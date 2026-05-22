@@ -31,6 +31,19 @@ class FakeDefinitionIntakeTests(unittest.TestCase):
                 is_literal=True,
             )
 
+    def test_valid_fake_paraphrase_over_eighty_words_is_stored(self):
+        text = " ".join(f"fakeparaphrase{i}" for i in range(120))
+
+        record = intake_fake_definition(
+            text=text,
+            extraction_type="paraphrase",
+            definition_type="fake_paraphrase",
+        )
+
+        self.assertEqual(record["word_count"], 120)
+        self.assertEqual(record["definition_type"], "fake_paraphrase")
+        self.assertFalse(record["is_literal"])
+
 
 if __name__ == "__main__":
     unittest.main()

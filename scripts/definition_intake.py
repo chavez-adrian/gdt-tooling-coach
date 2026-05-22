@@ -13,7 +13,11 @@ class DefinitionIntakeError(ValueError):
 
 
 def intake_fake_definition(
-    *, text: str, extraction_type: str, is_literal: bool = False
+    *,
+    text: str,
+    extraction_type: str,
+    is_literal: bool = False,
+    definition_type: str | None = None,
 ) -> dict[str, object]:
     word_count = len(WORD_RE.findall(text))
     if is_literal and extraction_type != "literal_quote":
@@ -25,6 +29,7 @@ def intake_fake_definition(
 
     return {
         "text": text,
+        "definition_type": definition_type,
         "extraction_type": extraction_type,
         "is_literal": is_literal,
         "word_count": word_count,
