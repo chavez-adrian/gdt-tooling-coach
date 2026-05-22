@@ -42,13 +42,19 @@ INSERT INTO definitions (
   source_id,
   definition_type,
   text,
-  extraction_type
+  word_count,
+  extraction_type,
+  is_literal,
+  copyright_notes
 )
 SELECT
   fake_concept.id,
   fake_source.id,
   'fake_reviewable_definition',
   'Fake reviewable definition linked to one fake source and one fake concept.',
-  'fake_manual'
+  11,
+  'fake_manual',
+  FALSE,
+  'Fake non-normative summary; no standard text copied.'
 FROM fake_concept
 CROSS JOIN fake_source;

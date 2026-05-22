@@ -1,9 +1,11 @@
 from pathlib import Path
+import re
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_source_definition_trace.sql"
+SCHEMA_PATH = ROOT / "db" / "migrations" / "001_initial_schema.sql"
 
 
 class FakeSourceDefinitionTraceTests(unittest.TestCase):
@@ -31,6 +33,32 @@ class FakeSourceDefinitionTraceTests(unittest.TestCase):
         self.assertIn("fake_concept.id", sql)
         self.assertIn("fake_source.id", sql)
         self.assertIn("CROSS JOIN fake_source", sql)
+
+    def test_fixture_definition_has_review_metadata_and_defaults_unvalidated(self):
+        fixture_sql = FIXTURE_PATH.read_text(encoding="utf-8")
+        schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
+        definition_insert = re.search(
+            r"INSERT INTO definitions\s*\((?P<columns>.*?)\)",
+            fixture_sql,
+            re.DOTALL,
+        )
+
+        self.assertIsNotNone(definition_insert)
+        columns = definition_insert.group("columns")
+        self.assertIn("extraction_type", columns)
+        self.assertIn("word_count", columns)
+        self.assertIn("is_literal", columns)
+        self.assertIn("copyright_notes", columns)
+        self.assertNotIn("review_status", columns)
+        self.assertIn("'fake_manual'", fixture_sql)
+        self.assertIn("11", fixture_sql)
+        self.assertIn("FALSE", fixture_sql)
+        self.assertIn("Fake non-normative summary; no standard text copied.", fixture_sql)
+        self.assertRegex(
+            schema_sql,
+            r"review_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'raw_import'",
+        )
+        self.assertNotIn("'validated'", fixture_sql)
 
 
 if __name__ == "__main__":
