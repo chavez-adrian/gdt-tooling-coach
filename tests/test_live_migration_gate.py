@@ -43,7 +43,7 @@ class LiveMigrationGateTests(unittest.TestCase):
         self.assertIn("Applied view: v_glossary_flat.sql", text)
         self.assertIn("Migrations and views are up to date.", text)
 
-    def test_gate_lists_read_only_verification_and_blocks_without_approval(self):
+    def test_gate_lists_read_only_verification_and_live_result(self):
         text = GATE_DOC_PATH.read_text(encoding="utf-8")
         lower_text = text.lower()
 
@@ -52,8 +52,10 @@ class LiveMigrationGateTests(unittest.TestCase):
         self.assertIn("FROM schema_migrations", text)
         self.assertIn("SELECT COUNT(*) AS flat_rows", text)
         self.assertIn("FROM v_glossary_flat", text)
-        self.assertIn("Approval status: missing", text)
-        self.assertIn("Do not run the live command", text)
+        self.assertIn("Approval status: received", text)
+        self.assertIn("first approved live migration run completed", text)
+        self.assertIn("applied_migrations: 1", text)
+        self.assertIn("core_tables: 9", text)
         self.assertNotIn("drop ", lower_text)
         self.assertNotIn("delete ", lower_text)
         self.assertNotIn("truncate ", lower_text)

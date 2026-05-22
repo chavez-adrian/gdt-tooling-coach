@@ -2,7 +2,7 @@
 
 Issue: #4
 
-Status: prepared; live execution blocked until explicit human approval is present in GitHub issue #4 comments.
+Status: first approved live migration run completed.
 
 ## Confirmed Neon target
 
@@ -58,11 +58,35 @@ FROM v_glossary_flat;
 
 ## Human approval gate
 
-Approval status: missing.
+Approval status: received in GitHub issue #4 and Codex conversation on 2026-05-22.
 
-Do not run the live command until issue #4 has a human comment that explicitly approves this Neon target and command:
+Approved Neon target and command:
 
 - Neon project: `gdt-tooling-coach`
 - Database: `gdt_tooling_coach`
 - Connection owner: `neondb_owner`
 - Command: `python scripts/run_migrations.py`
+
+## Live run result
+
+The approved command was executed on 2026-05-22.
+
+Observed successful output:
+
+```text
+Applying migration: 001_initial_schema.sql
+Applied: 001_initial_schema.sql
+Applying view: v_glossary_flat.sql
+Applied view: v_glossary_flat.sql
+Migrations and views are up to date.
+```
+
+Read-only verification result:
+
+```text
+applied_migrations: 1
+flat_rows: 0
+core_tables: 9
+```
+
+No PDF ingestion or content import was run.
