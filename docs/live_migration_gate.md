@@ -42,3 +42,27 @@ Migrations and views are up to date.
 ```
 
 If `001_initial_schema.sql` was already applied by a prior approved run, `No pending migrations.` may appear instead of the migration apply lines, followed by the view apply lines and final up-to-date message.
+
+## Post-run read-only verification
+
+After an approved live run, verify with read-only checks only:
+
+```sql
+SELECT COUNT(*) AS applied_migrations
+FROM schema_migrations
+WHERE version = '001_initial_schema.sql';
+
+SELECT COUNT(*) AS flat_rows
+FROM v_glossary_flat;
+```
+
+## Human approval gate
+
+Approval status: missing.
+
+Do not run the live command until issue #4 has a human comment that explicitly approves this Neon target and command:
+
+- Neon project: `gdt-tooling-coach`
+- Database: `gdt_tooling_coach`
+- Connection owner: `neondb_owner`
+- Command: `python scripts/run_migrations.py`
