@@ -17,18 +17,34 @@ WITH fake_source AS (
     'Non-normative fixture for local verification only.'
   )
   RETURNING id
+),
+fake_concept AS (
+  INSERT INTO concepts (
+    slug,
+    category,
+    subcategory,
+    difficulty_level,
+    notes
+  )
+  SELECT
+    'fake-flatness-demo',
+    'fake-form-control',
+    'fake-flat-surface',
+    1,
+    'Fake concept inserted by local tracer bullet.'
+  FROM fake_source
+  RETURNING id
 )
-INSERT INTO concepts (
-  slug,
-  category,
-  subcategory,
-  difficulty_level,
+INSERT INTO terms (
+  concept_id,
+  language,
+  source_type,
+  term,
+  is_primary,
   notes
 )
-SELECT
-  'fake-flatness-demo',
-  'fake-form-control',
-  'fake-flat-surface',
-  1,
-  'Fake concept inserted by local tracer bullet.'
-FROM fake_source;
+SELECT id, 'en', 'fake_training_en', 'Fake flatness', TRUE, 'Fake English term.'
+FROM fake_concept
+UNION ALL
+SELECT id, 'es', 'fake_training_es', 'Planitud falsa', TRUE, 'Fake Spanish term.'
+FROM fake_concept;

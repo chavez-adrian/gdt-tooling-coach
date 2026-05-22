@@ -17,6 +17,16 @@ class FakeGlossaryTracerBulletTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_inserts_one_fake_english_and_spanish_primary_term(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("INSERT INTO terms", sql)
+        self.assertIn("'en'", sql)
+        self.assertIn("'es'", sql)
+        self.assertIn("'Fake flatness'", sql)
+        self.assertIn("'Planitud falsa'", sql)
+        self.assertEqual(sql.count("TRUE"), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
