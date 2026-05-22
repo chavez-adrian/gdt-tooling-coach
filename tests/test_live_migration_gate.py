@@ -19,6 +19,13 @@ class LiveMigrationGateTests(unittest.TestCase):
         self.assertNotIn("password=", lower_text)
         self.assertNotIn("database_url=", lower_text)
 
+    def test_gate_records_local_proof_from_issue_3_as_complete(self):
+        text = GATE_DOC_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("Local proof from issue #3: complete", text)
+        self.assertIn("scripts/build_fake_glossary_verification.py --print", text)
+        self.assertIn("v_glossary_flat", text)
+
 
 if __name__ == "__main__":
     unittest.main()
