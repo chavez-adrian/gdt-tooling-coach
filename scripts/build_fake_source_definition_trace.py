@@ -34,6 +34,17 @@ WHERE c.slug = 'fake-source-definition-demo';
 """
 
 
+REVIEW_EXPORT_QUERY = """
+-- Review/export inspection output.
+SELECT
+  slug,
+  asme_2018_english_definition,
+  review_status
+FROM v_glossary_flat
+WHERE slug = 'fake-source-definition-demo';
+"""
+
+
 def build_verification_sql() -> str:
     parts = [
         "-- Local fake source-definition trace verification SQL.",
@@ -42,6 +53,7 @@ def build_verification_sql() -> str:
         VIEW_PATH.read_text(encoding="utf-8"),
         FIXTURE_PATH.read_text(encoding="utf-8"),
         VERIFY_QUERY.strip(),
+        REVIEW_EXPORT_QUERY.strip(),
     ]
     return "\n\n".join(parts) + "\n"
 

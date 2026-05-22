@@ -81,6 +81,21 @@ class FakeSourceDefinitionTraceTests(unittest.TestCase):
         self.assertNotIn("postgres://", result.stdout.lower())
         self.assertNotIn("postgresql://", result.stdout.lower())
 
+    def test_local_script_prints_review_export_output_for_fake_definition(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Review/export inspection output.", result.stdout)
+        self.assertIn("asme_2018_english_definition", result.stdout)
+        self.assertIn("review_status", result.stdout)
+        self.assertIn("FROM v_glossary_flat", result.stdout)
+        self.assertIn("WHERE slug = 'fake-source-definition-demo'", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
