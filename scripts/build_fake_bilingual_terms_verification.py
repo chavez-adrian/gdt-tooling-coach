@@ -23,6 +23,23 @@ WHERE slug = 'fake-bilingual-profile-demo';
 """
 
 
+RELATIONAL_TERMS_QUERY = """
+-- Relational source-of-truth output.
+SELECT
+  c.slug,
+  t.language,
+  t.source_type,
+  t.term,
+  t.abbreviation,
+  t.is_primary
+FROM concepts c
+JOIN terms t
+  ON t.concept_id = c.id
+WHERE c.slug = 'fake-bilingual-profile-demo'
+ORDER BY t.language;
+"""
+
+
 def build_verification_sql() -> str:
     parts = [
         "-- Local fake bilingual terminology verification SQL.",
@@ -30,6 +47,7 @@ def build_verification_sql() -> str:
         SCHEMA_PATH.read_text(encoding="utf-8"),
         VIEW_PATH.read_text(encoding="utf-8"),
         FIXTURE_PATH.read_text(encoding="utf-8"),
+        RELATIONAL_TERMS_QUERY.strip(),
         FLAT_REVIEW_QUERY.strip(),
     ]
     return "\n\n".join(parts) + "\n"

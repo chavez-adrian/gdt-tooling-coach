@@ -47,6 +47,22 @@ class FakeBilingualTermsTests(unittest.TestCase):
         self.assertIn("asme_2009_spanish_term", result.stdout)
         self.assertIn("fake-bilingual-profile-demo", result.stdout)
 
+    def test_local_script_keeps_relational_terms_as_source_of_truth(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Relational source-of-truth output.", result.stdout)
+        self.assertIn("JOIN terms", result.stdout)
+        self.assertIn("t.source_type", result.stdout)
+        self.assertIn("t.language", result.stdout)
+        self.assertIn("t.abbreviation", result.stdout)
+        self.assertNotIn("Fake profile control", (ROOT / "db" / "views" / "v_glossary_flat.sql").read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
