@@ -60,12 +60,18 @@ changed_concept AS (
 INSERT INTO concept_changes (
   concept_id,
   change_type,
+  change_summary,
+  impact_for_learning,
+  impact_for_tooling,
   source_2009_id,
   source_2018_id
 )
 SELECT
   changed_concept.id,
   'changed_meaning',
+  'Fake 2018 wording narrows the comparison focus.',
+  'Learners must review the newer fake phrasing before reusing memory aids.',
+  'Tooling should flag stale fake 2009 guidance for review.',
   source_2009.id,
   source_2018.id
 FROM changed_concept
