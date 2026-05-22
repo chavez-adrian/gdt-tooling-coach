@@ -28,3 +28,17 @@ Load the approved Neon `DATABASE_URL` outside git, then run exactly:
 ```powershell
 python scripts/run_migrations.py
 ```
+
+## Expected successful output
+
+For the first live run, success should include:
+
+```text
+Applying migration: 001_initial_schema.sql
+Applied: 001_initial_schema.sql
+Applying view: v_glossary_flat.sql
+Applied view: v_glossary_flat.sql
+Migrations and views are up to date.
+```
+
+If `001_initial_schema.sql` was already applied by a prior approved run, `No pending migrations.` may appear instead of the migration apply lines, followed by the view apply lines and final up-to-date message.

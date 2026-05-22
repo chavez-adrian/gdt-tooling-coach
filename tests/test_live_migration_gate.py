@@ -35,6 +35,14 @@ class LiveMigrationGateTests(unittest.TestCase):
         self.assertIn("python scripts/run_migrations.py", text)
         self.assertIn("Load the approved Neon `DATABASE_URL` outside git", text)
 
+    def test_gate_describes_expected_successful_output(self):
+        text = GATE_DOC_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("Expected successful output", text)
+        self.assertIn("Applied: 001_initial_schema.sql", text)
+        self.assertIn("Applied view: v_glossary_flat.sql", text)
+        self.assertIn("Migrations and views are up to date.", text)
+
 
 if __name__ == "__main__":
     unittest.main()
