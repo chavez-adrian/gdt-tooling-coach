@@ -56,6 +56,24 @@ changed_concept AS (
   FROM source_2009
   CROSS JOIN source_2018
   RETURNING id
+),
+no_change_concept AS (
+  INSERT INTO concepts (
+    slug,
+    category,
+    subcategory,
+    difficulty_level,
+    notes
+  )
+  SELECT
+    'fake-concept-no-significant-change',
+    'fake-concept-comparison',
+    'no-significant-change',
+    1,
+    'Fake concept whose meaning stays stable between fake 2009 and fake 2018 sources.'
+  FROM source_2009
+  CROSS JOIN source_2018
+  RETURNING id
 )
 INSERT INTO concept_changes (
   concept_id,
@@ -75,5 +93,17 @@ SELECT
   source_2009.id,
   source_2018.id
 FROM changed_concept
+CROSS JOIN source_2009
+CROSS JOIN source_2018
+UNION ALL
+SELECT
+  no_change_concept.id,
+  'no_significant_change',
+  'Fake 2018 wording preserves the fake 2009 meaning.',
+  'Learners may keep the same fake mental model after review.',
+  'Tooling can show a low-priority fake confirmation note.',
+  source_2009.id,
+  source_2018.id
+FROM no_change_concept
 CROSS JOIN source_2009
 CROSS JOIN source_2018;

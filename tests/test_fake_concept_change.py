@@ -74,6 +74,15 @@ class FakeConceptChangeTests(unittest.TestCase):
         self.assertNotIn("postgres://", result.stdout.lower())
         self.assertNotIn("postgresql://", result.stdout.lower())
 
+    def test_fixture_includes_no_significant_change_fake_case(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("'fake-concept-no-significant-change'", sql)
+        self.assertIn("'no_significant_change'", sql)
+        self.assertIn("Fake 2018 wording preserves the fake 2009 meaning.", sql)
+        self.assertIn("Learners may keep the same fake mental model after review.", sql)
+        self.assertIn("Tooling can show a low-priority fake confirmation note.", sql)
+
 
 if __name__ == "__main__":
     unittest.main()
