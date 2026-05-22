@@ -13,6 +13,8 @@ SELECT
   en.abbreviation AS english_abbreviation,
   es.term AS asme_2009_spanish_term,
   s.unicode_symbol,
+  s.unicode_reliable,
+  s.svg_path,
   s.text_fallback,
   def_en.text AS asme_2018_english_definition,
   def_es.text AS asme_2009_spanish_definition,

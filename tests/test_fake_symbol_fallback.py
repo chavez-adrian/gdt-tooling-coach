@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_symbol_fallback.sql"
+VIEW_PATH = ROOT / "db" / "views" / "v_glossary_flat.sql"
 
 
 class FakeSymbolFallbackTests(unittest.TestCase):
@@ -28,6 +29,15 @@ class FakeSymbolFallbackTests(unittest.TestCase):
         self.assertIn("text_fallback", sql)
         self.assertIn("'M 4 12 H 20 M 12 4 V 20'", sql)
         self.assertIn("'position symbol'", sql)
+
+    def test_flat_review_view_exposes_symbol_fallback_fields(self):
+        view_sql = VIEW_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("s.unicode_symbol", view_sql)
+        self.assertIn("s.unicode_reliable", view_sql)
+        self.assertIn("s.svg_path", view_sql)
+        self.assertIn("s.text_fallback", view_sql)
+        self.assertIn("LEFT JOIN symbols s", view_sql)
 
 
 if __name__ == "__main__":
