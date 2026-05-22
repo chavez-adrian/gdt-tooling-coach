@@ -1,0 +1,73 @@
+-- Fake/non-normative 2009-vs-2018 concept change fixture.
+-- Disposable PostgreSQL only; no Neon credentials required.
+
+WITH source_2009 AS (
+  INSERT INTO sources (
+    source_type,
+    title,
+    edition,
+    language,
+    file_name,
+    notes
+  )
+  VALUES (
+    'asme_2009_es_fake',
+    'Fake ASME Y14.5 2009 Spanish Source',
+    '2009 fake Spanish edition',
+    'es',
+    'fake-asme-y14-5-2009-es.pdf',
+    'Fake source link for local concept-change verification only.'
+  )
+  RETURNING id
+),
+source_2018 AS (
+  INSERT INTO sources (
+    source_type,
+    title,
+    edition,
+    language,
+    file_name,
+    notes
+  )
+  VALUES (
+    'asme_2018_en_fake',
+    'Fake ASME Y14.5 2018 English Source',
+    '2018 fake English edition',
+    'en',
+    'fake-asme-y14-5-2018-en.pdf',
+    'Fake source link for local concept-change verification only.'
+  )
+  RETURNING id
+),
+changed_concept AS (
+  INSERT INTO concepts (
+    slug,
+    category,
+    subcategory,
+    difficulty_level,
+    notes
+  )
+  SELECT
+    'fake-concept-changed-meaning',
+    'fake-concept-comparison',
+    'changed-meaning',
+    2,
+    'Fake concept whose meaning changed between fake 2009 and fake 2018 sources.'
+  FROM source_2009
+  CROSS JOIN source_2018
+  RETURNING id
+)
+INSERT INTO concept_changes (
+  concept_id,
+  change_type,
+  source_2009_id,
+  source_2018_id
+)
+SELECT
+  changed_concept.id,
+  'changed_meaning',
+  source_2009.id,
+  source_2018.id
+FROM changed_concept
+CROSS JOIN source_2009
+CROSS JOIN source_2018;
