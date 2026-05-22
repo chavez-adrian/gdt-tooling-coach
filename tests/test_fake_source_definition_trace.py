@@ -1,11 +1,14 @@
 from pathlib import Path
 import re
+import subprocess
+import sys
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_source_definition_trace.sql"
 SCHEMA_PATH = ROOT / "db" / "migrations" / "001_initial_schema.sql"
+VERIFY_SCRIPT_PATH = ROOT / "scripts" / "build_fake_source_definition_trace.py"
 
 
 class FakeSourceDefinitionTraceTests(unittest.TestCase):
@@ -59,6 +62,24 @@ class FakeSourceDefinitionTraceTests(unittest.TestCase):
             r"review_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'raw_import'",
         )
         self.assertNotIn("'validated'", fixture_sql)
+
+    def test_local_script_prints_disposable_source_definition_verification_sql(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("CREATE TABLE IF NOT EXISTS sources", result.stdout)
+        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", result.stdout)
+        self.assertIn("fake-source-definition-demo", result.stdout)
+        self.assertIn("JOIN sources", result.stdout)
+        self.assertIn("JOIN definitions", result.stdout)
+        self.assertNotIn("DATABASE_URL", result.stdout)
+        self.assertNotIn("postgres://", result.stdout.lower())
+        self.assertNotIn("postgresql://", result.stdout.lower())
 
 
 if __name__ == "__main__":
