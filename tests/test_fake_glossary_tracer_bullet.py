@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_glossary_tracer_bullet.sql"
 SCHEMA_PATH = ROOT / "db" / "migrations" / "001_initial_schema.sql"
+VIEW_PATH = ROOT / "db" / "views" / "v_glossary_flat.sql"
 
 
 class FakeGlossaryTracerBulletTests(unittest.TestCase):
@@ -49,6 +50,16 @@ class FakeGlossaryTracerBulletTests(unittest.TestCase):
             schema_sql,
             r"current_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'needs_review'",
         )
+
+    def test_flat_view_is_separate_and_does_not_filter_out_fake_fixture(self):
+        schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
+        view_sql = VIEW_PATH.read_text(encoding="utf-8")
+
+        self.assertNotIn("CREATE OR REPLACE VIEW v_glossary_flat", schema_sql)
+        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", view_sql)
+        self.assertNotIn("en.source_type = 'asme_2018_en'", view_sql)
+        self.assertNotIn("es.source_type = 'asme_2009_es'", view_sql)
+        self.assertNotIn("def_en.definition_type = 'normative_en_2018'", view_sql)
 
 
 if __name__ == "__main__":
