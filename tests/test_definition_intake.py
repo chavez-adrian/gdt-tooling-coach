@@ -44,6 +44,17 @@ class FakeDefinitionIntakeTests(unittest.TestCase):
         self.assertEqual(record["definition_type"], "fake_paraphrase")
         self.assertFalse(record["is_literal"])
 
+    def test_imported_fake_definition_defaults_to_reviewable_unvalidated_states(self):
+        record = intake_fake_definition(
+            text="Fake derived summary for review.",
+            extraction_type="summary",
+            definition_type="fake_summary",
+        )
+
+        self.assertEqual(record["review_status"], "raw_import")
+        self.assertEqual(record["validation_status"], "unvalidated")
+        self.assertEqual(record["current_status"], "needs_review")
+
 
 if __name__ == "__main__":
     unittest.main()

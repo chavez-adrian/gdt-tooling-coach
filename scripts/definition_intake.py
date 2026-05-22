@@ -33,4 +33,7 @@ def intake_fake_definition(
         "extraction_type": extraction_type,
         "is_literal": is_literal,
         "word_count": word_count,
+        "review_status": "raw_import",
+        "validation_status": "unvalidated",
+        "current_status": "needs_review",
     }
