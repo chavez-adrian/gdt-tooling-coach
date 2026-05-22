@@ -63,6 +63,25 @@ class FakeBilingualTermsTests(unittest.TestCase):
         self.assertIn("t.abbreviation", result.stdout)
         self.assertNotIn("Fake profile control", (ROOT / "db" / "views" / "v_glossary_flat.sql").read_text(encoding="utf-8"))
 
+    def test_local_script_prints_full_issue_7_acceptance_check_without_credentials(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Acceptance check: issue #7 fake bilingual terminology.", result.stdout)
+        self.assertIn("english_source_type_ok", result.stdout)
+        self.assertIn("spanish_source_type_ok", result.stdout)
+        self.assertIn("english_abbreviation_ok", result.stdout)
+        self.assertIn("flat_review_output_ok", result.stdout)
+        self.assertIn("relational_source_of_truth_ok", result.stdout)
+        self.assertNotIn("DATABASE_URL", result.stdout)
+        self.assertNotIn("postgres://", result.stdout.lower())
+        self.assertNotIn("postgresql://", result.stdout.lower())
+
 
 if __name__ == "__main__":
     unittest.main()
