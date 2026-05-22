@@ -21,6 +21,14 @@ class FakeSymbolFallbackTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_stores_svg_path_and_text_fallback_on_same_symbol_row(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("svg_path", sql)
+        self.assertIn("text_fallback", sql)
+        self.assertIn("'M 4 12 H 20 M 12 4 V 20'", sql)
+        self.assertIn("'position symbol'", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

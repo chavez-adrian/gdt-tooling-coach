@@ -22,6 +22,8 @@ INSERT INTO symbols (
   concept_id,
   unicode_symbol,
   unicode_reliable,
+  svg_path,
+  text_fallback,
   symbol_name,
   notes
 )
@@ -29,6 +31,8 @@ SELECT
   id,
   '⌖',
   TRUE,
+  'M 4 12 H 20 M 12 4 V 20',
+  'position symbol',
   'Fake position symbol',
   'Unicode is reliable for this fake concept.'
 FROM fake_concept;
