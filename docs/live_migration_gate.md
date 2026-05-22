@@ -20,3 +20,11 @@ Evidence path:
 
 - `python scripts/build_fake_glossary_verification.py --print`
 - The generated SQL builds the schema, applies `v_glossary_flat`, inserts fake non-normative fixture rows, and selects from `v_glossary_flat` without using Neon credentials.
+
+## Exact live command
+
+Load the approved Neon `DATABASE_URL` outside git, then run exactly:
+
+```powershell
+python scripts/run_migrations.py
+```

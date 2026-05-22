@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 GATE_DOC_PATH = ROOT / "docs" / "live_migration_gate.md"
+RUNNER_PATH = ROOT / "scripts" / "run_migrations.py"
 
 
 class LiveMigrationGateTests(unittest.TestCase):
@@ -25,6 +26,14 @@ class LiveMigrationGateTests(unittest.TestCase):
         self.assertIn("Local proof from issue #3: complete", text)
         self.assertIn("scripts/build_fake_glossary_verification.py --print", text)
         self.assertIn("v_glossary_flat", text)
+
+    def test_gate_lists_exact_live_command_and_existing_runner(self):
+        text = GATE_DOC_PATH.read_text(encoding="utf-8")
+
+        self.assertTrue(RUNNER_PATH.exists())
+        self.assertIn("Exact live command", text)
+        self.assertIn("python scripts/run_migrations.py", text)
+        self.assertIn("Load the approved Neon `DATABASE_URL` outside git", text)
 
 
 if __name__ == "__main__":
