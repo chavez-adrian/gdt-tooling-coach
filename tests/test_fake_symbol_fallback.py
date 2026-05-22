@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_symbol_fallback.sql"
 VIEW_PATH = ROOT / "db" / "views" / "v_glossary_flat.sql"
+DOC_PATH = ROOT / "docs" / "symbol_display_fallback.md"
 
 
 class FakeSymbolFallbackTests(unittest.TestCase):
@@ -38,6 +39,17 @@ class FakeSymbolFallbackTests(unittest.TestCase):
         self.assertIn("s.svg_path", view_sql)
         self.assertIn("s.text_fallback", view_sql)
         self.assertIn("LEFT JOIN symbols s", view_sql)
+
+    def test_docs_define_symbol_display_priority(self):
+        doc = DOC_PATH.read_text(encoding="utf-8")
+
+        unicode_pos = doc.index("1. Unicode")
+        svg_pos = doc.index("2. SVG")
+        text_pos = doc.index("3. Text fallback")
+
+        self.assertLess(unicode_pos, svg_pos)
+        self.assertLess(svg_pos, text_pos)
+        self.assertIn("unicode_reliable", doc)
 
 
 if __name__ == "__main__":
