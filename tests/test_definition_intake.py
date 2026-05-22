@@ -4,7 +4,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.definition_intake import intake_fake_definition
+from scripts.definition_intake import DefinitionIntakeError, intake_fake_definition
 
 
 class FakeDefinitionIntakeTests(unittest.TestCase):
@@ -16,6 +16,12 @@ class FakeDefinitionIntakeTests(unittest.TestCase):
 
         self.assertEqual(record["word_count"], 7)
         self.assertEqual(record["text"], "Fake summary text for local validation only.")
+
+    def test_rejects_literal_quote_over_eighty_words(self):
+        text = " ".join(f"fakeword{i}" for i in range(81))
+
+        with self.assertRaisesRegex(DefinitionIntakeError, "80 words"):
+            intake_fake_definition(text=text, extraction_type="literal_quote")
 
 
 if __name__ == "__main__":
