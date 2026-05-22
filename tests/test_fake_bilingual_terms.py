@@ -20,6 +20,14 @@ class FakeBilingualTermsTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_covers_english_abbreviation_when_present(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("abbreviation", sql)
+        self.assertIn("'FPC'", sql)
+        self.assertIn("'en', 'asme_2018_en', 'Fake profile control', 'FPC'", sql)
+        self.assertIn("'es', 'asme_2009_es', 'Control de perfil falso', NULL", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

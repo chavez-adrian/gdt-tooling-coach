@@ -23,11 +23,12 @@ INSERT INTO terms (
   language,
   source_type,
   term,
+  abbreviation,
   is_primary,
   notes
 )
-SELECT id, 'en', 'asme_2018_en', 'Fake profile control', TRUE, 'Fake English primary term.'
+SELECT id, 'en', 'asme_2018_en', 'Fake profile control', 'FPC', TRUE, 'Fake English primary term.'
 FROM fake_concept
 UNION ALL
-SELECT id, 'es', 'asme_2009_es', 'Control de perfil falso', TRUE, 'Fake Spanish primary term.'
+SELECT id, 'es', 'asme_2009_es', 'Control de perfil falso', NULL, TRUE, 'Fake Spanish primary term.'
 FROM fake_concept;
