@@ -23,6 +23,14 @@ class FakeDefinitionIntakeTests(unittest.TestCase):
         with self.assertRaisesRegex(DefinitionIntakeError, "80 words"):
             intake_fake_definition(text=text, extraction_type="literal_quote")
 
+    def test_literal_fake_quotes_require_literal_quote_extraction_type(self):
+        with self.assertRaisesRegex(DefinitionIntakeError, "literal_quote"):
+            intake_fake_definition(
+                text="Fake literal quote under the limit.",
+                extraction_type="summary",
+                is_literal=True,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
