@@ -83,6 +83,23 @@ class FakeConceptChangeTests(unittest.TestCase):
         self.assertIn("Learners may keep the same fake mental model after review.", sql)
         self.assertIn("Tooling can show a low-priority fake confirmation note.", sql)
 
+    def test_local_script_prints_acceptance_checks_for_both_fake_change_cases(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Acceptance checks for issue #8.", result.stdout)
+        self.assertIn("has_changed_meaning_case", result.stdout)
+        self.assertIn("has_no_significant_change_case", result.stdout)
+        self.assertIn("changed_meaning", result.stdout)
+        self.assertIn("no_significant_change", result.stdout)
+        self.assertIn("source_2009_linked", result.stdout)
+        self.assertIn("source_2018_linked", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

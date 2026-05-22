@@ -33,6 +33,43 @@ WHERE c.slug = 'fake-concept-changed-meaning';
 """
 
 
+ACCEPTANCE_QUERY = """
+-- Acceptance checks for issue #8.
+SELECT
+  EXISTS (
+    SELECT 1
+    FROM concepts c
+    JOIN concept_changes cc
+      ON cc.concept_id = c.id
+    WHERE c.slug = 'fake-concept-changed-meaning'
+      AND cc.change_type = 'changed_meaning'
+  ) AS has_changed_meaning_case,
+  EXISTS (
+    SELECT 1
+    FROM concepts c
+    JOIN concept_changes cc
+      ON cc.concept_id = c.id
+    WHERE c.slug = 'fake-concept-no-significant-change'
+      AND cc.change_type = 'no_significant_change'
+  ) AS has_no_significant_change_case,
+  NOT EXISTS (
+    SELECT 1
+    FROM concept_changes
+    WHERE review_status = 'validated'
+  ) AS default_review_status_is_unvalidated,
+  NOT EXISTS (
+    SELECT 1
+    FROM concept_changes
+    WHERE source_2009_id IS NULL
+  ) AS source_2009_linked,
+  NOT EXISTS (
+    SELECT 1
+    FROM concept_changes
+    WHERE source_2018_id IS NULL
+  ) AS source_2018_linked;
+"""
+
+
 def build_verification_sql() -> str:
     parts = [
         "-- Local fake concept-change verification SQL.",
@@ -40,6 +77,7 @@ def build_verification_sql() -> str:
         SCHEMA_PATH.read_text(encoding="utf-8"),
         FIXTURE_PATH.read_text(encoding="utf-8"),
         REVIEW_QUERY.strip(),
+        ACCEPTANCE_QUERY.strip(),
     ]
     return "\n\n".join(parts) + "\n"
 
