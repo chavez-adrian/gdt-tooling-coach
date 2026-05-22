@@ -21,6 +21,17 @@ class FakeSourceDefinitionTraceTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_links_fake_definition_to_fake_source_and_concept(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("fake_concept AS", sql)
+        self.assertIn("INSERT INTO concepts", sql)
+        self.assertIn("'fake-source-definition-demo'", sql)
+        self.assertIn("INSERT INTO definitions", sql)
+        self.assertIn("fake_concept.id", sql)
+        self.assertIn("fake_source.id", sql)
+        self.assertIn("CROSS JOIN fake_source", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

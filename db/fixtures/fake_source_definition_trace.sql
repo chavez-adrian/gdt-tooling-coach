@@ -19,6 +19,36 @@ WITH fake_source AS (
     'Fake file metadata: sha256:fake-source-definition-trace; bytes=12345; mime=application/pdf.'
   )
   RETURNING id
+),
+fake_concept AS (
+  INSERT INTO concepts (
+    slug,
+    category,
+    subcategory,
+    difficulty_level,
+    notes
+  )
+  SELECT
+    'fake-source-definition-demo',
+    'fake-datum-reference',
+    'fake-review-trace',
+    1,
+    'Fake concept for source-to-definition trace.'
+  FROM fake_source
+  RETURNING id
 )
-SELECT id
-FROM fake_source;
+INSERT INTO definitions (
+  concept_id,
+  source_id,
+  definition_type,
+  text,
+  extraction_type
+)
+SELECT
+  fake_concept.id,
+  fake_source.id,
+  'fake_reviewable_definition',
+  'Fake reviewable definition linked to one fake source and one fake concept.',
+  'fake_manual'
+FROM fake_concept
+CROSS JOIN fake_source;
