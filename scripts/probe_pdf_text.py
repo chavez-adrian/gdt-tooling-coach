@@ -122,25 +122,26 @@ def build_probe_report(
         pdf_path = project_root / expected_local_path
         if not pdf_path.exists():
             report_entries.append(
-                {
-                    "source_title": manifest_entry["source_title"],
-                    "expected_local_path": expected_local_path,
-                    "page_count": 0,
-                    "sample_size": 0,
-                    "random_seed": random_seed,
-                    "sampled_page_numbers": [],
-                    "sampled_page_indexes": [],
-                    "sampled_pages_by_quartile": {name: [] for name in QUARTILE_NAMES},
-                    "extracted_char_count": 0,
-                    "extracted_word_count": 0,
-                    "pages_with_extractable_text": 0,
-                    "has_extractable_text": False,
-                    "extraction_status": "missing_pdf",
-                }
+                build_empty_report_entry(
+                    manifest_entry=manifest_entry,
+                    random_seed=random_seed,
+                    extraction_status="missing_pdf",
+                )
             )
             continue
 
-        reader = PdfReader(pdf_path)
+        try:
+            reader = PdfReader(pdf_path)
+        except Exception:
+            report_entries.append(
+                build_empty_report_entry(
+                    manifest_entry=manifest_entry,
+                    random_seed=random_seed,
+                    extraction_status="pdf_open_error",
+                )
+            )
+            continue
+
         page_count = len(reader.pages)
         sample_plan = build_sample_plan(page_count, random_seed=random_seed)
         extracted_texts = [
@@ -170,6 +171,28 @@ def build_probe_report(
         )
 
     return report_entries
+
+
+def build_empty_report_entry(
+    manifest_entry: dict[str, object],
+    random_seed: int,
+    extraction_status: str,
+) -> dict[str, object]:
+    return {
+        "source_title": manifest_entry["source_title"],
+        "expected_local_path": manifest_entry["expected_local_path"],
+        "page_count": 0,
+        "sample_size": 0,
+        "random_seed": random_seed,
+        "sampled_page_numbers": [],
+        "sampled_page_indexes": [],
+        "sampled_pages_by_quartile": {name: [] for name in QUARTILE_NAMES},
+        "extracted_char_count": 0,
+        "extracted_word_count": 0,
+        "pages_with_extractable_text": 0,
+        "has_extractable_text": False,
+        "extraction_status": extraction_status,
+    }
 
 
 def write_probe_report(

@@ -213,6 +213,34 @@ class ProbePdfTextReportTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(report[0]["source_title"], "CLI Missing Source")
 
+    def test_report_records_pdf_open_error_as_metrics_row(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data" / "raw" / "broken.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Broken Source",
+                            "expected_local_path": "data/raw/broken.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            with patch("scripts.probe_pdf_text.PdfReader", side_effect=ValueError("bad")):
+                report = probe_pdf_text.build_probe_report(
+                    project_root=project_root,
+                    manifest_path=manifest_path,
+                )
+
+        self.assertEqual(report[0]["page_count"], 0)
+        self.assertEqual(report[0]["extraction_status"], "pdf_open_error")
+
 
 if __name__ == "__main__":
     unittest.main()
