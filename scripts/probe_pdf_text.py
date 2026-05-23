@@ -10,6 +10,7 @@ import math
 import random
 
 QUARTILE_NAMES = ("Q1", "Q2", "Q3", "Q4")
+DEFAULT_RANDOM_SEED = 20260523
 
 
 def calculate_sample_size(page_count: int) -> int:
@@ -70,7 +71,9 @@ def redistribute_sample_counts(
     return sample_counts
 
 
-def build_sample_plan(page_count: int, random_seed: int) -> dict[str, object]:
+def build_sample_plan(
+    page_count: int, random_seed: int = DEFAULT_RANDOM_SEED
+) -> dict[str, object]:
     sample_size = calculate_sample_size(page_count)
     quartiles = divide_page_indexes_into_quartiles(page_count)
     sample_counts = redistribute_sample_counts(

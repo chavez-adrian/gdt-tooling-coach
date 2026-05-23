@@ -73,6 +73,14 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
             {"Q1": 0, "Q2": 2, "Q3": 2, "Q4": 0},
         )
 
+    def test_sample_plan_uses_default_seed_and_contains_no_text_content(self):
+        plan = probe_pdf_text.build_sample_plan(page_count=40)
+
+        self.assertEqual(plan["random_seed"], probe_pdf_text.DEFAULT_RANDOM_SEED)
+        self.assertNotIn("text", plan)
+        self.assertNotIn("extracted_text", plan)
+        self.assertNotIn("text_sample", plan)
+
 
 if __name__ == "__main__":
     unittest.main()
