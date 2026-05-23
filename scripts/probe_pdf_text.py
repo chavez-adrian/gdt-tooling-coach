@@ -10,6 +10,7 @@ import argparse
 import math
 import json
 import random
+import subprocess
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -232,6 +233,18 @@ def main(argv: list[str] | None = None) -> int:
         random_seed=args.random_seed,
     )
     return 0
+
+
+def is_report_output_ignored(
+    project_root: Path,
+    output_relative_path: Path = DEFAULT_OUTPUT_RELATIVE_PATH,
+) -> bool:
+    result = subprocess.run(
+        ["git", "check-ignore", "--quiet", str(output_relative_path)],
+        cwd=project_root,
+        check=False,
+    )
+    return result.returncode == 0
 
 
 if __name__ == "__main__":

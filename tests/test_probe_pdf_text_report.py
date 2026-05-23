@@ -1,4 +1,5 @@
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -303,6 +304,17 @@ class ProbePdfTextReportTests(unittest.TestCase):
         self.assertEqual(report[0]["pages_with_extractable_text"], 1)
         self.assertEqual(report[0]["extraction_status"], "partial_page_error")
         self.assertNotIn("alpha", json.dumps(report))
+
+    def test_confirms_probe_report_output_path_is_git_ignored(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            subprocess.run(["git", "init"], cwd=project_root, check=True, capture_output=True)
+            (project_root / ".gitignore").write_text(
+                "data/processed/**\n!data/processed/.gitkeep\n",
+                encoding="utf-8",
+            )
+
+            self.assertTrue(probe_pdf_text.is_report_output_ignored(project_root))
 
 
 if __name__ == "__main__":
