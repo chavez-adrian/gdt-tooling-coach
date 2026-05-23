@@ -161,6 +161,33 @@ class ProbePdfTextReportTests(unittest.TestCase):
         self.assertFalse(report[0]["has_extractable_text"])
         self.assertEqual(report[0]["extraction_status"], "no_extractable_text")
 
+    def test_writes_probe_report_json_to_output_path(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            manifest_path = project_root / "manifest.json"
+            output_path = project_root / "data" / "processed" / "pdf_text_probe.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Missing Source",
+                            "expected_local_path": "data/raw/missing.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report = probe_pdf_text.write_probe_report(
+                project_root=project_root,
+                manifest_path=manifest_path,
+                output_path=output_path,
+            )
+
+            self.assertEqual(
+                json.loads(output_path.read_text(encoding="utf-8")), report
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

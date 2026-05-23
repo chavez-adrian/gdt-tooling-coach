@@ -167,3 +167,19 @@ def build_probe_report(
         )
 
     return report_entries
+
+
+def write_probe_report(
+    project_root: Path,
+    manifest_path: Path,
+    output_path: Path,
+    random_seed: int = DEFAULT_RANDOM_SEED,
+) -> list[dict[str, object]]:
+    report = build_probe_report(
+        project_root=project_root,
+        manifest_path=manifest_path,
+        random_seed=random_seed,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return report
