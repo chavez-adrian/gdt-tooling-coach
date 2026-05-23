@@ -29,6 +29,19 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
 
         self.assertEqual(summary["pdfs_with_extractable_text"], 2)
 
+    def test_summary_reports_sample_size_distribution(self):
+        report = {
+            "pdfs": [
+                {"source_path": "a.pdf", "sample_size": 4},
+                {"source_path": "b.pdf", "sample_size": 4},
+                {"source_path": "c.pdf", "sample_size": 8},
+            ]
+        }
+
+        summary = verify_pdf_text_probe.summarize_probe_report(report)
+
+        self.assertEqual(summary["sample_size_distribution"], {4: 2, 8: 1})
+
 
 if __name__ == "__main__":
     unittest.main()
