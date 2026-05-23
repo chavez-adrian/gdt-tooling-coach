@@ -30,6 +30,37 @@ WHERE c.slug = 'fake-deep-drawing-die-demo';
 """
 
 
+ACCEPTANCE_CHECK_QUERY = """
+-- Acceptance check: issue #10 fake tooling example.
+SELECT
+  EXISTS (
+    SELECT 1
+    FROM concepts c
+    JOIN tooling_examples te ON te.concept_id = c.id
+    WHERE c.slug = 'fake-deep-drawing-die-demo'
+      AND te.tool_component = 'blank holder'
+  ) AS tooling_example_path_ok,
+  EXISTS (
+    SELECT 1
+    FROM concepts c
+    JOIN tooling_examples te ON te.concept_id = c.id
+    WHERE c.slug = 'fake-deep-drawing-die-demo'
+      AND te.when_to_use IS NOT NULL
+      AND te.when_not_to_use IS NOT NULL
+      AND te.inspection_method IS NOT NULL
+      AND te.cost_warning IS NOT NULL
+  ) AS tooling_guidance_fields_ok,
+  EXISTS (
+    SELECT 1
+    FROM concepts c
+    JOIN tooling_examples te ON te.concept_id = c.id
+    WHERE c.slug = 'fake-deep-drawing-die-demo'
+      AND te.review_status = 'needs_human_review'
+      AND te.review_status <> 'validated'
+  ) AS tooling_review_status_unvalidated_ok;
+"""
+
+
 def build_verification_sql() -> str:
     parts = [
         "-- Local fake tooling example verification SQL.",
@@ -38,6 +69,7 @@ def build_verification_sql() -> str:
         VIEW_PATH.read_text(encoding="utf-8"),
         FIXTURE_PATH.read_text(encoding="utf-8"),
         REVIEW_QUERY.strip(),
+        ACCEPTANCE_CHECK_QUERY.strip(),
     ]
     return "\n\n".join(parts) + "\n"
 

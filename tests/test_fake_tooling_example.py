@@ -76,6 +76,23 @@ class FakeToolingExampleTests(unittest.TestCase):
         self.assertNotIn("postgres://", result.stdout.lower())
         self.assertNotIn("postgresql://", result.stdout.lower())
 
+    def test_local_script_prints_full_tooling_acceptance_check(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Acceptance check: issue #10 fake tooling example.", result.stdout)
+        self.assertIn("tooling_example_path_ok", result.stdout)
+        self.assertIn("tooling_guidance_fields_ok", result.stdout)
+        self.assertIn("tooling_review_status_unvalidated_ok", result.stdout)
+        self.assertIn("te.tool_component = 'blank holder'", result.stdout)
+        self.assertIn("te.review_status = 'needs_human_review'", result.stdout)
+        self.assertIn("te.review_status <> 'validated'", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
