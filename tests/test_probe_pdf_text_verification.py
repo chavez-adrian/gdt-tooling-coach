@@ -16,6 +16,19 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
 
         self.assertEqual(summary["total_pdfs_processed"], 2)
 
+    def test_summary_reports_count_of_pdfs_with_extractable_text(self):
+        report = {
+            "pdfs": [
+                {"source_path": "a.pdf", "has_extractable_text": True},
+                {"source_path": "b.pdf", "has_extractable_text": False},
+                {"source_path": "c.pdf", "has_extractable_text": True},
+            ]
+        }
+
+        summary = verify_pdf_text_probe.summarize_probe_report(report)
+
+        self.assertEqual(summary["pdfs_with_extractable_text"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
