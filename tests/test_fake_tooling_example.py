@@ -19,6 +19,20 @@ class FakeToolingExampleTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_includes_component_guidance_inspection_and_cost_fields(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("tool_component", sql)
+        self.assertIn("when_to_use", sql)
+        self.assertIn("when_not_to_use", sql)
+        self.assertIn("inspection_method", sql)
+        self.assertIn("cost_warning", sql)
+        self.assertIn("'blank holder'", sql)
+        self.assertIn("Use this fake example", sql)
+        self.assertIn("Do not use this fake example", sql)
+        self.assertIn("Fake inspection method", sql)
+        self.assertIn("Fake cost warning", sql)
+
 
 if __name__ == "__main__":
     unittest.main()
