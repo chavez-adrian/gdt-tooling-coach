@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from scripts import verify_pdf_text_probe
 
@@ -71,6 +72,22 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
         self.assertEqual(
             summary["sampled_pages_by_quartile"], {"Q1": 3, "Q2": 1, "Q3": 1, "Q4": 3}
         )
+
+    def test_summary_flags_text_content_fields_without_echoing_text(self):
+        report = {
+            "pdfs": [
+                {
+                    "source_path": "a.pdf",
+                    "extracted_text": "do not print this source text",
+                    "sample_size": 4,
+                }
+            ]
+        }
+
+        summary = verify_pdf_text_probe.summarize_probe_report(report)
+
+        self.assertTrue(summary["text_content_fields_present"])
+        self.assertNotIn("do not print this source text", json.dumps(summary))
 
 
 if __name__ == "__main__":
