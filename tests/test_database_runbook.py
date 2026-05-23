@@ -53,6 +53,32 @@ class DatabaseRunbookTests(unittest.TestCase):
         for phrase in required_phrases:
             self.assertIn(phrase, text)
 
+    def test_runbook_troubleshoots_common_failures_without_secrets_or_excerpts(self):
+        text = RUNBOOK_PATH.read_text(encoding="utf-8")
+        lower_text = text.lower()
+
+        required_phrases = [
+            "Missing `DATABASE_URL`",
+            "Missing dependencies",
+            "Failed migrations",
+            "No real credentials",
+            "No source-document excerpts",
+        ]
+
+        for phrase in required_phrases:
+            self.assertIn(phrase, text)
+
+        forbidden_fragments = [
+            "postgresql://",
+            "postgres://",
+            "password=",
+            "apikey",
+            "api_key",
+        ]
+
+        for fragment in forbidden_fragments:
+            self.assertNotIn(fragment, lower_text)
+
 
 if __name__ == "__main__":
     unittest.main()

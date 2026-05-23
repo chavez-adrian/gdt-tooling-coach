@@ -45,3 +45,16 @@ python scripts/build_fake_source_definition_trace.py --print
 These tracer bullets compose schema, views, and fake fixtures into SQL that can
 be inspected or run locally. To execute them, pipe the output into a disposable local PostgreSQL database.
 No Neon connection is required, and no source documents are needed.
+
+## Troubleshooting
+
+- Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set
+  the variable only in your private environment. Do not commit or paste the value.
+- Missing dependencies: rerun `python -m pip install -r requirements.txt` inside
+  the activated virtual environment.
+- Failed migrations: verify the target is disposable or approved, rerun
+  `python scripts/check_connection.py`, then inspect the failing migration file
+  before retrying.
+
+No real credentials are included here. No source-document excerpts are included
+or required for this handoff runbook.
