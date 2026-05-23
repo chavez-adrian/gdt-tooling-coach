@@ -1,7 +1,10 @@
 -- v_glossary_flat.sql
 -- Review/export view only. The relational tables remain the source of truth.
+-- Drop first so this file can be reapplied when the view column structure changes.
 
-CREATE OR REPLACE VIEW v_glossary_flat AS
+DROP VIEW IF EXISTS public.v_glossary_flat;
+
+CREATE VIEW public.v_glossary_flat AS
 SELECT
   c.id AS concept_id,
   c.slug,
