@@ -63,7 +63,8 @@ class FakeSymbolFallbackTests(unittest.TestCase):
             text=True,
         )
 
-        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", result.stdout)
+        self.assertIn("DROP VIEW IF EXISTS public.v_glossary_flat", result.stdout)
+        self.assertIn("CREATE VIEW public.v_glossary_flat", result.stdout)
         self.assertIn("fake-symbol-position-demo", result.stdout)
         self.assertIn("unicode_symbol", result.stdout)
         self.assertIn("unicode_reliable", result.stdout)

@@ -40,7 +40,8 @@ class FakeBilingualTermsTests(unittest.TestCase):
             text=True,
         )
 
-        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", result.stdout)
+        self.assertIn("DROP VIEW IF EXISTS public.v_glossary_flat", result.stdout)
+        self.assertIn("CREATE VIEW public.v_glossary_flat", result.stdout)
         self.assertIn("FROM v_glossary_flat", result.stdout)
         self.assertIn("asme_2018_english_term", result.stdout)
         self.assertIn("english_abbreviation", result.stdout)

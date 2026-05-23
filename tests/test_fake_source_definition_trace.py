@@ -73,7 +73,8 @@ class FakeSourceDefinitionTraceTests(unittest.TestCase):
         )
 
         self.assertIn("CREATE TABLE IF NOT EXISTS sources", result.stdout)
-        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", result.stdout)
+        self.assertIn("DROP VIEW IF EXISTS public.v_glossary_flat", result.stdout)
+        self.assertIn("CREATE VIEW public.v_glossary_flat", result.stdout)
         self.assertIn("fake-source-definition-demo", result.stdout)
         self.assertIn("JOIN sources", result.stdout)
         self.assertIn("JOIN definitions", result.stdout)

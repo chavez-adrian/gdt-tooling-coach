@@ -58,8 +58,12 @@ class FakeGlossaryTracerBulletTests(unittest.TestCase):
         schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
         view_sql = VIEW_PATH.read_text(encoding="utf-8")
 
-        self.assertNotIn("CREATE OR REPLACE VIEW v_glossary_flat", schema_sql)
-        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", view_sql)
+        self.assertNotIn("v_glossary_flat", schema_sql)
+        self.assertNotIn("DROP VIEW", schema_sql)
+        self.assertNotIn("CREATE VIEW public.v_glossary_flat", schema_sql)
+        self.assertIn("DROP VIEW IF EXISTS public.v_glossary_flat", view_sql)
+        self.assertIn("CREATE VIEW public.v_glossary_flat", view_sql)
+        self.assertNotIn("CREATE OR REPLACE VIEW", view_sql)
         self.assertNotIn("en.source_type = 'asme_2018_en'", view_sql)
         self.assertNotIn("es.source_type = 'asme_2009_es'", view_sql)
         self.assertNotIn("def_en.definition_type = 'normative_en_2018'", view_sql)
@@ -73,7 +77,8 @@ class FakeGlossaryTracerBulletTests(unittest.TestCase):
             text=True,
         )
 
-        self.assertIn("CREATE OR REPLACE VIEW v_glossary_flat", result.stdout)
+        self.assertIn("DROP VIEW IF EXISTS public.v_glossary_flat", result.stdout)
+        self.assertIn("CREATE VIEW public.v_glossary_flat", result.stdout)
         self.assertIn("fake-flatness-demo", result.stdout)
         self.assertIn("SELECT", result.stdout)
         self.assertIn("FROM v_glossary_flat", result.stdout)
