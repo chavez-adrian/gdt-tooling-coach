@@ -88,6 +88,23 @@ class FakeAdaptiveExerciseTests(unittest.TestCase):
         self.assertNotIn("postgres://", result.stdout.lower())
         self.assertNotIn("postgresql://", result.stdout.lower())
 
+    def test_local_script_prints_full_adaptive_exercise_acceptance_check(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Acceptance check: issue #11 fake adaptive exercise.", result.stdout)
+        self.assertIn("question_source_concept_path_ok", result.stdout)
+        self.assertIn("draft_exercise_derived_ok", result.stdout)
+        self.assertIn("exercise_learning_fields_ok", result.stdout)
+        self.assertIn("exercise_review_status_unvalidated_ok", result.stdout)
+        self.assertIn("ae.review_status = 'needs_human_review'", result.stdout)
+        self.assertIn("ae.review_status <> 'validated'", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

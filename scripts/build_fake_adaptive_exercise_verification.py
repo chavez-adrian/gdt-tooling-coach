@@ -32,6 +32,43 @@ WHERE c.slug = 'fake-course-question-datum-target';
 """
 
 
+ACCEPTANCE_CHECK_QUERY = """
+-- Acceptance check: issue #11 fake adaptive exercise.
+SELECT
+  EXISTS (
+    SELECT 1
+    FROM adaptive_exercises ae
+    JOIN course_question_patterns cqp ON cqp.id = ae.question_pattern_id
+    JOIN sources src ON src.id = cqp.source_id
+    JOIN concepts c ON c.id = cqp.concept_id
+    WHERE src.source_type = 'aamc_course_fake'
+      AND c.slug = 'fake-course-question-datum-target'
+  ) AS question_source_concept_path_ok,
+  EXISTS (
+    SELECT 1
+    FROM adaptive_exercises ae
+    JOIN course_question_patterns cqp ON cqp.id = ae.question_pattern_id
+    WHERE ae.exercise_status = 'draft'
+      AND cqp.question_pattern IS NOT NULL
+  ) AS draft_exercise_derived_ok,
+  EXISTS (
+    SELECT 1
+    FROM adaptive_exercises ae
+    WHERE ae.context IS NOT NULL
+      AND ae.application_area IS NOT NULL
+      AND ae.difficulty_level = 2
+      AND ae.rubric IS NOT NULL
+      AND ae.feedback_if_wrong IS NOT NULL
+  ) AS exercise_learning_fields_ok,
+  EXISTS (
+    SELECT 1
+    FROM adaptive_exercises ae
+    WHERE ae.review_status = 'needs_human_review'
+      AND ae.review_status <> 'validated'
+  ) AS exercise_review_status_unvalidated_ok;
+"""
+
+
 def build_verification_sql() -> str:
     parts = [
         "-- Local fake adaptive exercise verification SQL.",
@@ -39,6 +76,7 @@ def build_verification_sql() -> str:
         SCHEMA_PATH.read_text(encoding="utf-8"),
         FIXTURE_PATH.read_text(encoding="utf-8"),
         TRACEABILITY_QUERY.strip(),
+        ACCEPTANCE_CHECK_QUERY.strip(),
     ]
     return "\n\n".join(parts) + "\n"
 
