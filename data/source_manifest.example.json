@@ -1,0 +1,82 @@
+[
+  {
+    "source_title": "ASME Y14.5-2018 English",
+    "source_type": "asme_2018_en",
+    "language": "en",
+    "expected_local_path": "data/raw/asme_2018/ASME_Y14.5-2018_English.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest normative content."
+  },
+  {
+    "source_title": "ASME Y14.5-2009 Español",
+    "source_type": "asme_2009_es",
+    "language": "es",
+    "expected_local_path": "data/raw/asme_2009_es/ASME_Y14.5-2009_Espanol.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest normative content."
+  },
+  {
+    "source_title": "Módulo 0 Contenido del curso básico",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_0_contenido_del_curso_basico.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 1 Dimensionamiento y tolerancias",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_1_dimensionamiento_y_tolerancias.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 2 Definiciones dentro de las GD&T",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_2_definiciones_dentro_de_las_gdt.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 3 Tolerancias de forma",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_3_tolerancias_de_forma.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 4 Tolerancias de orientación y datum de referencia",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_4_tolerancias_de_orientacion_y_datum_de_referencia.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 5 Tolerancias de perfil",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_5_tolerancias_de_perfil.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 6 Tolerancias de localización",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_6_tolerancias_de_localizacion.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  },
+  {
+    "source_title": "Módulo 7 Tolerancia de cabeceo",
+    "source_type": "aamc_course",
+    "language": "es",
+    "expected_local_path": "data/raw/aamc_course/modulo_7_tolerancia_de_cabeceo.pdf",
+    "required": true,
+    "notes": "Local file metadata only; do not commit the PDF or ingest course content."
+  }
+]
