@@ -1,10 +1,13 @@
 from pathlib import Path
 import re
+import subprocess
+import sys
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_adaptive_exercise.sql"
+VERIFY_SCRIPT_PATH = ROOT / "scripts" / "build_fake_adaptive_exercise_verification.py"
 
 
 class FakeAdaptiveExerciseTests(unittest.TestCase):
@@ -63,6 +66,27 @@ class FakeAdaptiveExerciseTests(unittest.TestCase):
             r"review_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'needs_human_review'",
         )
         self.assertNotIn("'validated'", fixture_sql)
+
+    def test_local_script_prints_traceability_query_from_exercise_to_question_source_concept(self):
+        result = subprocess.run(
+            [sys.executable, str(VERIFY_SCRIPT_PATH), "--print"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertIn("-- Traceability output: fake adaptive exercise lineage.", result.stdout)
+        self.assertIn("JOIN course_question_patterns", result.stdout)
+        self.assertIn("JOIN sources", result.stdout)
+        self.assertIn("JOIN concepts", result.stdout)
+        self.assertIn("adaptive_exercise_prompt", result.stdout)
+        self.assertIn("question_pattern", result.stdout)
+        self.assertIn("source_title", result.stdout)
+        self.assertIn("concept_slug", result.stdout)
+        self.assertNotIn("DATABASE_URL", result.stdout)
+        self.assertNotIn("postgres://", result.stdout.lower())
+        self.assertNotIn("postgresql://", result.stdout.lower())
 
 
 if __name__ == "__main__":
