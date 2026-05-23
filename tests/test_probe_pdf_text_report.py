@@ -93,7 +93,7 @@ class ProbePdfTextReportTests(unittest.TestCase):
 
         reader.assert_called_once_with(pdf_path)
         self.assertEqual(report[0]["page_count"], 2)
-        self.assertEqual(report[0]["extraction_status"], "extracted")
+        self.assertEqual(report[0]["extraction_status"], "no_extractable_text")
 
     def test_report_counts_extracted_text_metrics_from_sampled_pages_only(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -129,6 +129,37 @@ class ProbePdfTextReportTests(unittest.TestCase):
         self.assertEqual(report[0]["extracted_word_count"], 3)
         self.assertEqual(report[0]["pages_with_extractable_text"], 2)
         self.assertTrue(report[0]["has_extractable_text"])
+
+    def test_report_marks_existing_pdf_with_no_sampled_text(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data" / "raw" / "blank.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Blank Source",
+                            "expected_local_path": "data/raw/blank.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            fake_reader = type(
+                "FakeReader", (), {"pages": [FakePage(""), FakePage(None)]}
+            )()
+
+            with patch("scripts.probe_pdf_text.PdfReader", return_value=fake_reader):
+                report = probe_pdf_text.build_probe_report(
+                    project_root=project_root,
+                    manifest_path=manifest_path,
+                )
+
+        self.assertFalse(report[0]["has_extractable_text"])
+        self.assertEqual(report[0]["extraction_status"], "no_extractable_text")
 
 
 if __name__ == "__main__":

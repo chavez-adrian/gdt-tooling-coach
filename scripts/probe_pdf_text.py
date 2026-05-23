@@ -145,6 +145,7 @@ def build_probe_report(
             for page_index in sample_plan["sampled_page_indexes"]
         ]
         extractable_texts = [text for text in extracted_texts if text]
+        extraction_status = "extracted" if extractable_texts else "no_extractable_text"
         report_entries.append(
             {
                 "source_title": manifest_entry["source_title"],
@@ -161,7 +162,7 @@ def build_probe_report(
                 ),
                 "pages_with_extractable_text": len(extractable_texts),
                 "has_extractable_text": bool(extractable_texts),
-                "extraction_status": "extracted",
+                "extraction_status": extraction_status,
             }
         )
 
