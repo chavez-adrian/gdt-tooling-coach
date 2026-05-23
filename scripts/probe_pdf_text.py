@@ -43,10 +43,39 @@ def allocate_sample_counts_by_quartile(sample_size: int) -> dict[str, int]:
     }
 
 
+def redistribute_sample_counts(
+    quartiles: dict[str, list[int]], requested_counts: dict[str, int]
+) -> dict[str, int]:
+    sample_counts = requested_counts.copy()
+    shortfall = 0
+
+    for quartile_name in QUARTILE_NAMES:
+        available_count = len(quartiles[quartile_name])
+        if sample_counts[quartile_name] > available_count:
+            shortfall += sample_counts[quartile_name] - available_count
+            sample_counts[quartile_name] = available_count
+
+    while shortfall:
+        redistributed = False
+        for quartile_name in QUARTILE_NAMES:
+            if sample_counts[quartile_name] < len(quartiles[quartile_name]):
+                sample_counts[quartile_name] += 1
+                shortfall -= 1
+                redistributed = True
+                if shortfall == 0:
+                    break
+        if not redistributed:
+            break
+
+    return sample_counts
+
+
 def build_sample_plan(page_count: int, random_seed: int) -> dict[str, object]:
     sample_size = calculate_sample_size(page_count)
     quartiles = divide_page_indexes_into_quartiles(page_count)
-    sample_counts = allocate_sample_counts_by_quartile(sample_size)
+    sample_counts = redistribute_sample_counts(
+        quartiles, allocate_sample_counts_by_quartile(sample_size)
+    )
     rng = random.Random(random_seed)
     sampled_pages_by_quartile = {
         quartile_name: sorted(

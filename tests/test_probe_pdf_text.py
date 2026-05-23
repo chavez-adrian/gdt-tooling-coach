@@ -59,6 +59,20 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
         self.assertEqual(plan["sample_size"], 25)
         self.assertEqual(len(plan["sampled_page_indexes"]), 25)
 
+    def test_redistributes_sample_counts_when_quartile_is_short(self):
+        quartiles = {
+            "Q1": [],
+            "Q2": [0, 1],
+            "Q3": [2, 3],
+            "Q4": [4, 5],
+        }
+        requested = {"Q1": 2, "Q2": 1, "Q3": 1, "Q4": 0}
+
+        self.assertEqual(
+            probe_pdf_text.redistribute_sample_counts(quartiles, requested),
+            {"Q1": 0, "Q2": 2, "Q3": 2, "Q4": 0},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
