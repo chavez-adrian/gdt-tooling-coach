@@ -46,6 +46,13 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
             len(set(plan["sampled_page_indexes"])),
         )
 
+    def test_sample_plan_for_small_pdf_samples_every_page(self):
+        plan = probe_pdf_text.build_sample_plan(page_count=3, random_seed=123)
+
+        self.assertEqual(plan["sample_size"], 3)
+        self.assertEqual(plan["sampled_page_indexes"], [0, 1, 2])
+        self.assertEqual(plan["sampled_page_numbers"], [1, 2, 3])
+
 
 if __name__ == "__main__":
     unittest.main()
