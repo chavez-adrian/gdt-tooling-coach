@@ -1,5 +1,7 @@
 import unittest
 import json
+from pathlib import Path
+from types import SimpleNamespace
 
 from scripts import verify_pdf_text_probe
 
@@ -88,6 +90,28 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
 
         self.assertTrue(summary["text_content_fields_present"])
         self.assertNotIn("do not print this source text", json.dumps(summary))
+
+    def test_ignored_report_path_check_uses_injectable_git_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd):
+            calls.append((command, cwd))
+            return SimpleNamespace(returncode=0)
+
+        result = verify_pdf_text_probe.check_report_path_ignored(
+            Path("repo"), command_runner=fake_runner
+        )
+
+        self.assertTrue(result["passed"])
+        self.assertEqual(
+            calls,
+            [
+                (
+                    ["git", "check-ignore", "--quiet", "data/processed/pdf_text_probe.json"],
+                    Path("repo"),
+                )
+            ],
+        )
 
 
 if __name__ == "__main__":

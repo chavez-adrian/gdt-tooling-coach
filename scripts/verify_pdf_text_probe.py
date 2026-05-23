@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import subprocess
+from pathlib import Path
+from typing import Callable
+
 TEXT_CONTENT_FIELD_NAMES = {"text", "content", "extracted_text", "raw_text"}
+REPORT_RELATIVE_PATH = Path("data/processed/pdf_text_probe.json")
 
 
 def summarize_probe_report(report: dict[str, object]) -> dict[str, object]:
@@ -31,4 +36,19 @@ def summarize_probe_report(report: dict[str, object]) -> dict[str, object]:
         "sample_size_distribution": sample_size_distribution,
         "sampled_pages_by_quartile": sampled_pages_by_quartile,
         "text_content_fields_present": text_content_fields_present,
+    }
+
+
+def check_report_path_ignored(
+    project_root: Path,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> dict[str, object]:
+    report_path = REPORT_RELATIVE_PATH.as_posix()
+    result = command_runner(
+        ["git", "check-ignore", "--quiet", report_path], cwd=project_root
+    )
+    return {
+        "name": "report_path_ignored_by_git",
+        "passed": result.returncode == 0,
+        "path": report_path,
     }
