@@ -1,9 +1,11 @@
 from pathlib import Path
+import re
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_tooling_example.sql"
+SCHEMA_PATH = ROOT / "db" / "migrations" / "001_initial_schema.sql"
 
 
 class FakeToolingExampleTests(unittest.TestCase):
@@ -32,6 +34,24 @@ class FakeToolingExampleTests(unittest.TestCase):
         self.assertIn("Do not use this fake example", sql)
         self.assertIn("Fake inspection method", sql)
         self.assertIn("Fake cost warning", sql)
+
+    def test_fixture_uses_unvalidated_tooling_example_review_default(self):
+        fixture_sql = FIXTURE_PATH.read_text(encoding="utf-8")
+        schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
+        tooling_insert = re.search(
+            r"INSERT INTO tooling_examples\s*\((?P<columns>.*?)\)",
+            fixture_sql,
+            re.DOTALL,
+        )
+
+        self.assertIsNotNone(tooling_insert)
+        self.assertNotIn("review_status", tooling_insert.group("columns"))
+        self.assertRegex(
+            schema_sql,
+            r"CREATE TABLE IF NOT EXISTS tooling_examples[\s\S]*?"
+            r"review_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'needs_human_review'",
+        )
+        self.assertNotIn("'validated'", fixture_sql)
 
 
 if __name__ == "__main__":
