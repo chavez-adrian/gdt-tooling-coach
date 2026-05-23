@@ -1,0 +1,142 @@
+# gdt-tooling-coach
+
+Knowledge base for an adaptive GD&T learning system focused on design, manufacture, inspection, and cost-conscious specification of sheet-metal deep-drawing dies.
+
+The project stores a structured bilingual GD&T glossary and learning dataset in PostgreSQL/Neon. It is not a user-facing application yet.
+
+## Purpose
+
+Build a relational database that supports:
+
+- GD&T concept glossary
+- ASME Y14.5-2018 English terms and current technical authority
+- ASME Y14.5-2009 Spanish normative terminology and Spanish definitions
+- AAMC International course terminology and review-question patterns
+- GD&T symbols with Unicode/SVG/text fallback logic
+- version comparison between ASME 2009 and 2018
+- tooling examples for deep-drawing dies
+- future adaptive learning exercises
+
+## Source hierarchy
+
+1. **ASME Y14.5-2018 English**  
+   Current technical authority.
+
+2. **ASME Y14.5-2009 Spanish**  
+   Primary Spanish normative language source, unless 2018 changed the concept significantly.
+
+3. **AAMC International course PDFs**  
+   Pedagogical source for course explanations, review questions, and learning patterns.
+
+## Editorial rules
+
+- Do not invent internal Peltre Nacional terminology.
+- Train users to use ASME/AAMC terminology in Spanish and English.
+- Literal quotes are allowed up to **80 continuous words** only when pedagogically useful.
+- Long sections, full tables, figures, and extended examples must not be reproduced.
+- Use faithful paraphrase when direct quotation is not necessary.
+- For definitions with clauses/incisos, cover each clause with brief quote and/or faithful paraphrase.
+- Unicode symbols are preferred; if unreliable, use SVG; if unavailable, use text fallback.
+
+## Tech stack
+
+- PostgreSQL on Neon
+- Python scripts
+- `psycopg`
+- `python-dotenv`
+- SQL migrations
+
+## Repo structure
+
+```text
+gdt-tooling-coach/
+  AGENTS.md
+  README.md
+  .env.example
+  requirements.txt
+  /docs
+    project_spec.md
+    editorial_rules.md
+    data_model.md
+    ingestion_plan.md
+  /db
+    /migrations
+      001_initial_schema.sql
+    /views
+      v_glossary_flat.sql
+  /scripts
+    check_connection.py
+    run_migrations.py
+    ingest_sources.py
+    extract_definitions.py
+    compare_versions.py
+  /data
+    /raw
+      /asme_2018
+      /asme_2009_es
+      /aamc_course
+    /processed
+  /tests
+```
+
+## Quick start
+
+### 1. Create virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it:
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Create `.env`
+
+Copy:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then edit `.env` and add the Neon connection string.
+
+### 4. Check database connection
+
+```bash
+python scripts/check_connection.py
+```
+
+### 5. Run migrations
+
+```bash
+python scripts/run_migrations.py
+```
+
+## Important
+
+Do not commit `.env` or real database credentials.
+
+Do not ingest source documents until the schema has been created and reviewed.
