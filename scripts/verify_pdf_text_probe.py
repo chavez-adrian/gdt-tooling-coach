@@ -52,3 +52,16 @@ def check_report_path_ignored(
         "passed": result.returncode == 0,
         "path": report_path,
     }
+
+
+def run_probe_script(
+    project_root: Path,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> dict[str, object]:
+    command = ["python", "scripts/probe_pdf_text.py"]
+    result = command_runner(command, cwd=project_root)
+    return {
+        "name": "probe_script",
+        "passed": result.returncode == 0,
+        "command": " ".join(command),
+    }

@@ -113,6 +113,20 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
             ],
         )
 
+    def test_probe_script_check_runs_controlled_probe_command(self):
+        calls = []
+
+        def fake_runner(command, cwd):
+            calls.append((command, cwd))
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        result = verify_pdf_text_probe.run_probe_script(
+            Path("repo"), command_runner=fake_runner
+        )
+
+        self.assertTrue(result["passed"])
+        self.assertEqual(calls, [(["python", "scripts/probe_pdf_text.py"], Path("repo"))])
+
 
 if __name__ == "__main__":
     unittest.main()
