@@ -12,6 +12,8 @@ class FakePage:
         self.text = text
 
     def extract_text(self):
+        if isinstance(self.text, Exception):
+            raise self.text
         return self.text
 
 
@@ -266,6 +268,41 @@ class ProbePdfTextReportTests(unittest.TestCase):
 
         self.assertEqual(report[0]["page_count"], 0)
         self.assertEqual(report[0]["extraction_status"], "pdf_open_error")
+
+    def test_report_records_page_extraction_error_without_storing_text(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data" / "raw" / "partial.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Partial Source",
+                            "expected_local_path": "data/raw/partial.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            fake_reader = type(
+                "FakeReader",
+                (),
+                {"pages": [FakePage("alpha"), FakePage(ValueError("bad page"))]},
+            )()
+
+            with patch("scripts.probe_pdf_text.PdfReader", return_value=fake_reader):
+                report = probe_pdf_text.build_probe_report(
+                    project_root=project_root,
+                    manifest_path=manifest_path,
+                )
+
+        self.assertEqual(report[0]["extracted_char_count"], 5)
+        self.assertEqual(report[0]["pages_with_extractable_text"], 1)
+        self.assertEqual(report[0]["extraction_status"], "partial_page_error")
+        self.assertNotIn("alpha", json.dumps(report))
 
 
 if __name__ == "__main__":

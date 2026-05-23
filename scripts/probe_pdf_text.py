@@ -144,12 +144,19 @@ def build_probe_report(
 
         page_count = len(reader.pages)
         sample_plan = build_sample_plan(page_count, random_seed=random_seed)
-        extracted_texts = [
-            reader.pages[page_index].extract_text() or ""
-            for page_index in sample_plan["sampled_page_indexes"]
-        ]
+        page_error_count = 0
+        extracted_texts = []
+        for page_index in sample_plan["sampled_page_indexes"]:
+            try:
+                extracted_texts.append(reader.pages[page_index].extract_text() or "")
+            except Exception:
+                page_error_count += 1
+                extracted_texts.append("")
         extractable_texts = [text for text in extracted_texts if text]
-        extraction_status = "extracted" if extractable_texts else "no_extractable_text"
+        if page_error_count:
+            extraction_status = "partial_page_error"
+        else:
+            extraction_status = "extracted" if extractable_texts else "no_extractable_text"
         report_entries.append(
             {
                 "source_title": manifest_entry["source_title"],
