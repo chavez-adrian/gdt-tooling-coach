@@ -46,6 +46,9 @@ class DatabaseRunbookTests(unittest.TestCase):
             "python scripts/build_fake_glossary_verification.py --print",
             "python scripts/build_fake_bilingual_terms_verification.py --print",
             "python scripts/build_fake_source_definition_trace.py --print",
+            "python scripts/build_fake_concept_change_verification.py --print",
+            "python scripts/build_fake_symbol_fallback_verification.py --print",
+            "python scripts/build_fake_tooling_example_verification.py --print",
             "pipe the output into a disposable local PostgreSQL database",
             "No Neon connection is required",
         ]
