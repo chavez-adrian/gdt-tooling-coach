@@ -78,3 +78,15 @@ def run_unittest_discover(
         "passed": result.returncode == 0,
         "command": " ".join(command),
     }
+
+
+def collect_git_evidence(
+    project_root: Path,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> dict[str, str]:
+    diff_stat = command_runner(["git", "diff", "--stat"], cwd=project_root)
+    status_short = command_runner(["git", "status", "--short"], cwd=project_root)
+    return {
+        "git_diff_stat": diff_stat.stdout.strip(),
+        "git_status_short": status_short.stdout.strip(),
+    }

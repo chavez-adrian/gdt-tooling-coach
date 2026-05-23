@@ -144,6 +144,28 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
             [(["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"], Path("repo"))],
         )
 
+    def test_git_evidence_runs_diff_stat_and_status_short(self):
+        calls = []
+
+        def fake_runner(command, cwd):
+            calls.append((command, cwd))
+            stdout = " scripts/verify_pdf_text_probe.py | 2 ++\n" if "--stat" in command else " M progress.txt\n"
+            return SimpleNamespace(returncode=0, stdout=stdout, stderr="")
+
+        result = verify_pdf_text_probe.collect_git_evidence(
+            Path("repo"), command_runner=fake_runner
+        )
+
+        self.assertEqual(
+            calls,
+            [
+                (["git", "diff", "--stat"], Path("repo")),
+                (["git", "status", "--short"], Path("repo")),
+            ],
+        )
+        self.assertEqual(result["git_diff_stat"], "scripts/verify_pdf_text_probe.py | 2 ++")
+        self.assertEqual(result["git_status_short"], "M progress.txt")
+
 
 if __name__ == "__main__":
     unittest.main()
