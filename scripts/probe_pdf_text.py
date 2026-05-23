@@ -140,6 +140,11 @@ def build_probe_report(
         reader = PdfReader(pdf_path)
         page_count = len(reader.pages)
         sample_plan = build_sample_plan(page_count, random_seed=random_seed)
+        extracted_texts = [
+            reader.pages[page_index].extract_text() or ""
+            for page_index in sample_plan["sampled_page_indexes"]
+        ]
+        extractable_texts = [text for text in extracted_texts if text]
         report_entries.append(
             {
                 "source_title": manifest_entry["source_title"],
@@ -150,10 +155,12 @@ def build_probe_report(
                 "sampled_page_numbers": sample_plan["sampled_page_numbers"],
                 "sampled_page_indexes": sample_plan["sampled_page_indexes"],
                 "sampled_pages_by_quartile": sample_plan["sampled_pages_by_quartile"],
-                "extracted_char_count": 0,
-                "extracted_word_count": 0,
-                "pages_with_extractable_text": 0,
-                "has_extractable_text": False,
+                "extracted_char_count": sum(len(text) for text in extractable_texts),
+                "extracted_word_count": sum(
+                    len(text.split()) for text in extractable_texts
+                ),
+                "pages_with_extractable_text": len(extractable_texts),
+                "has_extractable_text": bool(extractable_texts),
                 "extraction_status": "extracted",
             }
         )

@@ -7,6 +7,14 @@ from unittest.mock import patch
 from scripts import probe_pdf_text
 
 
+class FakePage:
+    def __init__(self, text):
+        self.text = text
+
+    def extract_text(self):
+        return self.text
+
+
 class ProbePdfTextReportTests(unittest.TestCase):
     def test_report_marks_manifest_pdf_missing(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -73,7 +81,9 @@ class ProbePdfTextReportTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            fake_reader = type("FakeReader", (), {"pages": [object(), object()]})()
+            fake_reader = type(
+                "FakeReader", (), {"pages": [FakePage(None), FakePage(None)]}
+            )()
 
             with patch("scripts.probe_pdf_text.PdfReader", return_value=fake_reader) as reader:
                 report = probe_pdf_text.build_probe_report(
@@ -84,6 +94,41 @@ class ProbePdfTextReportTests(unittest.TestCase):
         reader.assert_called_once_with(pdf_path)
         self.assertEqual(report[0]["page_count"], 2)
         self.assertEqual(report[0]["extraction_status"], "extracted")
+
+    def test_report_counts_extracted_text_metrics_from_sampled_pages_only(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data" / "raw" / "fake.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Metric Source",
+                            "expected_local_path": "data/raw/fake.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            fake_reader = type(
+                "FakeReader",
+                (),
+                {"pages": [FakePage("alpha beta"), FakePage(None), FakePage("gamma")]},
+            )()
+
+            with patch("scripts.probe_pdf_text.PdfReader", return_value=fake_reader):
+                report = probe_pdf_text.build_probe_report(
+                    project_root=project_root,
+                    manifest_path=manifest_path,
+                )
+
+        self.assertEqual(report[0]["extracted_char_count"], 15)
+        self.assertEqual(report[0]["extracted_word_count"], 3)
+        self.assertEqual(report[0]["pages_with_extractable_text"], 2)
+        self.assertTrue(report[0]["has_extractable_text"])
 
 
 if __name__ == "__main__":
