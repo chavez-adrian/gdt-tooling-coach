@@ -25,6 +25,12 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
             },
         )
 
+    def test_allocates_sample_counts_approximately_evenly_by_quartile(self):
+        self.assertEqual(
+            probe_pdf_text.allocate_sample_counts_by_quartile(6),
+            {"Q1": 2, "Q2": 2, "Q3": 1, "Q4": 1},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
