@@ -65,3 +65,16 @@ def run_probe_script(
         "passed": result.returncode == 0,
         "command": " ".join(command),
     }
+
+
+def run_unittest_discover(
+    project_root: Path,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> dict[str, object]:
+    command = ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]
+    result = command_runner(command, cwd=project_root)
+    return {
+        "name": "unittest_discover",
+        "passed": result.returncode == 0,
+        "command": " ".join(command),
+    }
