@@ -15,3 +15,12 @@ python scripts/run_migrations.py
 
 The migration runner applies table migrations and then the review view in
 `db/views/v_glossary_flat.sql`.
+
+## Data Ownership
+
+PostgreSQL relational tables are the source of truth. Concepts, sources, terms,
+definitions, symbols, and review metadata must be corrected in normalized tables
+through migrations or controlled import/review tooling.
+
+The flat view is for review and export only. Do not edit the flat view as canonical data.
+Do not treat exported rows as a replacement for the relational model.

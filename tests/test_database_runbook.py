@@ -22,6 +22,13 @@ class DatabaseRunbookTests(unittest.TestCase):
         for phrase in required_phrases:
             self.assertIn(phrase, text)
 
+    def test_runbook_explains_relational_source_of_truth_and_flat_view_role(self):
+        text = RUNBOOK_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("PostgreSQL relational tables are the source of truth", text)
+        self.assertIn("flat view is for review and export only", text)
+        self.assertIn("Do not edit the flat view as canonical data", text)
+
 
 if __name__ == "__main__":
     unittest.main()
