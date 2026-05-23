@@ -6,8 +6,10 @@ store, or ingest PDF text.
 
 from __future__ import annotations
 
+import math
+
 
 def calculate_sample_size(page_count: int) -> int:
     if page_count <= 4:
         return page_count
-    return 4
+    return min(max(math.ceil(page_count * 0.10), 4), 25)
