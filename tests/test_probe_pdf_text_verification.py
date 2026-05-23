@@ -1,5 +1,7 @@
 import unittest
+import io
 import json
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -165,6 +167,47 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
         )
         self.assertEqual(result["git_diff_stat"], "scripts/verify_pdf_text_probe.py | 2 ++")
         self.assertEqual(result["git_status_short"], "M progress.txt")
+
+    def test_cli_prints_metrics_only_final_verification(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            report_path = project_root / "data" / "processed" / "pdf_text_probe.json"
+            report_path.parent.mkdir(parents=True)
+            report_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_path": "a.pdf",
+                            "source_title": "hidden source text",
+                            "sample_size": 4,
+                            "has_extractable_text": True,
+                            "sampled_pages_by_quartile": {"Q1": [1], "Q2": [], "Q3": [], "Q4": []},
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+
+            def fake_runner(command, cwd):
+                if command == ["git", "diff", "--stat"]:
+                    return SimpleNamespace(returncode=0, stdout="", stderr="")
+                if command == ["git", "status", "--short"]:
+                    return SimpleNamespace(returncode=0, stdout="", stderr="")
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            exit_code = verify_pdf_text_probe.main(
+                ["--project-root", str(project_root)],
+                command_runner=fake_runner,
+                stdout=stdout,
+            )
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 0)
+        self.assertIn("final_verification_passed: true", output)
+        self.assertIn("total_pdfs_processed: 1", output)
+        self.assertIn("pdfs_with_extractable_text: 1", output)
+        self.assertNotIn("hidden source text", output)
 
 
 if __name__ == "__main__":
