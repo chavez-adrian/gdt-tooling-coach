@@ -31,6 +31,13 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
             {"Q1": 2, "Q2": 2, "Q3": 1, "Q4": 1},
         )
 
+    def test_sample_plan_is_reproducible_with_fixed_seed(self):
+        first_plan = probe_pdf_text.build_sample_plan(page_count=40, random_seed=123)
+        second_plan = probe_pdf_text.build_sample_plan(page_count=40, random_seed=123)
+
+        self.assertEqual(first_plan, second_plan)
+        self.assertEqual(first_plan["random_seed"], 123)
+
 
 if __name__ == "__main__":
     unittest.main()
