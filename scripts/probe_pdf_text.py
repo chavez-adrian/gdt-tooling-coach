@@ -6,6 +6,7 @@ store, or ingest PDF text.
 
 from __future__ import annotations
 
+import argparse
 import math
 import json
 import random
@@ -15,6 +16,8 @@ from pypdf import PdfReader
 
 QUARTILE_NAMES = ("Q1", "Q2", "Q3", "Q4")
 DEFAULT_RANDOM_SEED = 20260523
+DEFAULT_MANIFEST_RELATIVE_PATH = Path("data/source_manifest.example.json")
+DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/pdf_text_probe.json")
 
 
 def calculate_sample_size(page_count: int) -> int:
@@ -183,3 +186,21 @@ def write_probe_report(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Write controlled PDF text metrics.")
+    parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
+    args = parser.parse_args(argv)
+
+    project_root = args.project_root
+    write_probe_report(
+        project_root=project_root,
+        manifest_path=project_root / DEFAULT_MANIFEST_RELATIVE_PATH,
+        output_path=project_root / DEFAULT_OUTPUT_RELATIVE_PATH,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
