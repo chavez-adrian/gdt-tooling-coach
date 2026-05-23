@@ -38,6 +38,21 @@ class DatabaseRunbookTests(unittest.TestCase):
         self.assertIn("docs/live_migration_gate.md", text)
         self.assertIn("Do not run live Neon migrations from this runbook", text)
 
+    def test_runbook_documents_fake_data_tracer_verification_path(self):
+        text = RUNBOOK_PATH.read_text(encoding="utf-8")
+
+        required_phrases = [
+            "Fake-data verification path",
+            "python scripts/build_fake_glossary_verification.py --print",
+            "python scripts/build_fake_bilingual_terms_verification.py --print",
+            "python scripts/build_fake_source_definition_trace.py --print",
+            "pipe the output into a disposable local PostgreSQL database",
+            "No Neon connection is required",
+        ]
+
+        for phrase in required_phrases:
+            self.assertIn(phrase, text)
+
 
 if __name__ == "__main__":
     unittest.main()

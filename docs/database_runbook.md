@@ -31,3 +31,17 @@ Use `docs/neon_boundary.md` for the Neon boundary issue #2 decision and
 `docs/live_migration_gate.md` for the live approval issue #4 decision. Do not run live Neon migrations from this runbook.
 This runbook is for local setup, handoff, and review; live work remains gated by
 the approval document.
+
+## Fake Verification
+
+Fake-data verification path:
+
+```powershell
+python scripts/build_fake_glossary_verification.py --print
+python scripts/build_fake_bilingual_terms_verification.py --print
+python scripts/build_fake_source_definition_trace.py --print
+```
+
+These tracer bullets compose schema, views, and fake fixtures into SQL that can
+be inspected or run locally. To execute them, pipe the output into a disposable local PostgreSQL database.
+No Neon connection is required, and no source documents are needed.
