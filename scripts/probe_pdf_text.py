@@ -11,6 +11,8 @@ import json
 import random
 from pathlib import Path
 
+from pypdf import PdfReader
+
 QUARTILE_NAMES = ("Q1", "Q2", "Q3", "Q4")
 DEFAULT_RANDOM_SEED = 20260523
 
@@ -133,5 +135,27 @@ def build_probe_report(
                     "extraction_status": "missing_pdf",
                 }
             )
+            continue
+
+        reader = PdfReader(pdf_path)
+        page_count = len(reader.pages)
+        sample_plan = build_sample_plan(page_count, random_seed=random_seed)
+        report_entries.append(
+            {
+                "source_title": manifest_entry["source_title"],
+                "expected_local_path": expected_local_path,
+                "page_count": page_count,
+                "sample_size": sample_plan["sample_size"],
+                "random_seed": sample_plan["random_seed"],
+                "sampled_page_numbers": sample_plan["sampled_page_numbers"],
+                "sampled_page_indexes": sample_plan["sampled_page_indexes"],
+                "sampled_pages_by_quartile": sample_plan["sampled_pages_by_quartile"],
+                "extracted_char_count": 0,
+                "extracted_word_count": 0,
+                "pages_with_extractable_text": 0,
+                "has_extractable_text": False,
+                "extraction_status": "extracted",
+            }
+        )
 
     return report_entries
