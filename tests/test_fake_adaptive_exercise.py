@@ -23,6 +23,16 @@ class FakeAdaptiveExerciseTests(unittest.TestCase):
         self.assertNotIn("postgres://", sql.lower())
         self.assertNotIn("postgresql://", sql.lower())
 
+    def test_fixture_derives_draft_adaptive_exercise_from_fake_question_pattern(self):
+        sql = FIXTURE_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("fake_question_pattern AS", sql)
+        self.assertIn("RETURNING id", sql)
+        self.assertIn("INSERT INTO adaptive_exercises", sql)
+        self.assertIn("question_pattern_id", sql)
+        self.assertIn("fake_question_pattern.id", sql)
+        self.assertIn("'draft'", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

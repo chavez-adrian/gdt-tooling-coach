@@ -40,23 +40,36 @@ fake_concept AS (
     'Fake concept used to prove course-question traceability.'
   )
   RETURNING id
+),
+fake_question_pattern AS (
+  INSERT INTO course_question_patterns (
+    source_id,
+    concept_id,
+    question_pattern,
+    context,
+    application_area,
+    difficulty_level,
+    notes
+  )
+  SELECT
+    fake_source.id,
+    fake_concept.id,
+    'Fake learner is asked which datum target setup would stabilize a trial panel.',
+    'Fake classroom prompt about locating a sheet-metal panel before inspection.',
+    'deep drawing die tryout',
+    2,
+    'Fabricated AAMC-style question pattern; not copied from a course.'
+  FROM fake_source
+  CROSS JOIN fake_concept
+  RETURNING id
 )
-INSERT INTO course_question_patterns (
-  source_id,
-  concept_id,
-  question_pattern,
-  context,
-  application_area,
-  difficulty_level,
-  notes
+INSERT INTO adaptive_exercises (
+  question_pattern_id,
+  exercise_prompt,
+  exercise_status
 )
 SELECT
-  fake_source.id,
-  fake_concept.id,
-  'Fake learner is asked which datum target setup would stabilize a trial panel.',
-  'Fake classroom prompt about locating a sheet-metal panel before inspection.',
-  'deep drawing die tryout',
-  2,
-  'Fabricated AAMC-style question pattern; not copied from a course.'
-FROM fake_source
-CROSS JOIN fake_concept;
+  fake_question_pattern.id,
+  'Fake draft exercise: choose the datum target arrangement for a stable trial panel setup.',
+  'draft'
+FROM fake_question_pattern;
