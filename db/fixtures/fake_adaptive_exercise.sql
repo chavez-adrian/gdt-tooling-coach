@@ -66,10 +66,20 @@ fake_question_pattern AS (
 INSERT INTO adaptive_exercises (
   question_pattern_id,
   exercise_prompt,
+  context,
+  application_area,
+  difficulty_level,
+  rubric,
+  feedback_if_wrong,
   exercise_status
 )
 SELECT
   fake_question_pattern.id,
   'Fake draft exercise: choose the datum target arrangement for a stable trial panel setup.',
+  'Fake shop-floor context: a trial panel rocks before measurement.',
+  'deep drawing die tryout',
+  2,
+  'Fake rubric: answer should connect datum target contact points to stable inspection setup.',
+  'Fake feedback if wrong: revisit how datum targets constrain a panel before checking features.',
   'draft'
 FROM fake_question_pattern;

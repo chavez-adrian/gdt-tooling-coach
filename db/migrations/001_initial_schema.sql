@@ -167,7 +167,13 @@ CREATE TABLE IF NOT EXISTS adaptive_exercises (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   question_pattern_id UUID NOT NULL REFERENCES course_question_patterns(id) ON DELETE CASCADE,
   exercise_prompt TEXT NOT NULL,
+  context TEXT,
+  application_area TEXT,
+  difficulty_level INTEGER CHECK (difficulty_level BETWEEN 1 AND 5),
+  rubric TEXT,
+  feedback_if_wrong TEXT,
   exercise_status TEXT NOT NULL DEFAULT 'draft',
+  review_status TEXT NOT NULL DEFAULT 'needs_human_review',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
