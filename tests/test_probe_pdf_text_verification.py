@@ -42,6 +42,36 @@ class ProbePdfTextVerificationTests(unittest.TestCase):
 
         self.assertEqual(summary["sample_size_distribution"], {4: 2, 8: 1})
 
+    def test_summary_reports_sampled_pages_by_quartile_counts(self):
+        report = {
+            "pdfs": [
+                {
+                    "source_path": "a.pdf",
+                    "sampled_pages_by_quartile": {
+                        "Q1": [1, 2],
+                        "Q2": [5],
+                        "Q3": [],
+                        "Q4": [10],
+                    },
+                },
+                {
+                    "source_path": "b.pdf",
+                    "sampled_pages_by_quartile": {
+                        "Q1": [1],
+                        "Q2": [],
+                        "Q3": [7],
+                        "Q4": [12, 13],
+                    },
+                },
+            ]
+        }
+
+        summary = verify_pdf_text_probe.summarize_probe_report(report)
+
+        self.assertEqual(
+            summary["sampled_pages_by_quartile"], {"Q1": 3, "Q2": 1, "Q3": 1, "Q4": 3}
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
