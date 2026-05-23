@@ -213,6 +213,32 @@ class ProbePdfTextReportTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(report[0]["source_title"], "CLI Missing Source")
 
+    def test_cli_accepts_random_seed_for_reproducible_report(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            manifest_path = project_root / "data" / "source_manifest.example.json"
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Seeded Missing Source",
+                            "expected_local_path": "data/raw/missing.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            probe_pdf_text.main(
+                ["--project-root", str(project_root), "--random-seed", "77"]
+            )
+
+            output_path = project_root / "data" / "processed" / "pdf_text_probe.json"
+            report = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(report[0]["random_seed"], 77)
+
     def test_report_records_pdf_open_error_as_metrics_row(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             project_root = Path(temp_dir)

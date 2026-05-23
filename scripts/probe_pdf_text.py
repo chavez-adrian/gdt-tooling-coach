@@ -214,6 +214,7 @@ def write_probe_report(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Write controlled PDF text metrics.")
     parser.add_argument("--project-root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--random-seed", type=int, default=DEFAULT_RANDOM_SEED)
     args = parser.parse_args(argv)
 
     project_root = args.project_root
@@ -221,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
         project_root=project_root,
         manifest_path=project_root / DEFAULT_MANIFEST_RELATIVE_PATH,
         output_path=project_root / DEFAULT_OUTPUT_RELATIVE_PATH,
+        random_seed=args.random_seed,
     )
     return 0
 
