@@ -7,7 +7,9 @@ store, or ingest PDF text.
 from __future__ import annotations
 
 import math
+import json
 import random
+from pathlib import Path
 
 QUARTILE_NAMES = ("Q1", "Q2", "Q3", "Q4")
 DEFAULT_RANDOM_SEED = 20260523
@@ -100,3 +102,36 @@ def build_sample_plan(
         "sampled_page_numbers": [page_index + 1 for page_index in sampled_page_indexes],
         "sampled_pages_by_quartile": sampled_pages_by_quartile,
     }
+
+
+def build_probe_report(
+    project_root: Path,
+    manifest_path: Path,
+    random_seed: int = DEFAULT_RANDOM_SEED,
+) -> list[dict[str, object]]:
+    manifest_entries = json.loads(manifest_path.read_text(encoding="utf-8"))
+    report_entries: list[dict[str, object]] = []
+
+    for manifest_entry in manifest_entries:
+        expected_local_path = manifest_entry["expected_local_path"]
+        pdf_path = project_root / expected_local_path
+        if not pdf_path.exists():
+            report_entries.append(
+                {
+                    "source_title": manifest_entry["source_title"],
+                    "expected_local_path": expected_local_path,
+                    "page_count": 0,
+                    "sample_size": 0,
+                    "random_seed": random_seed,
+                    "sampled_page_numbers": [],
+                    "sampled_page_indexes": [],
+                    "sampled_pages_by_quartile": {name: [] for name in QUARTILE_NAMES},
+                    "extracted_char_count": 0,
+                    "extracted_word_count": 0,
+                    "pages_with_extractable_text": 0,
+                    "has_extractable_text": False,
+                    "extraction_status": "missing_pdf",
+                }
+            )
+
+    return report_entries
