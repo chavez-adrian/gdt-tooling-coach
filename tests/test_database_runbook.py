@@ -29,6 +29,15 @@ class DatabaseRunbookTests(unittest.TestCase):
         self.assertIn("flat view is for review and export only", text)
         self.assertIn("Do not edit the flat view as canonical data", text)
 
+    def test_runbook_references_neon_boundary_and_live_approval_gates(self):
+        text = RUNBOOK_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("Neon boundary issue #2", text)
+        self.assertIn("live approval issue #4", text)
+        self.assertIn("docs/neon_boundary.md", text)
+        self.assertIn("docs/live_migration_gate.md", text)
+        self.assertIn("Do not run live Neon migrations from this runbook", text)
+
 
 if __name__ == "__main__":
     unittest.main()

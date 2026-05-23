@@ -24,3 +24,10 @@ through migrations or controlled import/review tooling.
 
 The flat view is for review and export only. Do not edit the flat view as canonical data.
 Do not treat exported rows as a replacement for the relational model.
+
+## Live Neon Boundary
+
+Use `docs/neon_boundary.md` for the Neon boundary issue #2 decision and
+`docs/live_migration_gate.md` for the live approval issue #4 decision. Do not run live Neon migrations from this runbook.
+This runbook is for local setup, handoff, and review; live work remains gated by
+the approval document.
