@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA_PATH = ROOT / "db" / "migrations" / "001_initial_schema.sql"
+MIGRATIONS_DIR = ROOT / "db" / "migrations"
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_adaptive_exercise.sql"
 
 
@@ -70,10 +70,14 @@ SELECT
 
 
 def build_verification_sql() -> str:
+    migrations = [
+        f"-- Migration: {path.name}\n{path.read_text(encoding='utf-8')}"
+        for path in sorted(MIGRATIONS_DIR.glob("*.sql"))
+    ]
     parts = [
         "-- Local fake adaptive exercise verification SQL.",
         "-- Run against disposable PostgreSQL only; no Neon credentials required.",
-        SCHEMA_PATH.read_text(encoding="utf-8"),
+        *migrations,
         FIXTURE_PATH.read_text(encoding="utf-8"),
         TRACEABILITY_QUERY.strip(),
         ACCEPTANCE_CHECK_QUERY.strip(),

@@ -8,6 +8,14 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "db" / "fixtures" / "fake_adaptive_exercise.sql"
 VERIFY_SCRIPT_PATH = ROOT / "scripts" / "build_fake_adaptive_exercise_verification.py"
+MIGRATIONS_DIR = ROOT / "db" / "migrations"
+
+
+def migration_sql() -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted(MIGRATIONS_DIR.glob("*.sql"))
+    )
 
 
 class FakeAdaptiveExerciseTests(unittest.TestCase):
@@ -39,9 +47,7 @@ class FakeAdaptiveExerciseTests(unittest.TestCase):
 
     def test_draft_exercise_stores_learning_fields_and_defaults_unvalidated_review(self):
         fixture_sql = FIXTURE_PATH.read_text(encoding="utf-8")
-        schema_sql = (ROOT / "db" / "migrations" / "001_initial_schema.sql").read_text(
-            encoding="utf-8"
-        )
+        schema_sql = migration_sql()
         exercise_insert = re.search(
             r"INSERT INTO adaptive_exercises\s*\((?P<columns>.*?)\)",
             fixture_sql,
@@ -77,6 +83,7 @@ class FakeAdaptiveExerciseTests(unittest.TestCase):
         )
 
         self.assertIn("-- Traceability output: fake adaptive exercise lineage.", result.stdout)
+        self.assertIn("002_adaptive_exercises.sql", result.stdout)
         self.assertIn("JOIN course_question_patterns", result.stdout)
         self.assertIn("JOIN sources", result.stdout)
         self.assertIn("JOIN concepts", result.stdout)
