@@ -38,6 +38,14 @@ class ProbePdfTextSamplingTests(unittest.TestCase):
         self.assertEqual(first_plan, second_plan)
         self.assertEqual(first_plan["random_seed"], 123)
 
+    def test_sample_plan_does_not_duplicate_pages(self):
+        plan = probe_pdf_text.build_sample_plan(page_count=120, random_seed=123)
+
+        self.assertEqual(
+            len(plan["sampled_page_indexes"]),
+            len(set(plan["sampled_page_indexes"])),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
