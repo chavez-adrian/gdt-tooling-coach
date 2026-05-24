@@ -6,6 +6,7 @@ from pathlib import Path
 from scripts.extract_candidate_snippets import (
     DEFAULT_INPUT_PATH,
     DEFAULT_OUTPUT_PATH,
+    candidate_snippets_report_is_ignored,
     build_candidate_snippets_from_ranked_candidates,
     load_high_priority_ranked_candidates,
     write_candidate_snippets_report,
@@ -202,6 +203,22 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         self.assertEqual(
             Path("data/processed/candidate_snippets.json"),
             DEFAULT_OUTPUT_PATH.relative_to(DEFAULT_OUTPUT_PATH.parents[2]),
+        )
+
+    def test_candidate_snippets_report_path_is_checked_with_git_ignore(self):
+        calls = []
+
+        class Result:
+            returncode = 0
+
+        def fake_run(command, cwd, capture_output, text):
+            calls.append((command, cwd, capture_output, text))
+            return Result()
+
+        self.assertTrue(candidate_snippets_report_is_ignored(run_command=fake_run))
+        self.assertEqual(
+            ["git", "check-ignore", "data/processed/candidate_snippets.json"],
+            calls[0][0],
         )
 
 

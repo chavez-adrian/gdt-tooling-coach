@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -8,6 +9,7 @@ from pypdf import PdfReader
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
+DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/candidate_snippets.json")
 MAX_TOTAL_SNIPPETS = 100
 
 
@@ -112,6 +114,16 @@ def write_candidate_snippets_report(
         json.dump(report, output_file, indent=2, sort_keys=True)
         output_file.write("\n")
     return report
+
+
+def candidate_snippets_report_is_ignored(run_command=subprocess.run):
+    result = run_command(
+        ["git", "check-ignore", DEFAULT_OUTPUT_RELATIVE_PATH.as_posix()],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def main(argv=None):
