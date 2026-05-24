@@ -24,6 +24,22 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
 
         self.assertEqual(12, summary["total_candidate_pages"])
 
+    def test_summarizes_candidate_pages_by_source(self):
+        report = {
+            "candidate_pages": [
+                {"source_title": "ASME Y14.5 2018", "page_number": 4},
+                {"source_title": "ASME Y14.5 2018", "page_number": 5},
+                {"source_title": "NOM Z 2010", "page_number": 2},
+            ]
+        }
+
+        summary = summarize_candidate_report(report)
+
+        self.assertEqual(
+            {"ASME Y14.5 2018": 2, "NOM Z 2010": 1},
+            summary["candidate_pages_by_source"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
