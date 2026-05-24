@@ -155,6 +155,20 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         self.assertNotIn("review_state", snippets[0])
         self.assertNotIn("validated", snippets[0])
 
+    def test_empty_or_no_signal_page_text_yields_no_snippets(self):
+        candidates = [
+            {"source_title": "Empty Source", "page_number": 1, "priority_bucket": "high"},
+            {"source_title": "No Signal Source", "page_number": 2, "priority_bucket": "high"},
+        ]
+        page_text_by_key = {
+            ("Empty Source", 1): "",
+            ("No Signal Source", 2): "This page has tolerances but no controlled snippet signal.",
+        }
+
+        snippets = extract_candidate_snippets(candidates, page_text_by_key)
+
+        self.assertEqual([], snippets)
+
 
 if __name__ == "__main__":
     unittest.main()
