@@ -26,6 +26,9 @@ def score_definition_candidates(candidates):
     scored = []
     for candidate in candidates:
         score = candidate.get("signal_count", 0)
+        word_count = candidate.get("approximate_word_count", 0)
+        if 100 <= word_count <= 1600:
+            score += 1
         for signal in candidate.get("matched_signals", []):
             if signal in STRONG_SIGNALS:
                 score += 4

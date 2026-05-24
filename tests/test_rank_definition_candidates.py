@@ -76,6 +76,30 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertLess(scored[1]["definition_score"], scored[0]["definition_score"])
         self.assertEqual("plain", scored[0]["source_id"])
 
+    def test_approximate_word_count_adds_bounded_metadata_boost(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "too-short",
+                    "signal_count": 1,
+                    "approximate_word_count": 20,
+                },
+                {
+                    "source_id": "useful-page",
+                    "signal_count": 1,
+                    "approximate_word_count": 450,
+                },
+                {
+                    "source_id": "oversized",
+                    "signal_count": 1,
+                    "approximate_word_count": 4000,
+                },
+            ]
+        )
+
+        self.assertEqual("useful-page", scored[0]["source_id"])
+        self.assertEqual(scored[1]["definition_score"], scored[2]["definition_score"])
+
 
 if __name__ == "__main__":
     unittest.main()
