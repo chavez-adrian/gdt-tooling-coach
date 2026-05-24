@@ -1,3 +1,4 @@
+import json
 import re
 
 
@@ -51,6 +52,16 @@ def extract_candidate_snippets(candidates, page_text_by_key):
             if page_snippet_count >= 3:
                 break
     return snippets
+
+
+def load_high_priority_ranked_candidates(ranked_report_path):
+    with open(ranked_report_path, "r", encoding="utf-8") as ranked_file:
+        report = json.load(ranked_file)
+    return [
+        candidate
+        for candidate in report.get("ranked_candidates", [])
+        if candidate.get("priority_bucket") == "high"
+    ]
 
 
 def _sentence_windows(text):
