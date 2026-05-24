@@ -44,6 +44,19 @@ FORBIDDEN_TEXT_KEYS = {
     "text",
     "text_sample",
 }
+RANKED_REPORT_ROW_KEYS = (
+    "source_title",
+    "source_type",
+    "language",
+    "page_number",
+    "matched_signals",
+    "signal_count",
+    "approximate_word_count",
+    "candidate_score",
+    "rank_within_source",
+    "global_rank",
+    "priority_bucket",
+)
 
 
 def _priority_bucket(score):
@@ -89,12 +102,22 @@ def build_ranked_definition_candidate_rows(candidates):
     rows = []
     source_ranks = {}
     for global_rank, candidate in enumerate(score_definition_candidates(candidates), 1):
-        row = dict(candidate)
-        row["candidate_score"] = row.pop("definition_score")
-        row["global_rank"] = global_rank
-        source_title = row.get("source_title", "")
+        candidate_score = candidate["definition_score"]
+        source_title = candidate.get("source_title", "")
         source_ranks[source_title] = source_ranks.get(source_title, 0) + 1
-        row["rank_within_source"] = source_ranks[source_title]
+        row = {
+            "source_title": candidate.get("source_title"),
+            "source_type": candidate.get("source_type"),
+            "language": candidate.get("language"),
+            "page_number": candidate.get("page_number"),
+            "matched_signals": candidate.get("matched_signals", []),
+            "signal_count": candidate.get("signal_count", 0),
+            "approximate_word_count": candidate.get("approximate_word_count", 0),
+            "candidate_score": candidate_score,
+            "rank_within_source": source_ranks[source_title],
+            "global_rank": global_rank,
+            "priority_bucket": candidate["priority_bucket"],
+        }
         rows.append(row)
     return rows
 

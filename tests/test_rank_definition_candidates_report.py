@@ -191,6 +191,44 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
             calls[0][0],
         )
 
+    def test_ranked_output_excludes_forbidden_text_fields(self):
+        report = build_ranked_definition_candidate_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "standard",
+                    "language": "en",
+                    "page_number": 5,
+                    "matched_signals": ["definition"],
+                    "signal_count": 1,
+                    "approximate_word_count": 250,
+                    "page_text": "definition text must not be stored",
+                    "excerpt": "long quote must not be stored",
+                    "definition": "sample definition must not be stored",
+                    "candidate_reason": "matched 1 definition candidate signals: definition",
+                }
+            ]
+        )
+
+        row = report["ranked_candidates"][0]
+        self.assertEqual(
+            {
+                "source_title",
+                "source_type",
+                "language",
+                "page_number",
+                "matched_signals",
+                "signal_count",
+                "approximate_word_count",
+                "candidate_score",
+                "rank_within_source",
+                "global_rank",
+                "priority_bucket",
+            },
+            set(row),
+        )
+        self.assertNotIn("definition text must not be stored", row.values())
+
 
 if __name__ == "__main__":
     unittest.main()
