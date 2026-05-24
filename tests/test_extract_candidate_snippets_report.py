@@ -6,6 +6,7 @@ from pathlib import Path
 from scripts.extract_candidate_snippets import (
     build_candidate_snippets_from_ranked_candidates,
     load_high_priority_ranked_candidates,
+    write_candidate_snippets_report,
 )
 
 
@@ -126,6 +127,40 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         )
 
         self.assertEqual([], snippets)
+
+    def test_json_writer_creates_candidate_snippets_report(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            ranked_path = Path(tmp_dir) / "ranked_definition_candidates.json"
+            output_path = Path(tmp_dir) / "candidate_snippets.json"
+            ranked_path.write_text(
+                json.dumps(
+                    {
+                        "ranked_candidates": [
+                            {
+                                "source_title": "ASME",
+                                "expected_local_path": "data/raw/asme.pdf",
+                                "page_number": 2,
+                                "priority_bucket": "high",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            report = write_candidate_snippets_report(
+                ranked_path,
+                output_path,
+                pdf_reader_factory=FakePdfReader,
+            )
+            written_report = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(report, written_report)
+        self.assertEqual(1, len(written_report["candidate_snippets"]))
+        self.assertEqual(
+            "A datum is a theoretically exact reference.",
+            written_report["candidate_snippets"][0]["snippet_text"],
+        )
 
 
 if __name__ == "__main__":

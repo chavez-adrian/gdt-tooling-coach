@@ -92,6 +92,21 @@ def build_candidate_snippets_from_ranked_candidates(
     ]
 
 
+def write_candidate_snippets_report(
+    ranked_report_path, output_path, pdf_reader_factory=PdfReader
+):
+    snippets = build_candidate_snippets_from_ranked_candidates(
+        load_high_priority_ranked_candidates(ranked_report_path),
+        pdf_reader_factory=pdf_reader_factory,
+    )
+    report = {"candidate_snippets": snippets}
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        json.dump(report, output_file, indent=2, sort_keys=True)
+        output_file.write("\n")
+    return report
+
+
 def _to_public_report_row(snippet):
     return {
         "source_title": snippet.get("source_title"),
