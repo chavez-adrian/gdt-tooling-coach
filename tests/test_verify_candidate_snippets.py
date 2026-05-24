@@ -1,8 +1,14 @@
+import io
+import json
+import tempfile
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
 from scripts.verify_candidate_snippets import (
     check_report_path_ignored,
     collect_git_evidence,
+    main,
     run_extractor_command,
     run_unittest_command,
     summarize_candidate_snippet_report,
@@ -171,6 +177,71 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
             " M scripts/verify_candidate_snippets.py\n",
             evidence["git_status_short"]["stdout"],
         )
+
+    def test_cli_reads_report_runs_checks_and_prints_metadata_only_pass_fail_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_path = Path(tmpdir) / "candidate_snippets.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "contract": {
+                            "neon_writes": False,
+                            "database_modifications": False,
+                            "validated_content": False,
+                        },
+                        "candidate_snippets": [
+                            {
+                                "source_title": "ASME",
+                                "expected_local_path": "data/raw/asme.pdf",
+                                "page_number": 10,
+                                "snippet_word_count": 7,
+                                "snippet_text": "text must not be printed",
+                                "extraction_type": "literal_quote",
+                                "proposed_review_state": "raw_import",
+                                "requires_human_review": True,
+                            },
+                            {
+                                "source_title": "ASME",
+                                "expected_local_path": "data/raw/asme.pdf",
+                                "page_number": 10,
+                                "snippet_word_count": 5,
+                                "snippet_text": "more text must not be printed",
+                                "extraction_type": "literal_quote",
+                                "proposed_review_state": "raw_import",
+                                "requires_human_review": True,
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            def fake_runner(command, cwd=None, capture_output=None, text=None):
+                class Result:
+                    returncode = 0
+                    stdout = ""
+                    stderr = ""
+
+                return Result()
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--report", str(report_path), "--project-root", tmpdir],
+                    runner=fake_runner,
+                )
+
+        printed = output.getvalue()
+        self.assertEqual(0, exit_code)
+        self.assertIn("Overall result: PASS", printed)
+        self.assertIn("High-priority pages processed: 1", printed)
+        self.assertIn("Snippets generated: 2", printed)
+        self.assertIn("ASME: 2", printed)
+        self.assertIn("Maximum snippet word count observed: 7", printed)
+        self.assertIn("No snippet exceeds 80 words: PASS", printed)
+        self.assertIn("Raw literal human-review fields: PASS", printed)
+        self.assertIn("No Neon/database/validated contract: PASS", printed)
+        self.assertNotIn("text must not be printed", printed)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,9 @@
 """Local verification for the controlled candidate-snippet workflow."""
 
+import argparse
+import json
 import subprocess
+from pathlib import Path
 
 MAX_SNIPPET_WORDS = 80
 REPORT_PATH = "data/processed/candidate_snippets.json"
@@ -14,10 +17,19 @@ SAFE_CONTRACT_FLAGS = {
 def summarize_candidate_snippet_report(report):
     snippets = report.get("candidate_snippets", [])
     snippets_by_source = {}
+    page_keys = set()
     for snippet in snippets:
         source_title = snippet.get("source_title") or "unknown"
         snippets_by_source[source_title] = snippets_by_source.get(source_title, 0) + 1
+        page_keys.add(
+            (
+                snippet.get("expected_local_path") or snippet.get("source_path"),
+                snippet.get("source_title"),
+                snippet.get("page_number"),
+            )
+        )
     return {
+        "high_priority_pages_processed": len(page_keys),
         "snippets_generated": len(snippets),
         "snippets_by_source": dict(sorted(snippets_by_source.items())),
         "max_snippet_word_count": max(
@@ -119,3 +131,86 @@ def collect_git_evidence(project_root, runner=subprocess.run):
             runner=runner,
         ),
     }
+
+
+def build_verification(report, project_root, runner=subprocess.run):
+    word_limit = verify_snippet_word_limit(report)
+    review_state = verify_review_state_fields(report)
+    contract = verify_report_contract(report)
+    command_checks = [
+        run_extractor_command(project_root, runner=runner),
+        run_unittest_command(project_root, runner=runner),
+        check_report_path_ignored(project_root, runner=runner),
+    ]
+    git_evidence = collect_git_evidence(project_root, runner=runner)
+    passed = (
+        word_limit["passed"]
+        and review_state["passed"]
+        and contract["passed"]
+        and all(check["passed"] for check in command_checks)
+    )
+    return {
+        "passed": passed,
+        "summary": summarize_candidate_snippet_report(report),
+        "word_limit": word_limit,
+        "review_state": review_state,
+        "contract": contract,
+        "command_checks": command_checks,
+        "git_evidence": git_evidence,
+    }
+
+
+def print_metrics_summary(verification):
+    summary = verification["summary"]
+    print("Candidate snippet verification")
+    print(f"Overall result: {'PASS' if verification['passed'] else 'FAIL'}")
+    print(f"High-priority pages processed: {summary['high_priority_pages_processed']}")
+    print(f"Snippets generated: {summary['snippets_generated']}")
+    print("Snippets by source:")
+    if not summary["snippets_by_source"]:
+        print("  none")
+    else:
+        for source_title, count in summary["snippets_by_source"].items():
+            print(f"  {source_title}: {count}")
+    print(
+        "Maximum snippet word count observed: "
+        f"{summary['max_snippet_word_count']}"
+    )
+    print(
+        "No snippet exceeds 80 words: "
+        f"{'PASS' if verification['word_limit']['passed'] else 'FAIL'}"
+    )
+    print(
+        "Raw literal human-review fields: "
+        f"{'PASS' if verification['review_state']['passed'] else 'FAIL'}"
+    )
+    print(
+        "No Neon/database/validated contract: "
+        f"{'PASS' if verification['contract']['passed'] else 'FAIL'}"
+    )
+    for check in verification["command_checks"]:
+        print(f"{check['command']}: {'PASS' if check['passed'] else 'FAIL'}")
+    print("git diff --stat:")
+    print(verification["git_evidence"]["git_diff_stat"]["stdout"].rstrip())
+    print("git status --short:")
+    print(verification["git_evidence"]["git_status_short"]["stdout"].rstrip())
+
+
+def main(argv=None, runner=subprocess.run):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--report", default=REPORT_PATH)
+    parser.add_argument("--project-root", default=".")
+    args = parser.parse_args(argv)
+
+    project_root = Path(args.project_root)
+    report_path = Path(args.report)
+    if not report_path.is_absolute():
+        report_path = project_root / report_path
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    verification = build_verification(report, project_root, runner=runner)
+    print_metrics_summary(verification)
+    return 0 if verification["passed"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
