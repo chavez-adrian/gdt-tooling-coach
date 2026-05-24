@@ -104,6 +104,19 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
 
         self.assertEqual(signals, [snippet["matched_signal"] for snippet in snippets])
 
+    def test_snippet_review_state_fields_are_fixed(self):
+        candidate = {
+            "source_title": "Review Source",
+            "page_number": 8,
+            "priority_bucket": "high",
+        }
+
+        snippets = extract_candidate_snippets([candidate], {("Review Source", 8): "A datum is referenced."})
+
+        self.assertEqual("literal_quote", snippets[0]["extraction_type"])
+        self.assertEqual("raw_import", snippets[0]["proposed_review_state"])
+        self.assertIs(True, snippets[0]["requires_human_review"])
+
 
 if __name__ == "__main__":
     unittest.main()
