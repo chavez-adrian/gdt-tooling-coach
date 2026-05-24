@@ -16,6 +16,25 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertEqual("two", scored[0]["source_id"])
         self.assertEqual("one", scored[1]["source_id"])
 
+    def test_strong_signals_weight_more_than_medium_signals(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "medium",
+                    "signal_count": 1,
+                    "matched_signals": ["datum"],
+                },
+                {
+                    "source_id": "strong",
+                    "signal_count": 1,
+                    "matched_signals": ["definition"],
+                },
+            ]
+        )
+
+        self.assertGreater(scored[0]["definition_score"], scored[1]["definition_score"])
+        self.assertEqual("strong", scored[0]["source_id"])
+
 
 if __name__ == "__main__":
     unittest.main()
