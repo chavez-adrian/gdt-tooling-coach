@@ -1,5 +1,7 @@
 """Local verification for the ranked definition-candidate workflow."""
 
+import subprocess
+
 FORBIDDEN_CONTENT_KEYS = {
     "content",
     "definition",
@@ -48,3 +50,23 @@ def report_contains_forbidden_content_fields(report):
         "has_forbidden_content_fields": bool(field_paths),
         "field_paths": field_paths,
     }
+
+
+def _run_command_check(name, command, project_root, runner=subprocess.run):
+    result = runner(command, cwd=project_root, capture_output=True, text=True)
+    return {
+        "name": name,
+        "command": " ".join(command),
+        "passed": result.returncode == 0,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def run_ranker_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "ranked definition candidate command",
+        ["python", "scripts/rank_definition_candidates.py"],
+        project_root,
+        runner=runner,
+    )

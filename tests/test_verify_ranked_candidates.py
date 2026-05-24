@@ -2,6 +2,7 @@ import unittest
 
 from scripts.verify_ranked_candidates import (
     report_contains_forbidden_content_fields,
+    run_ranker_command,
     summarize_ranked_report,
 )
 
@@ -67,6 +68,29 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
         self.assertTrue(safety["has_forbidden_content_fields"])
         self.assertEqual(["ranked_candidates[0].snippet"], safety["field_paths"])
         self.assertNotIn("definition sample", str(safety))
+
+    def test_runs_ranker_command_with_injectable_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append((command, cwd, capture_output, text))
+
+            class Result:
+                returncode = 0
+                stdout = "ranker ok"
+                stderr = ""
+
+            return Result()
+
+        check = run_ranker_command("repo-root", runner=fake_runner)
+
+        self.assertTrue(check["passed"])
+        self.assertEqual(["python", "scripts/rank_definition_candidates.py"], calls[0][0])
+        self.assertEqual("repo-root", calls[0][1])
+        self.assertEqual(
+            "python scripts/rank_definition_candidates.py",
+            check["command"],
+        )
 
 
 if __name__ == "__main__":
