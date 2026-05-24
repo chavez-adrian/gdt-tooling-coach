@@ -4,6 +4,8 @@ import unittest
 from pathlib import Path
 
 from scripts.extract_candidate_snippets import (
+    DEFAULT_INPUT_PATH,
+    DEFAULT_OUTPUT_PATH,
     build_candidate_snippets_from_ranked_candidates,
     load_high_priority_ranked_candidates,
     write_candidate_snippets_report,
@@ -191,6 +193,16 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         )
 
         self.assertEqual(100, len(snippets))
+
+    def test_cli_defaults_to_ranked_input_and_snippets_output_paths(self):
+        self.assertEqual(
+            Path("data/processed/ranked_definition_candidates.json"),
+            DEFAULT_INPUT_PATH.relative_to(DEFAULT_INPUT_PATH.parents[2]),
+        )
+        self.assertEqual(
+            Path("data/processed/candidate_snippets.json"),
+            DEFAULT_OUTPUT_PATH.relative_to(DEFAULT_OUTPUT_PATH.parents[2]),
+        )
 
 
 if __name__ == "__main__":

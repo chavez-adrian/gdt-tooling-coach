@@ -1,8 +1,13 @@
+import argparse
 import json
 import re
+from pathlib import Path
 
 from pypdf import PdfReader
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
 MAX_TOTAL_SNIPPETS = 100
 
 
@@ -109,6 +114,18 @@ def write_candidate_snippets_report(
     return report
 
 
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Write controlled candidate snippets for human review."
+    )
+    parser.add_argument("--input", type=Path, default=DEFAULT_INPUT_PATH)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
+    args = parser.parse_args(argv)
+    report = write_candidate_snippets_report(args.input, args.output)
+    print(f"Candidate snippets written: {len(report['candidate_snippets'])}")
+    return 0
+
+
 def _to_public_report_row(snippet):
     return {
         "source_title": snippet.get("source_title"),
@@ -144,3 +161,7 @@ def _page_text_for_candidate(candidate, page_text_by_key):
         if text is not None:
             return text
     return ""
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
