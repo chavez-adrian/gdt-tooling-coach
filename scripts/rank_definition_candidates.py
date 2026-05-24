@@ -1,4 +1,6 @@
-"""Metadata-only scoring for definition candidate pages."""
+"""Metadata-only scoring and ranking for definition candidate pages."""
+
+import json
 
 STRONG_SIGNALS = {
     "definition",
@@ -112,3 +114,16 @@ def build_ranked_definition_candidate_report(candidates):
         },
         "ranked_candidates": rows,
     }
+
+
+def write_ranked_definition_candidate_report(input_path, output_path):
+    with open(input_path, "r", encoding="utf-8") as input_file:
+        candidate_report = json.load(input_file)
+    report = build_ranked_definition_candidate_report(
+        candidate_report.get("candidate_pages", [])
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        json.dump(report, output_file, indent=2, sort_keys=True)
+        output_file.write("\n")
+    return report

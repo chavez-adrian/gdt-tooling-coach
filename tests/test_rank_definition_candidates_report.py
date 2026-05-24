@@ -1,8 +1,12 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.rank_definition_candidates import (
     build_ranked_definition_candidate_report,
     build_ranked_definition_candidate_rows,
+    write_ranked_definition_candidate_report,
 )
 
 
@@ -130,6 +134,32 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
             ],
             report["summary"]["top_sources_by_high_priority_candidates"],
         )
+
+    def test_json_writer_reads_candidate_pages_and_writes_ranked_report(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_path = Path(tmpdir) / "definition_candidate_pages.json"
+            output_path = Path(tmpdir) / "nested" / "ranked_definition_candidates.json"
+            input_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_pages": [
+                            {
+                                "source_title": "ASME",
+                                "signal_count": 1,
+                                "matched_signals": ["definition"],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            report = write_ranked_definition_candidate_report(input_path, output_path)
+
+            written = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(report, written)
+            self.assertEqual(1, written["summary"]["total_candidates"])
+            self.assertEqual("ASME", written["ranked_candidates"][0]["source_title"])
 
 
 if __name__ == "__main__":
