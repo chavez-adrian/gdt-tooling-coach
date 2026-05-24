@@ -35,6 +35,28 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertGreater(scored[0]["definition_score"], scored[1]["definition_score"])
         self.assertEqual("strong", scored[0]["source_id"])
 
+    def test_medium_gdt_signals_contribute_to_score(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "gdt",
+                    "signal_count": 8,
+                    "matched_signals": [
+                        "datum",
+                        "feature control frame",
+                        "tolerance zone",
+                        "MMC",
+                        "LMC",
+                        "RFS",
+                        "sÃ­mbolo",
+                        "sÃ­mbolos",
+                    ],
+                }
+            ]
+        )
+
+        self.assertEqual(24, scored[0]["definition_score"])
+
 
 if __name__ == "__main__":
     unittest.main()

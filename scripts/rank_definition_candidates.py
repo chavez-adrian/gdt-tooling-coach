@@ -9,7 +9,16 @@ STRONG_SIGNALS = {
     "terminologÃ­a",
     "glossary",
 }
-MEDIUM_SIGNALS = {"datum"}
+MEDIUM_SIGNALS = {
+    "datum",
+    "feature control frame",
+    "tolerance zone",
+    "MMC",
+    "LMC",
+    "RFS",
+    "sÃ­mbolo",
+    "sÃ­mbolos",
+}
 
 
 def score_definition_candidates(candidates):
