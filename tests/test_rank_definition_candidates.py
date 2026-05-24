@@ -121,6 +121,30 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertEqual("standard-source", scored[0]["source_id"])
         self.assertGreater(scored[0]["definition_score"], scored[1]["definition_score"])
 
+    def test_assigns_high_medium_and_low_priority_buckets(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "high",
+                    "signal_count": 3,
+                    "matched_signals": ["definition", "glossary", "datum"],
+                },
+                {
+                    "source_id": "medium",
+                    "signal_count": 1,
+                    "matched_signals": ["definition"],
+                },
+                {"source_id": "low", "signal_count": 1},
+            ]
+        )
+
+        buckets_by_source = {
+            candidate["source_id"]: candidate["priority_bucket"] for candidate in scored
+        }
+        self.assertEqual("high", buckets_by_source["high"])
+        self.assertEqual("medium", buckets_by_source["medium"])
+        self.assertEqual("low", buckets_by_source["low"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -24,6 +24,14 @@ PREFERRED_SOURCE_TYPES = {"standard", "official_standard", "norm"}
 SUPPORTED_LANGUAGES = {"en", "es", "english", "spanish"}
 
 
+def _priority_bucket(score):
+    if score >= 12:
+        return "high"
+    if score >= 5:
+        return "medium"
+    return "low"
+
+
 def score_definition_candidates(candidates):
     scored = []
     for candidate in candidates:
@@ -42,5 +50,11 @@ def score_definition_candidates(candidates):
                 score += 2
             elif signal in GENERIC_SIGNALS:
                 score -= 1
-        scored.append({**candidate, "definition_score": score})
+        scored.append(
+            {
+                **candidate,
+                "definition_score": score,
+                "priority_bucket": _priority_bucket(score),
+            }
+        )
     return sorted(scored, key=lambda item: item["definition_score"], reverse=True)
