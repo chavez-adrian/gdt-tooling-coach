@@ -1,6 +1,12 @@
 """Metadata-only scoring and ranking for definition candidate pages."""
 
 import json
+import argparse
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "definition_candidate_pages.json"
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
 
 STRONG_SIGNALS = {
     "definition",
@@ -127,3 +133,18 @@ def write_ranked_definition_candidate_report(input_path, output_path):
         json.dump(report, output_file, indent=2, sort_keys=True)
         output_file.write("\n")
     return report
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Write a metadata-only ranked definition candidate report."
+    )
+    parser.add_argument("--input", type=Path, default=DEFAULT_INPUT_PATH)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
+    args = parser.parse_args(argv)
+    write_ranked_definition_candidate_report(args.input, args.output)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

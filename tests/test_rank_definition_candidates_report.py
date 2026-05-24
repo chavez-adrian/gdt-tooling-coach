@@ -4,6 +4,8 @@ import unittest
 from pathlib import Path
 
 from scripts.rank_definition_candidates import (
+    DEFAULT_INPUT_PATH,
+    DEFAULT_OUTPUT_PATH,
     build_ranked_definition_candidate_report,
     build_ranked_definition_candidate_rows,
     write_ranked_definition_candidate_report,
@@ -160,6 +162,16 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
             self.assertEqual(report, written)
             self.assertEqual(1, written["summary"]["total_candidates"])
             self.assertEqual("ASME", written["ranked_candidates"][0]["source_title"])
+
+    def test_cli_defaults_to_processed_candidate_input_and_ranked_output(self):
+        self.assertEqual(
+            Path("data/processed/definition_candidate_pages.json"),
+            DEFAULT_INPUT_PATH.relative_to(DEFAULT_INPUT_PATH.parents[2]),
+        )
+        self.assertEqual(
+            Path("data/processed/ranked_definition_candidates.json"),
+            DEFAULT_OUTPUT_PATH.relative_to(DEFAULT_OUTPUT_PATH.parents[2]),
+        )
 
 
 if __name__ == "__main__":
