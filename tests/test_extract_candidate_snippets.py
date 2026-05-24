@@ -23,6 +23,28 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual("datum", snippets[0]["matched_signal"])
         self.assertEqual(page_text, snippets[0]["snippet_text"])
 
+    def test_medium_and_low_priority_candidates_yield_no_snippets(self):
+        candidates = [
+            {
+                "source_title": "Medium Source",
+                "page_number": 1,
+                "priority_bucket": "medium",
+            },
+            {
+                "source_title": "Low Source",
+                "page_number": 2,
+                "priority_bucket": "low",
+            },
+        ]
+        page_text_by_key = {
+            ("Medium Source", 1): "A datum definition appears here.",
+            ("Low Source", 2): "A datum definition appears here too.",
+        }
+
+        snippets = extract_candidate_snippets(candidates, page_text_by_key)
+
+        self.assertEqual([], snippets)
+
 
 if __name__ == "__main__":
     unittest.main()
