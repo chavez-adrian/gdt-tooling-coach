@@ -40,6 +40,7 @@ def build_definition_candidate_report(manifest_path, project_root):
     existing_pdfs = 0
     no_match_pdfs = 0
     pdf_open_errors = 0
+    page_extraction_errors = 0
     candidate_pages = []
     source_statuses = []
 
@@ -61,12 +62,17 @@ def build_definition_candidate_report(manifest_path, project_root):
                 continue
             pages = []
             for page_index, page in enumerate(reader.pages, start=1):
+                try:
+                    page_text = page.extract_text() or ""
+                except Exception:
+                    page_extraction_errors += 1
+                    continue
                 pages.append(
                     {
                         "source_title": entry["title"],
                         "expected_local_path": entry["expected_local_path"],
                         "page_number": page_index,
-                        "page_text": page.extract_text() or "",
+                        "page_text": page_text,
                     }
                 )
             source_candidates = locate_definition_candidates(pages)
@@ -84,6 +90,7 @@ def build_definition_candidate_report(manifest_path, project_root):
             "missing_pdfs": missing_pdfs,
             "no_match_pdfs": no_match_pdfs,
             "pdf_open_errors": pdf_open_errors,
+            "page_extraction_errors": page_extraction_errors,
             "candidate_pages": len(candidate_pages),
         },
         "candidate_pages": candidate_pages,
