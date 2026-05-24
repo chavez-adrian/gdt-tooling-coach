@@ -16,6 +16,22 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
 
         self.assertEqual(2, summary["snippets_generated"])
 
+    def test_summarizes_snippets_by_source(self):
+        report = {
+            "candidate_snippets": [
+                {"source_title": "ASME Y14.5-2018"},
+                {"source_title": "AAMC Course"},
+                {"source_title": "ASME Y14.5-2018"},
+            ]
+        }
+
+        summary = summarize_candidate_snippet_report(report)
+
+        self.assertEqual(
+            {"AAMC Course": 1, "ASME Y14.5-2018": 2},
+            summary["snippets_by_source"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
