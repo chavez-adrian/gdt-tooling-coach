@@ -87,3 +87,17 @@ def build_ranked_definition_candidate_rows(candidates):
         row["rank_within_source"] = source_ranks[source_title]
         rows.append(row)
     return rows
+
+
+def build_ranked_definition_candidate_report(candidates):
+    rows = build_ranked_definition_candidate_rows(candidates)
+    bucket_counts = {"high": 0, "medium": 0, "low": 0}
+    for row in rows:
+        bucket_counts[row["priority_bucket"]] += 1
+    return {
+        "summary": {
+            "total_candidates": len(rows),
+            "priority_buckets": bucket_counts,
+        },
+        "ranked_candidates": rows,
+    }

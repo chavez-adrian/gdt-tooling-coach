@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.rank_definition_candidates import build_ranked_definition_candidate_rows
+from scripts.rank_definition_candidates import (
+    build_ranked_definition_candidate_report,
+    build_ranked_definition_candidate_rows,
+)
 
 
 class RankedDefinitionCandidatesReportTests(unittest.TestCase):
@@ -78,6 +81,26 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
         self.assertEqual(1, ranks[("ASME", 3)])
         self.assertEqual(2, ranks[("ASME", 1)])
         self.assertEqual(1, ranks[("ISO", 2)])
+
+    def test_report_summary_counts_priority_buckets(self):
+        report = build_ranked_definition_candidate_report(
+            [
+                {
+                    "source_title": "High",
+                    "signal_count": 3,
+                    "matched_signals": ["definition", "glossary", "datum"],
+                },
+                {
+                    "source_title": "Medium",
+                    "signal_count": 1,
+                    "matched_signals": ["definition"],
+                },
+                {"source_title": "Low", "signal_count": 1, "matched_signals": []},
+            ]
+        )
+
+        self.assertEqual(3, report["summary"]["total_candidates"])
+        self.assertEqual({"high": 1, "medium": 1, "low": 1}, report["summary"]["priority_buckets"])
 
 
 if __name__ == "__main__":
