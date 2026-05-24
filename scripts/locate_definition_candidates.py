@@ -3,6 +3,7 @@
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -107,6 +108,14 @@ def write_definition_candidate_report(manifest_path, output_path, project_root):
         encoding="utf-8",
     )
     return report
+
+
+def definition_candidate_report_is_ignored(project_root, runner=subprocess.run):
+    result = runner(
+        ["git", "check-ignore", str(DEFAULT_OUTPUT_PATH).replace("\\", "/")],
+        cwd=Path(project_root),
+    )
+    return result.returncode == 0
 
 
 def main(argv=None, project_root=None):

@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from scripts.locate_definition_candidates import (
     build_definition_candidate_report,
+    definition_candidate_report_is_ignored,
     main,
     write_definition_candidate_report,
 )
@@ -259,6 +260,31 @@ class DefinitionCandidateReportTests(unittest.TestCase):
         self.assertEqual(1, report["summary"]["page_extraction_errors"])
         self.assertEqual([2], [page["page_number"] for page in report["candidate_pages"]])
         self.assertNotIn("cannot extract", json.dumps(report))
+
+    def test_generated_report_path_can_be_confirmed_as_git_ignored(self):
+        calls = []
+
+        def fake_runner(command, cwd):
+            calls.append((command, cwd))
+            return Mock(returncode=0)
+
+        ignored = definition_candidate_report_is_ignored(
+            Path("repo"),
+            runner=fake_runner,
+        )
+
+        self.assertTrue(ignored)
+        self.assertEqual(
+            (
+                [
+                    "git",
+                    "check-ignore",
+                    "data/processed/definition_candidate_pages.json",
+                ],
+                Path("repo"),
+            ),
+            calls[0],
+        )
 
 
 if __name__ == "__main__":
