@@ -101,3 +101,20 @@ def run_unittest_command(project_root, runner=subprocess.run):
         project_root,
         runner=runner,
     )
+
+
+def collect_git_evidence(project_root, runner=subprocess.run):
+    return {
+        "git_diff_stat": _run_command_check(
+            "git diff stat",
+            ["git", "diff", "--stat"],
+            project_root,
+            runner=runner,
+        ),
+        "git_status_short": _run_command_check(
+            "git status short",
+            ["git", "status", "--short"],
+            project_root,
+            runner=runner,
+        ),
+    }

@@ -2,6 +2,7 @@ import unittest
 
 from scripts.verify_definition_candidates import (
     check_report_path_ignored,
+    collect_git_evidence,
     run_locator_command,
     run_unittest_command,
     report_contains_forbidden_content_fields,
@@ -142,6 +143,28 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
             ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
             calls[0],
         )
+
+    def test_collects_git_diff_stat_and_status_evidence(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append(command)
+
+            class Result:
+                returncode = 0
+                stdout = "changed.py | 2 +-\n" if command[-1] == "--stat" else " M changed.py\n"
+                stderr = ""
+
+            return Result()
+
+        evidence = collect_git_evidence("repo-root", runner=fake_runner)
+
+        self.assertEqual(
+            [["git", "diff", "--stat"], ["git", "status", "--short"]],
+            calls,
+        )
+        self.assertEqual("changed.py | 2 +-\n", evidence["git_diff_stat"]["stdout"])
+        self.assertEqual(" M changed.py\n", evidence["git_status_short"]["stdout"])
 
 
 if __name__ == "__main__":
