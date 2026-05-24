@@ -221,6 +221,30 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
             calls[0][0],
         )
 
+    def test_written_report_declares_no_neon_or_database_modifications(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            ranked_path = Path(tmp_dir) / "ranked_definition_candidates.json"
+            output_path = Path(tmp_dir) / "candidate_snippets.json"
+            ranked_path.write_text(
+                json.dumps({"ranked_candidates": []}),
+                encoding="utf-8",
+            )
+
+            report = write_candidate_snippets_report(
+                ranked_path,
+                output_path,
+                pdf_reader_factory=FakePdfReader,
+            )
+
+        self.assertEqual(
+            {
+                "neon_writes": False,
+                "database_modifications": False,
+                "validated_content": False,
+            },
+            report["contract"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,11 @@ DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_ca
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
 DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/candidate_snippets.json")
 MAX_TOTAL_SNIPPETS = 100
+REPORT_CONTRACT = {
+    "neon_writes": False,
+    "database_modifications": False,
+    "validated_content": False,
+}
 
 
 STRONG_SIGNALS = (
@@ -108,7 +113,10 @@ def write_candidate_snippets_report(
         load_high_priority_ranked_candidates(ranked_report_path),
         pdf_reader_factory=pdf_reader_factory,
     )
-    report = {"candidate_snippets": snippets}
+    report = {
+        "contract": REPORT_CONTRACT,
+        "candidate_snippets": snippets,
+    }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as output_file:
         json.dump(report, output_file, indent=2, sort_keys=True)
