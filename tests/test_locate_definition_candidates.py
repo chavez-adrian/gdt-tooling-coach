@@ -81,6 +81,18 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         self.assertEqual([], result["matched_signals"])
         self.assertEqual(0, result["signal_count"])
 
+    def test_candidate_reason_summarizes_signals_without_page_text(self):
+        result = analyze_definition_candidate_page(
+            "Definition appears near a datum explanation that must not be echoed.",
+            {"source_id": "fake-reason", "page_number": 18},
+        )
+
+        self.assertEqual(
+            "matched 2 definition candidate signals: definition, datum",
+            result["candidate_reason"],
+        )
+        self.assertNotIn("appears near", result["candidate_reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

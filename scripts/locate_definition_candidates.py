@@ -31,6 +31,13 @@ def analyze_definition_candidate_page(page_text, page_metadata=None):
         for signal in SIGNALS
         if re.search(rf"(?<!\w){re.escape(signal.lower())}(?!\w)", normalized_text)
     ]
+    if matched_signals:
+        candidate_reason = (
+            f"matched {len(matched_signals)} definition candidate signals: "
+            f"{', '.join(matched_signals)}"
+        )
+    else:
+        candidate_reason = "matched 0 definition candidate signals"
 
     return {
         **metadata,
@@ -39,4 +46,5 @@ def analyze_definition_candidate_page(page_text, page_metadata=None):
         "signal_count": len(matched_signals),
         "approximate_char_count": len(page_text),
         "approximate_word_count": len(re.findall(r"\w+", page_text)),
+        "candidate_reason": candidate_reason,
     }
