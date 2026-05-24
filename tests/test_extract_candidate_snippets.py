@@ -117,6 +117,28 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual("raw_import", snippets[0]["proposed_review_state"])
         self.assertIs(True, snippets[0]["requires_human_review"])
 
+    def test_preserves_candidate_metadata_needed_for_review(self):
+        candidate = {
+            "source_title": "ASME Y14.5",
+            "source_type": "standard",
+            "source_language": "en",
+            "source_path": "data/sources/asme-y14-5.pdf",
+            "page_number": 42,
+            "candidate_score": 88,
+            "global_rank": 3,
+            "priority_bucket": "high",
+        }
+
+        snippets = extract_candidate_snippets([candidate], {("ASME Y14.5", 42): "Datum references appear here."})
+
+        self.assertEqual("ASME Y14.5", snippets[0]["source_title"])
+        self.assertEqual("standard", snippets[0]["source_type"])
+        self.assertEqual("en", snippets[0]["source_language"])
+        self.assertEqual("data/sources/asme-y14-5.pdf", snippets[0]["source_path"])
+        self.assertEqual(42, snippets[0]["page_number"])
+        self.assertEqual(88, snippets[0]["candidate_score"])
+        self.assertEqual(3, snippets[0]["global_rank"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -31,6 +31,13 @@ def extract_candidate_snippets(candidates, page_text_by_key):
                     snippet_words = sentence.split()[:80]
                     snippets.append(
                         {
+                            "source_title": candidate.get("source_title"),
+                            "source_type": candidate.get("source_type"),
+                            "source_language": candidate.get("source_language"),
+                            "source_path": candidate.get("source_path"),
+                            "page_number": candidate.get("page_number"),
+                            "candidate_score": candidate.get("candidate_score"),
+                            "global_rank": candidate.get("global_rank"),
                             "matched_signal": signal,
                             "snippet_word_count": len(snippet_words),
                             "snippet_text": " ".join(snippet_words),
