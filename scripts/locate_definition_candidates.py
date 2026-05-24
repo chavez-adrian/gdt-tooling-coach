@@ -73,6 +73,17 @@ def build_definition_candidate_report(manifest_path, project_root):
     }
 
 
+def write_definition_candidate_report(manifest_path, output_path, project_root):
+    output_path = Path(output_path)
+    report = build_definition_candidate_report(manifest_path, project_root)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return report
+
+
 def locate_definition_candidates(pages):
     candidates = []
     for page in pages:

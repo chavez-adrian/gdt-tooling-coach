@@ -4,7 +4,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from scripts.locate_definition_candidates import build_definition_candidate_report
+from scripts.locate_definition_candidates import (
+    build_definition_candidate_report,
+    write_definition_candidate_report,
+)
 
 
 class DefinitionCandidateReportTests(unittest.TestCase):
@@ -136,6 +139,34 @@ class DefinitionCandidateReportTests(unittest.TestCase):
         self.assertEqual([], report["candidate_pages"])
         self.assertEqual(0, report["summary"]["candidate_pages"])
         self.assertEqual(1, report["summary"]["no_match_pdfs"])
+
+    def test_writes_definition_candidate_report_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            manifest_path = project_root / "manifest.json"
+            output_path = project_root / "data/processed/definition_candidate_pages.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "Missing Source",
+                            "expected_local_path": "data/raw/missing.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report = write_definition_candidate_report(
+                manifest_path,
+                output_path,
+                project_root,
+            )
+
+            written_report = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(report, written_report)
+        self.assertEqual([], written_report["candidate_pages"])
 
 
 if __name__ == "__main__":
