@@ -73,3 +73,12 @@ def score_definition_candidate(candidate):
 def score_definition_candidates(candidates):
     scored = [score_definition_candidate(candidate) for candidate in candidates]
     return sorted(scored, key=lambda item: item["definition_score"], reverse=True)
+
+
+def build_ranked_definition_candidate_rows(candidates):
+    rows = []
+    for candidate in score_definition_candidates(candidates):
+        row = dict(candidate)
+        row["candidate_score"] = row.pop("definition_score")
+        rows.append(row)
+    return rows
