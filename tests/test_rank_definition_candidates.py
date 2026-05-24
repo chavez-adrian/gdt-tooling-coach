@@ -148,6 +148,29 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
     def test_empty_candidate_input_returns_empty_list(self):
         self.assertEqual([], score_definition_candidates([]))
 
+    def test_scored_output_drops_forbidden_text_fields(self):
+        page_text = "definition text that must not be stored"
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "safe",
+                    "signal_count": 1,
+                    "matched_signals": ["definition"],
+                    "page_text": page_text,
+                    "text": page_text,
+                    "excerpt": "definition text",
+                    "definition": "stored definition",
+                }
+            ]
+        )
+
+        self.assertEqual("safe", scored[0]["source_id"])
+        self.assertNotIn("page_text", scored[0])
+        self.assertNotIn("text", scored[0])
+        self.assertNotIn("excerpt", scored[0])
+        self.assertNotIn("definition", scored[0])
+        self.assertNotIn(page_text, scored[0].values())
+
 
 if __name__ == "__main__":
     unittest.main()

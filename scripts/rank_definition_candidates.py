@@ -22,6 +22,18 @@ MEDIUM_SIGNALS = {
 GENERIC_SIGNALS = {"term", "terms", "tÃ©rmino", "tÃ©rminos"}
 PREFERRED_SOURCE_TYPES = {"standard", "official_standard", "norm"}
 SUPPORTED_LANGUAGES = {"en", "es", "english", "spanish"}
+FORBIDDEN_TEXT_KEYS = {
+    "content",
+    "definition",
+    "definitions",
+    "excerpt",
+    "long_quote",
+    "page_text",
+    "quote",
+    "sample",
+    "text",
+    "text_sample",
+}
 
 
 def _priority_bucket(score):
@@ -50,9 +62,12 @@ def score_definition_candidates(candidates):
                 score += 2
             elif signal in GENERIC_SIGNALS:
                 score -= 1
+        safe_candidate = {
+            key: value for key, value in candidate.items() if key not in FORBIDDEN_TEXT_KEYS
+        }
         scored.append(
             {
-                **candidate,
+                **safe_candidate,
                 "definition_score": score,
                 "priority_bucket": _priority_bucket(score),
             }
