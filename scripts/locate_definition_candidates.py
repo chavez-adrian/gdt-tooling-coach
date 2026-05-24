@@ -31,6 +31,13 @@ SIGNALS = [
 TEXT_METADATA_KEYS = {"content", "definition", "excerpt", "quote", "sample", "text"}
 DEFAULT_MANIFEST_PATH = Path("data/source_manifest.example.json")
 DEFAULT_OUTPUT_PATH = Path("data/processed/definition_candidate_pages.json")
+METADATA_ONLY_CONTRACT = {
+    "stores_full_page_text": False,
+    "stores_definitions": False,
+    "stores_long_quotes_or_samples": False,
+    "performs_ocr": False,
+    "connects_to_neon": False,
+}
 
 
 def build_definition_candidate_report(manifest_path, project_root):
@@ -46,6 +53,7 @@ def build_definition_candidate_report(manifest_path, project_root):
     source_statuses = []
 
     for entry in manifest_entries:
+        source_title = entry.get("source_title", entry.get("title", ""))
         pdf_path = project_root / entry["expected_local_path"]
         if pdf_path.exists():
             existing_pdfs += 1
@@ -55,7 +63,7 @@ def build_definition_candidate_report(manifest_path, project_root):
                 pdf_open_errors += 1
                 source_statuses.append(
                     {
-                        "source_title": entry["title"],
+                        "source_title": source_title,
                         "expected_local_path": entry["expected_local_path"],
                         "status": "pdf_open_error",
                     }
@@ -70,7 +78,7 @@ def build_definition_candidate_report(manifest_path, project_root):
                     continue
                 pages.append(
                     {
-                        "source_title": entry["title"],
+                        "source_title": source_title,
                         "expected_local_path": entry["expected_local_path"],
                         "page_number": page_index,
                         "page_text": page_text,
@@ -96,6 +104,7 @@ def build_definition_candidate_report(manifest_path, project_root):
         },
         "candidate_pages": candidate_pages,
         "source_statuses": source_statuses,
+        "metadata_only_contract": dict(METADATA_ONLY_CONTRACT),
     }
 
 

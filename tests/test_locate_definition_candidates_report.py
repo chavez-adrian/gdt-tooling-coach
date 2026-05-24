@@ -286,6 +286,55 @@ class DefinitionCandidateReportTests(unittest.TestCase):
             calls[0],
         )
 
+    def test_report_declares_metadata_only_contract(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text("[]", encoding="utf-8")
+
+            report = build_definition_candidate_report(manifest_path, project_root)
+
+        self.assertEqual(
+            {
+                "stores_full_page_text": False,
+                "stores_definitions": False,
+                "stores_long_quotes_or_samples": False,
+                "performs_ocr": False,
+                "connects_to_neon": False,
+            },
+            report["metadata_only_contract"],
+        )
+
+    def test_manifest_source_title_field_is_used_for_candidate_records(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data/raw/source.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "Manifest Source Title",
+                            "expected_local_path": "data/raw/source.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            page = Mock()
+            page.extract_text.return_value = "Definitions include datum references."
+
+            with patch("scripts.locate_definition_candidates.PdfReader") as pdf_reader:
+                pdf_reader.return_value.pages = [page]
+                report = build_definition_candidate_report(manifest_path, project_root)
+
+        self.assertEqual(
+            "Manifest Source Title",
+            report["candidate_pages"][0]["source_title"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
