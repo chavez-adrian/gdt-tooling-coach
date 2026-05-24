@@ -134,6 +134,18 @@ def candidate_snippets_report_is_ignored(run_command=subprocess.run):
     return result.returncode == 0
 
 
+def format_console_summary(report):
+    contract = report["contract"]
+    return "\n".join(
+        [
+            f"Candidate snippets written: {len(report['candidate_snippets'])}",
+            f"Neon writes: {str(contract['neon_writes']).lower()}",
+            f"Database modifications: {str(contract['database_modifications']).lower()}",
+            f"Validated content: {str(contract['validated_content']).lower()}",
+        ]
+    )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Write controlled candidate snippets for human review."
@@ -142,7 +154,7 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
     args = parser.parse_args(argv)
     report = write_candidate_snippets_report(args.input, args.output)
-    print(f"Candidate snippets written: {len(report['candidate_snippets'])}")
+    print(format_console_summary(report))
     return 0
 
 

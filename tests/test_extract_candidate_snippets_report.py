@@ -8,6 +8,7 @@ from scripts.extract_candidate_snippets import (
     DEFAULT_OUTPUT_PATH,
     candidate_snippets_report_is_ignored,
     build_candidate_snippets_from_ranked_candidates,
+    format_console_summary,
     load_high_priority_ranked_candidates,
     write_candidate_snippets_report,
 )
@@ -244,6 +245,23 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
             },
             report["contract"],
         )
+
+    def test_console_summary_reports_snippet_count_and_contract(self):
+        report = {
+            "candidate_snippets": [{}, {}],
+            "contract": {
+                "neon_writes": False,
+                "database_modifications": False,
+                "validated_content": False,
+            },
+        }
+
+        summary = format_console_summary(report)
+
+        self.assertIn("Candidate snippets written: 2", summary)
+        self.assertIn("Neon writes: false", summary)
+        self.assertIn("Database modifications: false", summary)
+        self.assertIn("Validated content: false", summary)
 
 
 if __name__ == "__main__":
