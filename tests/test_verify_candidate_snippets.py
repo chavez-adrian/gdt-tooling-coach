@@ -243,6 +243,24 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
         self.assertIn("No Neon/database/validated contract: PASS", printed)
         self.assertNotIn("text must not be printed", printed)
 
+    def test_docs_describe_controlled_candidate_snippet_verification(self):
+        project_root = Path(__file__).resolve().parents[1]
+        readme = (project_root / "README.md").read_text(encoding="utf-8")
+        ingestion_plan = (project_root / "docs" / "ingestion_plan.md").read_text(
+            encoding="utf-8"
+        )
+        editorial_rules = (
+            project_root / "docs" / "editorial_rules.md"
+        ).read_text(encoding="utf-8")
+
+        for content in (readme, ingestion_plan, editorial_rules):
+            self.assertIn("python scripts/extract_candidate_snippets.py", content)
+            self.assertIn("python scripts/verify_candidate_snippets.py", content)
+            self.assertIn("data/processed/candidate_snippets.json", content)
+            self.assertIn("raw_import", content)
+            self.assertIn("requires_human_review", content)
+            self.assertIn("No se conecta a Neon", content)
+
 
 if __name__ == "__main__":
     unittest.main()

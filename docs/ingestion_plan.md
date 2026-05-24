@@ -24,6 +24,8 @@ para producir reportes de metadatos ignorados por Git:
 - `python scripts/locate_definition_candidates.py`
 - `python scripts/rank_definition_candidates.py`
 - `python scripts/verify_ranked_candidates.py`
+- `python scripts/extract_candidate_snippets.py`
+- `python scripts/verify_candidate_snippets.py`
 
 Los reportes permitidos son:
 
@@ -57,3 +59,10 @@ esas paginas, pero el reporte local debe quedar acotado:
 Esta fase no inserta en Neon, no modifica tablas, no modifica `sources` ni
 `definitions`, y no marca contenido como validado. El resultado es material
 crudo para revision humana posterior.
+
+El verificador `python scripts/verify_candidate_snippets.py` debe ejecutarse
+despues del extractor. Reporta paginas high-priority procesadas, snippets
+generados, snippets por fuente, maximo conteo de palabras, confirmacion del
+limite de 80 palabras, campos `raw_import` y `requires_human_review`, contrato
+sin Neon ni modificaciones de base de datos, `git diff --stat` y
+`git status --short`. No imprime texto de snippets. No se conecta a Neon.

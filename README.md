@@ -157,6 +157,8 @@ python scripts/locate_definition_candidates.py
 python scripts/verify_definition_candidates.py
 python scripts/rank_definition_candidates.py
 python scripts/verify_ranked_candidates.py
+python scripts/extract_candidate_snippets.py
+python scripts/verify_candidate_snippets.py
 ```
 
 Generated reports are written under `data/processed/`, which is ignored by Git:
@@ -164,7 +166,7 @@ Generated reports are written under `data/processed/`, which is ignored by Git:
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
 - `data/processed/ranked_definition_candidates.json`
-- `data/processed/candidate_snippets.json` (planned controlled snippet phase)
+- `data/processed/candidate_snippets.json`
 
 These reports contain metrics and page metadata only. They must not contain full
 page text, definitions, long quotes, textual samples, OCR output, credentials, or
@@ -174,8 +176,12 @@ The ranked candidate report orders definition-candidate pages for editorial
 review and summarizes total candidates, high/medium/low priority counts, and top
 sources by high-priority candidates. No se conecta a Neon.
 
-The planned snippet phase is the first controlled step that may preserve brief
+The controlled snippet phase is the first local step that may preserve brief
 literal text for human review. It is limited to high-priority ranked pages, at
 most 80 continuous words per snippet, at most 3 snippets per page, and at most
-100 snippets total for the phase. Snippets remain `raw_import`, require human
-review, and must never be inserted into Neon or marked validated by the script.
+100 snippets total for the phase. Snippets remain `raw_import`, set
+`requires_human_review = true`, and must never be inserted into Neon or marked
+validated by the script. `python scripts/verify_candidate_snippets.py` reports
+high-priority pages processed, snippets generated, snippets by source, maximum
+word count, safety checks, command checks, and Git evidence without printing
+snippet text. No se conecta a Neon.

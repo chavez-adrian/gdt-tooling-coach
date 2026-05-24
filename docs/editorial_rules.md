@@ -49,6 +49,14 @@ rankeadas. Cada snippet guardado debe ser breve y revisable:
 Los snippets no son definiciones validadas. No deben insertarse en Neon ni
 marcarse como `validated` sin una revision humana posterior.
 
+La verificacion de `data/processed/candidate_snippets.json` se hace con
+`python scripts/extract_candidate_snippets.py` y
+`python scripts/verify_candidate_snippets.py`. El verificador solo puede
+imprimir conteos, fuentes, maximo conteo de palabras, estados `raw_import`,
+`requires_human_review`, contrato sin Neon/base de datos y evidencia Git. No
+debe imprimir `snippet_text` ni contenido normativo literal. No se conecta a
+Neon.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.
