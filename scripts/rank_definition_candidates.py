@@ -77,8 +77,9 @@ def score_definition_candidates(candidates):
 
 def build_ranked_definition_candidate_rows(candidates):
     rows = []
-    for candidate in score_definition_candidates(candidates):
+    for global_rank, candidate in enumerate(score_definition_candidates(candidates), 1):
         row = dict(candidate)
         row["candidate_score"] = row.pop("definition_score")
+        row["global_rank"] = global_rank
         rows.append(row)
     return rows
