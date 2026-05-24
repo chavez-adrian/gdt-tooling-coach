@@ -1,8 +1,14 @@
+import io
+import json
+import tempfile
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
 from scripts.verify_ranked_candidates import (
     check_report_path_ignored,
     collect_git_evidence,
+    main,
     report_contains_forbidden_content_fields,
     run_ranker_command,
     run_unittest_command,
@@ -155,6 +161,56 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
         )
         self.assertEqual("changed.py | 2 +-\n", evidence["git_diff_stat"]["stdout"])
         self.assertEqual(" M changed.py\n", evidence["git_status_short"]["stdout"])
+
+    def test_cli_reads_report_runs_checks_and_prints_metrics_only_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_path = Path(tmpdir) / "ranked_definition_candidates.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "summary": {
+                            "total_candidates": 3,
+                            "priority_buckets": {"high": 1, "medium": 1, "low": 1},
+                            "top_sources_by_high_priority_candidates": [
+                                {
+                                    "source_title": "ASME",
+                                    "high_priority_candidates": 1,
+                                }
+                            ],
+                        },
+                        "ranked_candidates": [
+                            {"source_title": "ASME", "priority_bucket": "high"}
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            def fake_runner(command, cwd=None, capture_output=None, text=None):
+                class Result:
+                    returncode = 0
+                    stdout = ""
+                    stderr = ""
+
+                return Result()
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--report", str(report_path), "--project-root", tmpdir],
+                    runner=fake_runner,
+                )
+
+        printed = output.getvalue()
+        self.assertEqual(0, exit_code)
+        self.assertIn("Overall result: PASS", printed)
+        self.assertIn("Total ranked candidates: 3", printed)
+        self.assertIn("High: 1", printed)
+        self.assertIn("Medium: 1", printed)
+        self.assertIn("Low: 1", printed)
+        self.assertIn("ASME: 1", printed)
+        self.assertIn("Forbidden content fields: none", printed)
+        self.assertNotIn("priority_bucket", printed)
 
 
 if __name__ == "__main__":
