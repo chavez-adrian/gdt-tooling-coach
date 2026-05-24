@@ -102,6 +102,35 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
         self.assertEqual(3, report["summary"]["total_candidates"])
         self.assertEqual({"high": 1, "medium": 1, "low": 1}, report["summary"]["priority_buckets"])
 
+    def test_report_summary_lists_top_sources_by_high_priority_candidates(self):
+        report = build_ranked_definition_candidate_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "signal_count": 3,
+                    "matched_signals": ["definition", "glossary", "datum"],
+                },
+                {
+                    "source_title": "ISO",
+                    "signal_count": 5,
+                    "matched_signals": ["definition", "glossary"],
+                },
+                {
+                    "source_title": "ASME",
+                    "signal_count": 5,
+                    "matched_signals": ["definition", "glossary"],
+                },
+            ]
+        )
+
+        self.assertEqual(
+            [
+                {"source_title": "ASME", "high_priority_candidates": 2},
+                {"source_title": "ISO", "high_priority_candidates": 1},
+            ],
+            report["summary"]["top_sources_by_high_priority_candidates"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

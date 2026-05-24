@@ -92,12 +92,23 @@ def build_ranked_definition_candidate_rows(candidates):
 def build_ranked_definition_candidate_report(candidates):
     rows = build_ranked_definition_candidate_rows(candidates)
     bucket_counts = {"high": 0, "medium": 0, "low": 0}
+    high_counts_by_source = {}
     for row in rows:
         bucket_counts[row["priority_bucket"]] += 1
+        if row["priority_bucket"] == "high":
+            source_title = row.get("source_title", "")
+            high_counts_by_source[source_title] = high_counts_by_source.get(source_title, 0) + 1
+    top_sources = [
+        {"source_title": source_title, "high_priority_candidates": count}
+        for source_title, count in sorted(
+            high_counts_by_source.items(), key=lambda item: (-item[1], item[0])
+        )
+    ]
     return {
         "summary": {
             "total_candidates": len(rows),
             "priority_buckets": bucket_counts,
+            "top_sources_by_high_priority_candidates": top_sources,
         },
         "ranked_candidates": rows,
     }
