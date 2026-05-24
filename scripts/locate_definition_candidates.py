@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+from pypdf import PdfReader
+
 SIGNALS = [
     "definition",
     "definitions",
@@ -38,6 +40,18 @@ def build_definition_candidate_report(manifest_path, project_root):
         pdf_path = project_root / entry["expected_local_path"]
         if pdf_path.exists():
             existing_pdfs += 1
+            reader = PdfReader(str(pdf_path))
+            pages = []
+            for page_index, page in enumerate(reader.pages, start=1):
+                pages.append(
+                    {
+                        "source_title": entry["title"],
+                        "expected_local_path": entry["expected_local_path"],
+                        "page_number": page_index,
+                        "page_text": page.extract_text() or "",
+                    }
+                )
+            candidate_pages = locate_definition_candidates(pages)
         else:
             missing_pdfs += 1
 
@@ -47,7 +61,7 @@ def build_definition_candidate_report(manifest_path, project_root):
             "existing_pdfs": existing_pdfs,
             "missing_pdfs": missing_pdfs,
         },
-        "candidate_pages": [],
+        "candidate_pages": candidate_pages if existing_pdfs else [],
     }
 
 
@@ -58,6 +72,7 @@ def locate_definition_candidates(pages):
         page_metadata = {key: value for key, value in page.items() if key != "page_text"}
         result = analyze_definition_candidate_page(page_text, page_metadata)
         if result["is_candidate"]:
+            result = {key: value for key, value in result.items() if key != "is_candidate"}
             candidates.append(result)
     return candidates
 
