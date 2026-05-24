@@ -1,6 +1,8 @@
 import unittest
 
 from scripts.verify_candidate_snippets import (
+    check_report_path_ignored,
+    collect_git_evidence,
     run_extractor_command,
     run_unittest_command,
     summarize_candidate_snippet_report,
@@ -128,6 +130,46 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
                 ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
             ],
             [call[0] for call in calls],
+        )
+
+    def test_collects_git_evidence_and_checks_candidate_snippet_report_is_ignored(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append(command)
+
+            class Result:
+                returncode = 0
+                stdout = (
+                    "data/processed/candidate_snippets.json\n"
+                    if command[:2] == ["git", "check-ignore"]
+                    else "scripts/verify_candidate_snippets.py | 2 ++\n"
+                    if command[-1] == "--stat"
+                    else " M scripts/verify_candidate_snippets.py\n"
+                )
+                stderr = ""
+
+            return Result()
+
+        ignore_check = check_report_path_ignored("repo-root", runner=fake_runner)
+        evidence = collect_git_evidence("repo-root", runner=fake_runner)
+
+        self.assertTrue(ignore_check["passed"])
+        self.assertEqual(
+            [
+                ["git", "check-ignore", "data/processed/candidate_snippets.json"],
+                ["git", "diff", "--stat"],
+                ["git", "status", "--short"],
+            ],
+            calls,
+        )
+        self.assertEqual(
+            "scripts/verify_candidate_snippets.py | 2 ++\n",
+            evidence["git_diff_stat"]["stdout"],
+        )
+        self.assertEqual(
+            " M scripts/verify_candidate_snippets.py\n",
+            evidence["git_status_short"]["stdout"],
         )
 
 
