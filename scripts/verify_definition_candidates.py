@@ -1,7 +1,10 @@
 """Local verification for the definition-candidate locator report."""
 
+import argparse
+import json
 import subprocess
 from collections import Counter
+from pathlib import Path
 
 REPORT_PATH = "data/processed/definition_candidate_pages.json"
 FORBIDDEN_CONTENT_KEYS = {
@@ -118,3 +121,69 @@ def collect_git_evidence(project_root, runner=subprocess.run):
             runner=runner,
         ),
     }
+
+
+def build_verification(report, project_root, runner=subprocess.run):
+    safety = report_contains_forbidden_content_fields(report)
+    command_checks = [
+        run_locator_command(project_root, runner=runner),
+        run_unittest_command(project_root, runner=runner),
+        check_report_path_ignored(project_root, runner=runner),
+    ]
+    git_evidence = collect_git_evidence(project_root, runner=runner)
+    passed = (
+        all(check["passed"] for check in command_checks)
+        and not safety["has_forbidden_content_fields"]
+    )
+    return {
+        "passed": passed,
+        "summary": summarize_candidate_report(report),
+        "content_safety": safety,
+        "command_checks": command_checks,
+        "git_evidence": git_evidence,
+    }
+
+
+def print_metrics_summary(verification):
+    summary = verification["summary"]
+    safety = verification["content_safety"]
+    print("Definition candidate locator verification")
+    print(f"Overall result: {'PASS' if verification['passed'] else 'FAIL'}")
+    print(f"PDFs processed: {summary['pdfs_processed']}")
+    print(f"Total candidate pages: {summary['total_candidate_pages']}")
+    print("Candidate pages by source:")
+    for source, count in summary["candidate_pages_by_source"].items():
+        print(f"  {source}: {count}")
+    print("Top signals found:")
+    for signal, count in summary["top_signals_found"]:
+        print(f"  {signal}: {count}")
+    if safety["has_forbidden_content_fields"]:
+        print(f"Forbidden content fields: {', '.join(safety['field_paths'])}")
+    else:
+        print("Forbidden content fields: none")
+    for check in verification["command_checks"]:
+        print(f"{check['command']}: {'PASS' if check['passed'] else 'FAIL'}")
+    print("git diff --stat:")
+    print(verification["git_evidence"]["git_diff_stat"]["stdout"].rstrip())
+    print("git status --short:")
+    print(verification["git_evidence"]["git_status_short"]["stdout"].rstrip())
+
+
+def main(argv=None, runner=subprocess.run):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--report", default=REPORT_PATH)
+    parser.add_argument("--project-root", default=".")
+    args = parser.parse_args(argv)
+
+    project_root = Path(args.project_root)
+    report_path = Path(args.report)
+    if not report_path.is_absolute():
+        report_path = project_root / report_path
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    verification = build_verification(report, project_root, runner=runner)
+    print_metrics_summary(verification)
+    return 0 if verification["passed"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

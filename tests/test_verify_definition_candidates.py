@@ -1,8 +1,14 @@
+import io
+import json
+import tempfile
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
 from scripts.verify_definition_candidates import (
     check_report_path_ignored,
     collect_git_evidence,
+    main,
     run_locator_command,
     run_unittest_command,
     report_contains_forbidden_content_fields,
@@ -165,6 +171,54 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
         )
         self.assertEqual("changed.py | 2 +-\n", evidence["git_diff_stat"]["stdout"])
         self.assertEqual(" M changed.py\n", evidence["git_status_short"]["stdout"])
+
+    def test_cli_reads_report_runs_checks_and_prints_metrics_only_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_path = Path(tmpdir) / "definition_candidate_pages.json"
+            report_path.write_text(
+                json.dumps(
+                    {
+                        "summary": {"existing_pdfs": 1, "candidate_pages": 2},
+                        "candidate_pages": [
+                            {
+                                "source_title": "ASME",
+                                "page_number": 1,
+                                "matched_signals": ["definition"],
+                            },
+                            {
+                                "source_title": "ASME",
+                                "page_number": 2,
+                                "matched_signals": ["datum"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            def fake_runner(command, cwd=None, capture_output=None, text=None):
+                class Result:
+                    returncode = 0
+                    stdout = ""
+                    stderr = ""
+
+                return Result()
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--report", str(report_path), "--project-root", tmpdir],
+                    runner=fake_runner,
+                )
+
+        printed = output.getvalue()
+        self.assertEqual(0, exit_code)
+        self.assertIn("PDFs processed: 1", printed)
+        self.assertIn("Total candidate pages: 2", printed)
+        self.assertIn("ASME: 2", printed)
+        self.assertIn("definition: 1", printed)
+        self.assertIn("Forbidden content fields: none", printed)
+        self.assertNotIn("page_text", printed)
 
 
 if __name__ == "__main__":
