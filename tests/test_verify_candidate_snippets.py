@@ -2,6 +2,7 @@ import unittest
 
 from scripts.verify_candidate_snippets import (
     summarize_candidate_snippet_report,
+    verify_report_contract,
     verify_review_state_fields,
     verify_snippet_word_limit,
 )
@@ -83,6 +84,23 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
 
         self.assertFalse(safety["passed"])
         self.assertEqual([1], safety["invalid_review_state_indexes"])
+
+    def test_fails_contract_safety_when_report_touches_neon_database_or_validation(self):
+        report = {
+            "contract": {
+                "neon_writes": True,
+                "database_modifications": True,
+                "validated_content": True,
+            }
+        }
+
+        safety = verify_report_contract(report)
+
+        self.assertFalse(safety["passed"])
+        self.assertEqual(
+            ["neon_writes", "database_modifications", "validated_content"],
+            safety["violated_contract_flags"],
+        )
 
 
 if __name__ == "__main__":

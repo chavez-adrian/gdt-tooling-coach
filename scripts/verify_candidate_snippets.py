@@ -1,6 +1,11 @@
 """Local verification for the controlled candidate-snippet workflow."""
 
 MAX_SNIPPET_WORDS = 80
+SAFE_CONTRACT_FLAGS = {
+    "neon_writes": False,
+    "database_modifications": False,
+    "validated_content": False,
+}
 
 
 def summarize_candidate_snippet_report(report):
@@ -42,4 +47,17 @@ def verify_review_state_fields(report):
     return {
         "passed": not invalid_indexes,
         "invalid_review_state_indexes": invalid_indexes,
+    }
+
+
+def verify_report_contract(report):
+    contract = report.get("contract", {})
+    violated_flags = [
+        flag
+        for flag, expected_value in SAFE_CONTRACT_FLAGS.items()
+        if contract.get(flag) != expected_value
+    ]
+    return {
+        "passed": not violated_flags,
+        "violated_contract_flags": violated_flags,
     }
