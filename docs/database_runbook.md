@@ -60,24 +60,46 @@ python scripts/probe_pdf_text.py
 python scripts/verify_pdf_text_probe.py
 python scripts/locate_definition_candidates.py
 python scripts/verify_definition_candidates.py
+python scripts/rank_definition_candidates.py
+python scripts/verify_ranked_candidates.py
+python scripts/extract_candidate_snippets.py
+python scripts/verify_candidate_snippets.py
 ```
 
 Expected generated reports:
 
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
+- `data/processed/ranked_definition_candidates.json`
+- `data/processed/candidate_snippets.json`
 
 Safety checks:
 
 ```powershell
 git check-ignore data/processed/pdf_text_probe.json
 git check-ignore data/processed/definition_candidate_pages.json
+git check-ignore data/processed/ranked_definition_candidates.json
+git check-ignore data/processed/candidate_snippets.json
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-These reports must remain metadata-only. They must not include full page text,
-definitions, long quotes, textual samples, OCR output, Neon credentials, or any
-validated/imported source content.
+The probe, candidate-page, and ranked-candidate reports must remain metadata-only.
+They must not include full page text, definitions, long quotes, textual samples,
+OCR output, Neon credentials, or any validated/imported source content.
+
+`candidate_snippets.json` is the exception that may contain bounded literal
+snippets for human review. It is still local-only, ignored by Git, and constrained
+to raw review material:
+
+- at most 80 continuous words per snippet;
+- at most 3 snippets per high-priority page;
+- at most 100 snippets in the phase;
+- `extraction_type = "literal_quote"`;
+- `proposed_review_state = "raw_import"`;
+- `requires_human_review = true`.
+
+Snippet extraction must not insert into Neon, modify tables, update `sources` or
+`definitions`, mark content as validated, or print snippets in verification output.
 
 ## Troubleshooting
 

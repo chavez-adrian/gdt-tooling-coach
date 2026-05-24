@@ -74,6 +74,10 @@ gdt-tooling-coach/
     verify_pdf_text_probe.py
     locate_definition_candidates.py
     verify_definition_candidates.py
+    rank_definition_candidates.py
+    verify_ranked_candidates.py
+    extract_candidate_snippets.py
+    verify_candidate_snippets.py
   /data
     /raw
       /asme_2018
