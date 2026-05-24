@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.verify_candidate_snippets import summarize_candidate_snippet_report
+from scripts.verify_candidate_snippets import (
+    summarize_candidate_snippet_report,
+    verify_snippet_word_limit,
+)
 
 
 class VerifyCandidateSnippetsTest(unittest.TestCase):
@@ -44,6 +47,20 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
         summary = summarize_candidate_snippet_report(report)
 
         self.assertEqual(80, summary["max_snippet_word_count"])
+
+    def test_fails_word_limit_safety_when_any_snippet_exceeds_80_words(self):
+        report = {
+            "candidate_snippets": [
+                {"source_title": "ASME", "snippet_word_count": 80},
+                {"source_title": "AAMC", "snippet_word_count": 81},
+            ]
+        }
+
+        safety = verify_snippet_word_limit(report)
+
+        self.assertFalse(safety["passed"])
+        self.assertEqual(80, safety["max_allowed_words"])
+        self.assertEqual([1], safety["over_limit_indexes"])
 
 
 if __name__ == "__main__":
