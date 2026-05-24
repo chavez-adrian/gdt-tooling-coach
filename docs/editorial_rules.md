@@ -11,6 +11,19 @@
 
 Cada definicion, termino, simbolo o ejercicio derivado debe poder rastrearse a una fuente o a una decision editorial revisable.
 
+## Probes de PDF
+
+Los probes locales de PDF solo pueden producir metadatos para revision:
+
+- conteos aproximados de caracteres y palabras;
+- paginas muestreadas o candidatas;
+- senales detectadas;
+- estados tecnicos de lectura.
+
+No deben guardar texto completo de pagina, definiciones, citas largas, muestras
+textuales, OCR ni contenido marcado como validado. Cualquier extraccion de texto
+debe permanecer en memoria durante el proceso local.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.

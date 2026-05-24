@@ -70,6 +70,10 @@ gdt-tooling-coach/
     ingest_sources.py
     extract_definitions.py
     compare_versions.py
+    probe_pdf_text.py
+    verify_pdf_text_probe.py
+    locate_definition_candidates.py
+    verify_definition_candidates.py
   /data
     /raw
       /asme_2018
@@ -140,3 +144,24 @@ python scripts/run_migrations.py
 Do not commit `.env` or real database credentials.
 
 Do not ingest source documents until the schema has been created and reviewed.
+
+## Controlled PDF metadata probes
+
+The repo includes local-only PDF inspection scripts that support source review
+without ingesting normative content into PostgreSQL/Neon.
+
+```bash
+python scripts/probe_pdf_text.py
+python scripts/verify_pdf_text_probe.py
+python scripts/locate_definition_candidates.py
+python scripts/verify_definition_candidates.py
+```
+
+Generated reports are written under `data/processed/`, which is ignored by Git:
+
+- `data/processed/pdf_text_probe.json`
+- `data/processed/definition_candidate_pages.json`
+
+These reports contain metrics and page metadata only. They must not contain full
+page text, definitions, long quotes, textual samples, OCR output, credentials, or
+validated source content. They do not connect to Neon.

@@ -49,6 +49,36 @@ These tracer bullets compose schema, views, and fake fixtures into SQL that can
 be inspected or run locally. To execute them, pipe the output into a disposable local PostgreSQL database.
 No Neon connection is required, and no source documents are needed.
 
+## Local PDF Metadata Verification
+
+The PDF metadata probes are local-only review aids. They may open local PDFs and
+extract text in memory, but they write only metrics or candidate-page metadata
+to ignored files under `data/processed/`.
+
+```powershell
+python scripts/probe_pdf_text.py
+python scripts/verify_pdf_text_probe.py
+python scripts/locate_definition_candidates.py
+python scripts/verify_definition_candidates.py
+```
+
+Expected generated reports:
+
+- `data/processed/pdf_text_probe.json`
+- `data/processed/definition_candidate_pages.json`
+
+Safety checks:
+
+```powershell
+git check-ignore data/processed/pdf_text_probe.json
+git check-ignore data/processed/definition_candidate_pages.json
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+These reports must remain metadata-only. They must not include full page text,
+definitions, long quotes, textual samples, OCR output, Neon credentials, or any
+validated/imported source content.
+
 ## Troubleshooting
 
 - Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set
