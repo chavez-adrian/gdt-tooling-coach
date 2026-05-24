@@ -19,6 +19,7 @@ MEDIUM_SIGNALS = {
     "sÃ­mbolo",
     "sÃ­mbolos",
 }
+GENERIC_SIGNALS = {"term", "terms", "tÃ©rmino", "tÃ©rminos"}
 
 
 def score_definition_candidates(candidates):
@@ -30,5 +31,7 @@ def score_definition_candidates(candidates):
                 score += 4
             elif signal in MEDIUM_SIGNALS:
                 score += 2
+            elif signal in GENERIC_SIGNALS:
+                score -= 1
         scored.append({**candidate, "definition_score": score})
     return sorted(scored, key=lambda item: item["definition_score"], reverse=True)

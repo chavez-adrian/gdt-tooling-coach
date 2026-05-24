@@ -57,6 +57,25 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
 
         self.assertEqual(24, scored[0]["definition_score"])
 
+    def test_overly_generic_signals_are_penalized(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "generic",
+                    "signal_count": 1,
+                    "matched_signals": ["terms"],
+                },
+                {
+                    "source_id": "plain",
+                    "signal_count": 1,
+                    "matched_signals": [],
+                },
+            ]
+        )
+
+        self.assertLess(scored[1]["definition_score"], scored[0]["definition_score"])
+        self.assertEqual("plain", scored[0]["source_id"])
+
 
 if __name__ == "__main__":
     unittest.main()
