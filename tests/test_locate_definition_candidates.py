@@ -36,6 +36,14 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         )
         self.assertEqual(3, result["signal_count"])
 
+    def test_matching_is_case_insensitive_for_gdt_acronyms(self):
+        result = analyze_definition_candidate_page(
+            "mmc, LmC, and rfs are listed in the DEFINITIONS section.",
+            {"source_id": "fake-case", "page_number": 14},
+        )
+
+        self.assertEqual(["definition", "MMC", "LMC", "RFS"], result["matched_signals"])
+
 
 if __name__ == "__main__":
     unittest.main()
