@@ -71,6 +71,16 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         self.assertEqual(len(page_text), result["approximate_char_count"])
         self.assertEqual(3, result["approximate_word_count"])
 
+    def test_returns_no_candidate_for_pages_without_signals(self):
+        result = analyze_definition_candidate_page(
+            "This page only contains an exercise answer key.",
+            {"source_id": "fake-source", "page_number": 17},
+        )
+
+        self.assertFalse(result["is_candidate"])
+        self.assertEqual([], result["matched_signals"])
+        self.assertEqual(0, result["signal_count"])
+
 
 if __name__ == "__main__":
     unittest.main()

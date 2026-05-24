@@ -34,6 +34,7 @@ def analyze_definition_candidate_page(page_text, page_metadata=None):
 
     return {
         **metadata,
+        "is_candidate": bool(matched_signals),
         "matched_signals": matched_signals,
         "signal_count": len(matched_signals),
         "approximate_char_count": len(page_text),
