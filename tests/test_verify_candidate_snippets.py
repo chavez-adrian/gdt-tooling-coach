@@ -2,6 +2,7 @@ import unittest
 
 from scripts.verify_candidate_snippets import (
     summarize_candidate_snippet_report,
+    verify_review_state_fields,
     verify_snippet_word_limit,
 )
 
@@ -61,6 +62,27 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
         self.assertFalse(safety["passed"])
         self.assertEqual(80, safety["max_allowed_words"])
         self.assertEqual([1], safety["over_limit_indexes"])
+
+    def test_fails_review_state_safety_when_snippet_is_not_raw_literal_reviewable(self):
+        report = {
+            "candidate_snippets": [
+                {
+                    "extraction_type": "literal_quote",
+                    "proposed_review_state": "raw_import",
+                    "requires_human_review": True,
+                },
+                {
+                    "extraction_type": "paraphrase",
+                    "proposed_review_state": "validated",
+                    "requires_human_review": False,
+                },
+            ]
+        }
+
+        safety = verify_review_state_fields(report)
+
+        self.assertFalse(safety["passed"])
+        self.assertEqual([1], safety["invalid_review_state_indexes"])
 
 
 if __name__ == "__main__":

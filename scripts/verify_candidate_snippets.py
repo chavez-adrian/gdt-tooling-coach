@@ -29,3 +29,17 @@ def verify_snippet_word_limit(report):
         "max_allowed_words": MAX_SNIPPET_WORDS,
         "over_limit_indexes": over_limit_indexes,
     }
+
+
+def verify_review_state_fields(report):
+    invalid_indexes = [
+        index
+        for index, snippet in enumerate(report.get("candidate_snippets", []))
+        if snippet.get("extraction_type") != "literal_quote"
+        or snippet.get("proposed_review_state") != "raw_import"
+        or snippet.get("requires_human_review") is not True
+    ]
+    return {
+        "passed": not invalid_indexes,
+        "invalid_review_state_indexes": invalid_indexes,
+    }
