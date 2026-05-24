@@ -1,6 +1,8 @@
 import unittest
 
 from scripts.verify_candidate_snippets import (
+    run_extractor_command,
+    run_unittest_command,
     summarize_candidate_snippet_report,
     verify_report_contract,
     verify_review_state_fields,
@@ -100,6 +102,32 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
         self.assertEqual(
             ["neon_writes", "database_modifications", "validated_content"],
             safety["violated_contract_flags"],
+        )
+
+    def test_runs_extractor_and_unittest_commands_with_injectable_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append((command, cwd, capture_output, text))
+
+            class Result:
+                returncode = 0
+                stdout = "ok"
+                stderr = ""
+
+            return Result()
+
+        extractor_check = run_extractor_command("repo-root", runner=fake_runner)
+        unittest_check = run_unittest_command("repo-root", runner=fake_runner)
+
+        self.assertTrue(extractor_check["passed"])
+        self.assertTrue(unittest_check["passed"])
+        self.assertEqual(
+            [
+                ["python", "scripts/extract_candidate_snippets.py"],
+                ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+            ],
+            [call[0] for call in calls],
         )
 
 

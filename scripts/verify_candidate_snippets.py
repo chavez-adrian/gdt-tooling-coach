@@ -1,5 +1,7 @@
 """Local verification for the controlled candidate-snippet workflow."""
 
+import subprocess
+
 MAX_SNIPPET_WORDS = 80
 SAFE_CONTRACT_FLAGS = {
     "neon_writes": False,
@@ -61,3 +63,32 @@ def verify_report_contract(report):
         "passed": not violated_flags,
         "violated_contract_flags": violated_flags,
     }
+
+
+def _run_command_check(name, command, project_root, runner=subprocess.run):
+    result = runner(command, cwd=project_root, capture_output=True, text=True)
+    return {
+        "name": name,
+        "command": " ".join(command),
+        "passed": result.returncode == 0,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def run_extractor_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "candidate snippet extractor command",
+        ["python", "scripts/extract_candidate_snippets.py"],
+        project_root,
+        runner=runner,
+    )
+
+
+def run_unittest_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "unittest discovery command",
+        ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+        project_root,
+        runner=runner,
+    )
