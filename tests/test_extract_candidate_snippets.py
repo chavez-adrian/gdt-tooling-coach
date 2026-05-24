@@ -169,6 +169,22 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
 
         self.assertEqual([], snippets)
 
+    def test_page_text_can_be_supplied_by_source_path_and_page_number(self):
+        candidate = {
+            "source_title": "Duplicate Title",
+            "source_path": "data/sources/source-a.pdf",
+            "page_number": 11,
+            "priority_bucket": "high",
+        }
+        page_text_by_key = {
+            ("data/sources/source-a.pdf", 11): "A datum appears on the path-keyed page.",
+        }
+
+        snippets = extract_candidate_snippets([candidate], page_text_by_key)
+
+        self.assertEqual(1, len(snippets))
+        self.assertEqual("datum", snippets[0]["matched_signal"])
+
 
 if __name__ == "__main__":
     unittest.main()

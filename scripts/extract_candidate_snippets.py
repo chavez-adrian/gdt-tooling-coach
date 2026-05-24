@@ -23,7 +23,7 @@ def extract_candidate_snippets(candidates, page_text_by_key):
     for candidate in candidates:
         if candidate.get("priority_bucket") != "high":
             continue
-        text = page_text_by_key.get((candidate.get("source_title"), candidate.get("page_number")), "")
+        text = _page_text_for_candidate(candidate, page_text_by_key)
         page_snippet_count = 0
         for sentence in _sentence_windows(text):
             for signal in STRONG_SIGNALS:
@@ -60,3 +60,12 @@ def _sentence_windows(text):
 
 def _contains_signal(text, signal):
     return re.search(rf"(?<!\w){re.escape(signal)}(?!\w)", text, flags=re.IGNORECASE) is not None
+
+
+def _page_text_for_candidate(candidate, page_text_by_key):
+    page_number = candidate.get("page_number")
+    for source_key in (candidate.get("source_path"), candidate.get("source_title")):
+        text = page_text_by_key.get((source_key, page_number))
+        if text is not None:
+            return text
+    return ""
