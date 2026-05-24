@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.verify_definition_candidates import summarize_candidate_report
+from scripts.verify_definition_candidates import (
+    report_contains_forbidden_content_fields,
+    summarize_candidate_report,
+)
 
 
 class VerifyDefinitionCandidatesTest(unittest.TestCase):
@@ -55,6 +58,22 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
             [("definition", 2), ("datum", 2), ("MMC", 1)],
             summary["top_signals_found"],
         )
+
+    def test_detects_forbidden_text_content_fields_without_returning_values(self):
+        report = {
+            "candidate_pages": [
+                {
+                    "source_title": "ASME",
+                    "page_text": "definition sample that must not be echoed",
+                }
+            ]
+        }
+
+        safety = report_contains_forbidden_content_fields(report)
+
+        self.assertTrue(safety["has_forbidden_content_fields"])
+        self.assertEqual(["candidate_pages[0].page_text"], safety["field_paths"])
+        self.assertNotIn("definition sample", str(safety))
 
 
 if __name__ == "__main__":
