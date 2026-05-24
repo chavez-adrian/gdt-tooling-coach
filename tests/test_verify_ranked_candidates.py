@@ -225,6 +225,18 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
             self.assertIn("data/processed/ranked_definition_candidates.json", content)
             self.assertIn("No se conecta a Neon", content)
 
+    def test_editorial_rules_limit_ranked_reports_to_metadata_only_prioritization(self):
+        project_root = Path(__file__).resolve().parents[1]
+        editorial_rules = (
+            project_root / "docs" / "editorial_rules.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("ranked_definition_candidates.json", editorial_rules)
+        self.assertIn("priorizacion editorial", editorial_rules)
+        self.assertIn("high/medium/low", editorial_rules)
+        self.assertIn("No debe guardar snippets", editorial_rules)
+        self.assertIn("No se conecta a Neon", editorial_rules)
+
 
 if __name__ == "__main__":
     unittest.main()

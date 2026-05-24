@@ -24,6 +24,16 @@ No deben guardar texto completo de pagina, definiciones, citas largas, muestras
 textuales, OCR ni contenido marcado como validado. Cualquier extraccion de texto
 debe permanecer en memoria durante el proceso local.
 
+## Ranking de paginas candidatas
+
+`data/processed/ranked_definition_candidates.json` es solamente una
+priorizacion editorial de paginas candidatas. Puede guardar conteos
+high/medium/low, ranking, senales canonicas, titulos de fuente y metadatos de
+pagina necesarios para decidir que revisar primero.
+
+No debe guardar snippets, texto extraido, definiciones, citas largas, muestras
+textuales, OCR ni contenido validado. No se conecta a Neon.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.
