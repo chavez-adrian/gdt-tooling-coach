@@ -75,6 +75,35 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
 
         self.assertEqual(3, len(snippets))
 
+    def test_detects_required_english_spanish_and_gdt_signals(self):
+        signals = [
+            "definition",
+            "definitions",
+            "definición",
+            "definiciones",
+            "terminology",
+            "terminología",
+            "glossary",
+            "datum",
+            "feature control frame",
+            "tolerance zone",
+            "MMC",
+            "LMC",
+            "RFS",
+        ]
+        candidates = [
+            {"source_title": f"Signal {index}", "page_number": index, "priority_bucket": "high"}
+            for index, _signal in enumerate(signals, start=1)
+        ]
+        page_text_by_key = {
+            (f"Signal {index}", index): f"This page contains {signal} for review."
+            for index, signal in enumerate(signals, start=1)
+        }
+
+        snippets = extract_candidate_snippets(candidates, page_text_by_key)
+
+        self.assertEqual(signals, [snippet["matched_signal"] for snippet in snippets])
+
 
 if __name__ == "__main__":
     unittest.main()

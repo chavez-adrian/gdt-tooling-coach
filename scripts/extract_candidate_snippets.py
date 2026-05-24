@@ -1,7 +1,21 @@
 import re
 
 
-STRONG_SIGNALS = ("datum",)
+STRONG_SIGNALS = (
+    "definition",
+    "definitions",
+    "definición",
+    "definiciones",
+    "terminology",
+    "terminología",
+    "glossary",
+    "datum",
+    "feature control frame",
+    "tolerance zone",
+    "MMC",
+    "LMC",
+    "RFS",
+)
 
 
 def extract_candidate_snippets(candidates, page_text_by_key):
@@ -10,10 +24,10 @@ def extract_candidate_snippets(candidates, page_text_by_key):
         if candidate.get("priority_bucket") != "high":
             continue
         text = page_text_by_key.get((candidate.get("source_title"), candidate.get("page_number")), "")
+        page_snippet_count = 0
         for sentence in _sentence_windows(text):
-            lowered = sentence.lower()
             for signal in STRONG_SIGNALS:
-                if signal in lowered:
+                if _contains_signal(sentence, signal):
                     snippet_words = sentence.split()[:80]
                     snippets.append(
                         {
@@ -22,8 +36,9 @@ def extract_candidate_snippets(candidates, page_text_by_key):
                             "snippet_text": " ".join(snippet_words),
                         }
                     )
+                    page_snippet_count += 1
                     break
-            if len(snippets) >= 3:
+            if page_snippet_count >= 3:
                 break
     return snippets
 
@@ -31,3 +46,7 @@ def extract_candidate_snippets(candidates, page_text_by_key):
 def _sentence_windows(text):
     windows = [window.strip() for window in re.split(r"(?<=[.!?])\s+", text) if window.strip()]
     return windows or [text]
+
+
+def _contains_signal(text, signal):
+    return re.search(rf"(?<!\w){re.escape(signal)}(?!\w)", text, flags=re.IGNORECASE) is not None
