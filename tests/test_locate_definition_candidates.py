@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.locate_definition_candidates import analyze_definition_candidate_page
+from scripts.locate_definition_candidates import (
+    analyze_definition_candidate_page,
+    locate_definition_candidates,
+)
 
 
 class DefinitionCandidateDetectionTests(unittest.TestCase):
@@ -112,6 +115,19 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         self.assertNotIn("sample", result)
         self.assertNotIn("text", result)
         self.assertNotIn(page_text, result.values())
+
+    def test_locates_only_candidate_pages_for_report_use(self):
+        results = locate_definition_candidates(
+            [
+                {"page_text": "Plain practice content.", "source_id": "fake", "page_number": 1},
+                {"page_text": "A glossary explains MMC.", "source_id": "fake", "page_number": 2},
+            ]
+        )
+
+        self.assertEqual(1, len(results))
+        self.assertEqual(2, results[0]["page_number"])
+        self.assertEqual(["glossary", "MMC"], results[0]["matched_signals"])
+        self.assertNotIn("page_text", results[0])
 
 
 if __name__ == "__main__":

@@ -25,6 +25,17 @@ SIGNALS = [
 TEXT_METADATA_KEYS = {"content", "definition", "excerpt", "quote", "sample", "text"}
 
 
+def locate_definition_candidates(pages):
+    candidates = []
+    for page in pages:
+        page_text = page.get("page_text", "")
+        page_metadata = {key: value for key, value in page.items() if key != "page_text"}
+        result = analyze_definition_candidate_page(page_text, page_metadata)
+        if result["is_candidate"]:
+            candidates.append(result)
+    return candidates
+
+
 def analyze_definition_candidate_page(page_text, page_metadata=None):
     metadata = {
         key: value
