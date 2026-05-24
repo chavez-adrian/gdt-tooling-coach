@@ -22,9 +22,15 @@ SIGNALS = [
     "RFS",
 ]
 
+TEXT_METADATA_KEYS = {"content", "definition", "excerpt", "quote", "sample", "text"}
+
 
 def analyze_definition_candidate_page(page_text, page_metadata=None):
-    metadata = dict(page_metadata or {})
+    metadata = {
+        key: value
+        for key, value in dict(page_metadata or {}).items()
+        if key not in TEXT_METADATA_KEYS
+    }
     normalized_text = page_text.lower()
     matched_signals = [
         signal

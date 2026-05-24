@@ -93,6 +93,26 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         )
         self.assertNotIn("appears near", result["candidate_reason"])
 
+    def test_public_metadata_shape_excludes_extracted_text_fields(self):
+        page_text = "Glossary content that must remain in memory only."
+        result = analyze_definition_candidate_page(
+            page_text,
+            {
+                "source_id": "fake-safe",
+                "page_number": 19,
+                "content": page_text,
+                "sample": "Glossary content",
+                "text": page_text,
+            },
+        )
+
+        self.assertEqual("fake-safe", result["source_id"])
+        self.assertEqual(19, result["page_number"])
+        self.assertNotIn("content", result)
+        self.assertNotIn("sample", result)
+        self.assertNotIn("text", result)
+        self.assertNotIn(page_text, result.values())
+
 
 if __name__ == "__main__":
     unittest.main()
