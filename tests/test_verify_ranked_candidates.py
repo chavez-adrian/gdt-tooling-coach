@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.verify_ranked_candidates import summarize_ranked_report
+from scripts.verify_ranked_candidates import (
+    report_contains_forbidden_content_fields,
+    summarize_ranked_report,
+)
 
 
 class VerifyRankedCandidatesTest(unittest.TestCase):
@@ -48,6 +51,22 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
             ],
             summary["top_sources_by_high_priority_candidates"],
         )
+
+    def test_detects_forbidden_text_content_fields_without_returning_values(self):
+        report = {
+            "ranked_candidates": [
+                {
+                    "source_title": "ASME",
+                    "snippet": "definition sample that must not be echoed",
+                }
+            ]
+        }
+
+        safety = report_contains_forbidden_content_fields(report)
+
+        self.assertTrue(safety["has_forbidden_content_fields"])
+        self.assertEqual(["ranked_candidates[0].snippet"], safety["field_paths"])
+        self.assertNotIn("definition sample", str(safety))
 
 
 if __name__ == "__main__":
