@@ -86,7 +86,29 @@ def build_candidate_snippets_from_ranked_candidates(
         normalized = {**candidate, "source_path": pdf_path}
         normalized_candidates.append(normalized)
         page_text_by_key[(pdf_path, page_number)] = page_text
-    return extract_candidate_snippets(normalized_candidates, page_text_by_key)
+    return [
+        _to_public_report_row(snippet)
+        for snippet in extract_candidate_snippets(normalized_candidates, page_text_by_key)
+    ]
+
+
+def _to_public_report_row(snippet):
+    return {
+        "source_title": snippet.get("source_title"),
+        "source_type": snippet.get("source_type"),
+        "language": snippet.get("language") or snippet.get("source_language"),
+        "expected_local_path": snippet.get("expected_local_path")
+        or snippet.get("source_path"),
+        "page_number": snippet.get("page_number"),
+        "matched_signal": snippet.get("matched_signal"),
+        "snippet_word_count": snippet.get("snippet_word_count"),
+        "snippet_text": snippet.get("snippet_text"),
+        "extraction_type": snippet.get("extraction_type"),
+        "proposed_review_state": snippet.get("proposed_review_state"),
+        "requires_human_review": snippet.get("requires_human_review"),
+        "candidate_score": snippet.get("candidate_score"),
+        "global_rank": snippet.get("global_rank"),
+    }
 
 
 def _sentence_windows(text):

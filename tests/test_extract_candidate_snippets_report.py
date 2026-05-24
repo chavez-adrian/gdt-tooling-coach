@@ -74,6 +74,28 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
             snippets[0]["snippet_text"],
         )
 
+    def test_report_rows_use_public_field_names(self):
+        candidate = {
+            "source_title": "ASME",
+            "source_type": "standard",
+            "source_language": "en",
+            "source_path": "data/raw/asme.pdf",
+            "page_number": 2,
+            "candidate_score": 91,
+            "global_rank": 1,
+            "priority_bucket": "high",
+        }
+
+        snippets = build_candidate_snippets_from_ranked_candidates(
+            [candidate],
+            pdf_reader_factory=FakePdfReader,
+        )
+
+        self.assertEqual("en", snippets[0]["language"])
+        self.assertEqual("data/raw/asme.pdf", snippets[0]["expected_local_path"])
+        self.assertNotIn("source_language", snippets[0])
+        self.assertNotIn("source_path", snippets[0])
+
 
 if __name__ == "__main__":
     unittest.main()
