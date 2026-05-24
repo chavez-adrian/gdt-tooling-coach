@@ -15,6 +15,15 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         self.assertEqual("fake-source", result["source_id"])
         self.assertEqual(3, result["page_number"])
 
+    def test_detects_spanish_definition_and_symbol_signals(self):
+        result = analyze_definition_candidate_page(
+            "La definición del símbolo aparece en la terminología del anexo.",
+            {"source_id": "fake-spanish", "page_number": 8},
+        )
+
+        self.assertEqual(["símbolo", "definición", "terminología"], result["matched_signals"])
+        self.assertEqual(3, result["signal_count"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,11 +1,17 @@
 """Metadata-only definition-candidate detection for PDF page text."""
 
+SIGNALS = [
+    "definition",
+    "símbolo",
+    "definición",
+    "terminología",
+]
+
 
 def analyze_definition_candidate_page(page_text, page_metadata=None):
     metadata = dict(page_metadata or {})
-    matched_signals = []
-    if "definition" in page_text.lower():
-        matched_signals.append("definition")
+    normalized_text = page_text.lower()
+    matched_signals = [signal for signal in SIGNALS if signal in normalized_text]
 
     return {
         **metadata,
