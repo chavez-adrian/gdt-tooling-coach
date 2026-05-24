@@ -5,6 +5,9 @@ SIGNALS = [
     "símbolo",
     "definición",
     "terminología",
+    "datum",
+    "feature control frame",
+    "tolerance zone",
 ]
 
 

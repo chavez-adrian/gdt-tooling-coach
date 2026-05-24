@@ -24,6 +24,18 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         self.assertEqual(["símbolo", "definición", "terminología"], result["matched_signals"])
         self.assertEqual(3, result["signal_count"])
 
+    def test_detects_gdt_definition_signals(self):
+        result = analyze_definition_candidate_page(
+            "Datum references define the feature control frame and tolerance zone.",
+            {"source_id": "fake-gdt", "page_number": 12},
+        )
+
+        self.assertEqual(
+            ["datum", "feature control frame", "tolerance zone"],
+            result["matched_signals"],
+        )
+        self.assertEqual(3, result["signal_count"])
+
 
 if __name__ == "__main__":
     unittest.main()
