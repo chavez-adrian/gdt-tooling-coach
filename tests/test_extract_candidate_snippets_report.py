@@ -3,7 +3,29 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.extract_candidate_snippets import load_high_priority_ranked_candidates
+from scripts.extract_candidate_snippets import (
+    build_candidate_snippets_from_ranked_candidates,
+    load_high_priority_ranked_candidates,
+)
+
+
+class FakePage:
+    def __init__(self, text):
+        self.text = text
+
+    def extract_text(self):
+        return self.text
+
+
+class FakePdfReader:
+    opened_paths = []
+
+    def __init__(self, path):
+        self.opened_paths.append(str(path))
+        self.pages = [
+            FakePage("This first page should not be read."),
+            FakePage("A datum is a theoretically exact reference."),
+        ]
 
 
 class ExtractCandidateSnippetsReportTests(unittest.TestCase):
@@ -28,6 +50,28 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         self.assertEqual(
             [{"source_title": "High", "priority_bucket": "high"}],
             candidates,
+        )
+
+    def test_high_candidate_opens_pdf_and_extracts_requested_page_text(self):
+        FakePdfReader.opened_paths = []
+        candidate = {
+            "source_title": "ASME",
+            "expected_local_path": "data/raw/asme.pdf",
+            "page_number": 2,
+            "priority_bucket": "high",
+        }
+
+        snippets = build_candidate_snippets_from_ranked_candidates(
+            [candidate],
+            pdf_reader_factory=FakePdfReader,
+        )
+
+        self.assertEqual(["data/raw/asme.pdf"], FakePdfReader.opened_paths)
+        self.assertEqual(1, len(snippets))
+        self.assertEqual("datum", snippets[0]["matched_signal"])
+        self.assertEqual(
+            "A datum is a theoretically exact reference.",
+            snippets[0]["snippet_text"],
         )
 
 

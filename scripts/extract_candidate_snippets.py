@@ -1,6 +1,8 @@
 import json
 import re
 
+from pypdf import PdfReader
+
 
 STRONG_SIGNALS = (
     "definition",
@@ -62,6 +64,29 @@ def load_high_priority_ranked_candidates(ranked_report_path):
         for candidate in report.get("ranked_candidates", [])
         if candidate.get("priority_bucket") == "high"
     ]
+
+
+def build_candidate_snippets_from_ranked_candidates(
+    candidates, pdf_reader_factory=PdfReader
+):
+    high_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate.get("priority_bucket") == "high"
+    ]
+    page_text_by_key = {}
+    normalized_candidates = []
+    for candidate in high_candidates:
+        pdf_path = candidate.get("expected_local_path") or candidate.get("source_path")
+        if not pdf_path:
+            continue
+        reader = pdf_reader_factory(pdf_path)
+        page_number = candidate.get("page_number")
+        page_text = reader.pages[page_number - 1].extract_text() or ""
+        normalized = {**candidate, "source_path": pdf_path}
+        normalized_candidates.append(normalized)
+        page_text_by_key[(pdf_path, page_number)] = page_text
+    return extract_candidate_snippets(normalized_candidates, page_text_by_key)
 
 
 def _sentence_windows(text):
