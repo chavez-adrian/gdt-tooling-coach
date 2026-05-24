@@ -44,32 +44,32 @@ def _priority_bucket(score):
     return "low"
 
 
+def score_definition_candidate(candidate):
+    score = candidate.get("signal_count", 0)
+    word_count = candidate.get("approximate_word_count", 0)
+    if 100 <= word_count <= 1600:
+        score += 1
+    if candidate.get("source_type") in PREFERRED_SOURCE_TYPES:
+        score += 1
+    if candidate.get("language") in SUPPORTED_LANGUAGES:
+        score += 1
+    for signal in candidate.get("matched_signals", []):
+        if signal in STRONG_SIGNALS:
+            score += 4
+        elif signal in MEDIUM_SIGNALS:
+            score += 2
+        elif signal in GENERIC_SIGNALS:
+            score -= 1
+    safe_candidate = {
+        key: value for key, value in candidate.items() if key not in FORBIDDEN_TEXT_KEYS
+    }
+    return {
+        **safe_candidate,
+        "definition_score": score,
+        "priority_bucket": _priority_bucket(score),
+    }
+
+
 def score_definition_candidates(candidates):
-    scored = []
-    for candidate in candidates:
-        score = candidate.get("signal_count", 0)
-        word_count = candidate.get("approximate_word_count", 0)
-        if 100 <= word_count <= 1600:
-            score += 1
-        if candidate.get("source_type") in PREFERRED_SOURCE_TYPES:
-            score += 1
-        if candidate.get("language") in SUPPORTED_LANGUAGES:
-            score += 1
-        for signal in candidate.get("matched_signals", []):
-            if signal in STRONG_SIGNALS:
-                score += 4
-            elif signal in MEDIUM_SIGNALS:
-                score += 2
-            elif signal in GENERIC_SIGNALS:
-                score -= 1
-        safe_candidate = {
-            key: value for key, value in candidate.items() if key not in FORBIDDEN_TEXT_KEYS
-        }
-        scored.append(
-            {
-                **safe_candidate,
-                "definition_score": score,
-                "priority_bucket": _priority_bucket(score),
-            }
-        )
+    scored = [score_definition_candidate(candidate) for candidate in candidates]
     return sorted(scored, key=lambda item: item["definition_score"], reverse=True)

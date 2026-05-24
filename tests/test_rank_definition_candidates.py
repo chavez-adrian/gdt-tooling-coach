@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.rank_definition_candidates import score_definition_candidates
+from scripts.rank_definition_candidates import (
+    score_definition_candidate,
+    score_definition_candidates,
+)
 
 
 class RankDefinitionCandidatesTests(unittest.TestCase):
@@ -170,6 +173,29 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertNotIn("excerpt", scored[0])
         self.assertNotIn("definition", scored[0])
         self.assertNotIn(page_text, scored[0].values())
+
+    def test_single_candidate_helper_returns_public_scored_metadata_shape(self):
+        scored = score_definition_candidate(
+            {
+                "source_id": "public",
+                "page_number": 4,
+                "signal_count": 1,
+                "matched_signals": ["glossary"],
+                "approximate_word_count": 200,
+                "source_type": "standard",
+                "language": "en",
+                "candidate_reason": "matched 1 definition candidate signals: glossary",
+            }
+        )
+
+        self.assertEqual("public", scored["source_id"])
+        self.assertEqual(4, scored["page_number"])
+        self.assertEqual(8, scored["definition_score"])
+        self.assertEqual("medium", scored["priority_bucket"])
+        self.assertEqual(
+            "matched 1 definition candidate signals: glossary",
+            scored["candidate_reason"],
+        )
 
 
 if __name__ == "__main__":
