@@ -40,6 +40,22 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
             summary["candidate_pages_by_source"],
         )
 
+    def test_summarizes_top_signals_found(self):
+        report = {
+            "candidate_pages": [
+                {"matched_signals": ["definition", "datum"]},
+                {"matched_signals": ["definition", "MMC"]},
+                {"matched_signals": ["datum"]},
+            ]
+        }
+
+        summary = summarize_candidate_report(report)
+
+        self.assertEqual(
+            [("definition", 2), ("datum", 2), ("MMC", 1)],
+            summary["top_signals_found"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
