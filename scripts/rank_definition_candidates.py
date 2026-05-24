@@ -77,9 +77,13 @@ def score_definition_candidates(candidates):
 
 def build_ranked_definition_candidate_rows(candidates):
     rows = []
+    source_ranks = {}
     for global_rank, candidate in enumerate(score_definition_candidates(candidates), 1):
         row = dict(candidate)
         row["candidate_score"] = row.pop("definition_score")
         row["global_rank"] = global_rank
+        source_title = row.get("source_title", "")
+        source_ranks[source_title] = source_ranks.get(source_title, 0) + 1
+        row["rank_within_source"] = source_ranks[source_title]
         rows.append(row)
     return rows

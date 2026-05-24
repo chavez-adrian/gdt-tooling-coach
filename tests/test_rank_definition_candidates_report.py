@@ -47,6 +47,38 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
         self.assertEqual("Low", rows[1]["source_title"])
         self.assertEqual(2, rows[1]["global_rank"])
 
+    def test_ranked_rows_assign_rank_within_each_source(self):
+        rows = build_ranked_definition_candidate_rows(
+            [
+                {
+                    "source_title": "ASME",
+                    "page_number": 1,
+                    "signal_count": 1,
+                    "matched_signals": [],
+                },
+                {
+                    "source_title": "ISO",
+                    "page_number": 2,
+                    "signal_count": 4,
+                    "matched_signals": ["definition"],
+                },
+                {
+                    "source_title": "ASME",
+                    "page_number": 3,
+                    "signal_count": 3,
+                    "matched_signals": ["definition"],
+                },
+            ]
+        )
+
+        ranks = {
+            (row["source_title"], row["page_number"]): row["rank_within_source"]
+            for row in rows
+        }
+        self.assertEqual(1, ranks[("ASME", 3)])
+        self.assertEqual(2, ranks[("ASME", 1)])
+        self.assertEqual(1, ranks[("ISO", 2)])
+
 
 if __name__ == "__main__":
     unittest.main()
