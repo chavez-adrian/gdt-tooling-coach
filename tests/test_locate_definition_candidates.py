@@ -64,6 +64,13 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
         )
         self.assertEqual(7, result["signal_count"])
 
+    def test_returns_approximate_page_text_metrics(self):
+        page_text = "Definition words here."
+        result = analyze_definition_candidate_page(page_text, {"page_number": 16})
+
+        self.assertEqual(len(page_text), result["approximate_char_count"])
+        self.assertEqual(3, result["approximate_word_count"])
+
 
 if __name__ == "__main__":
     unittest.main()
