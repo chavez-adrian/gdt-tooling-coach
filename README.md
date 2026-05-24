@@ -155,13 +155,20 @@ python scripts/probe_pdf_text.py
 python scripts/verify_pdf_text_probe.py
 python scripts/locate_definition_candidates.py
 python scripts/verify_definition_candidates.py
+python scripts/rank_definition_candidates.py
+python scripts/verify_ranked_candidates.py
 ```
 
 Generated reports are written under `data/processed/`, which is ignored by Git:
 
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
+- `data/processed/ranked_definition_candidates.json`
 
 These reports contain metrics and page metadata only. They must not contain full
 page text, definitions, long quotes, textual samples, OCR output, credentials, or
 validated source content. They do not connect to Neon.
+
+The ranked candidate report orders definition-candidate pages for editorial
+review and summarizes total candidates, high/medium/low priority counts, and top
+sources by high-priority candidates. No se conecta a Neon.

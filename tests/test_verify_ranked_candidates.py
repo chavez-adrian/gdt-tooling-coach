@@ -212,6 +212,19 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
         self.assertIn("Forbidden content fields: none", printed)
         self.assertNotIn("priority_bucket", printed)
 
+    def test_readme_and_ingestion_plan_document_ranked_candidate_verification(self):
+        project_root = Path(__file__).resolve().parents[1]
+        readme = (project_root / "README.md").read_text(encoding="utf-8")
+        ingestion_plan = (project_root / "docs" / "ingestion_plan.md").read_text(
+            encoding="utf-8"
+        )
+
+        for content in (readme, ingestion_plan):
+            self.assertIn("python scripts/rank_definition_candidates.py", content)
+            self.assertIn("python scripts/verify_ranked_candidates.py", content)
+            self.assertIn("data/processed/ranked_definition_candidates.json", content)
+            self.assertIn("No se conecta a Neon", content)
+
 
 if __name__ == "__main__":
     unittest.main()

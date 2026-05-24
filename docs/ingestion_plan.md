@@ -22,13 +22,20 @@ para producir reportes de metadatos ignorados por Git:
 
 - `python scripts/probe_pdf_text.py`
 - `python scripts/locate_definition_candidates.py`
+- `python scripts/rank_definition_candidates.py`
+- `python scripts/verify_ranked_candidates.py`
 
 Los reportes permitidos son:
 
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
+- `data/processed/ranked_definition_candidates.json`
 
 Estos reportes no son ingestion. No insertan datos en Neon, no marcan contenido
 como validado, no guardan texto completo, no guardan definiciones, no guardan
 citas largas y no hacen OCR. Sirven solamente para decidir donde revisar
 manual o editorialmente en una fase posterior.
+
+El reporte rankeado prioriza paginas candidatas para revision editorial y el
+verificador resume candidatos totales, conteos high/medium/low y fuentes con mas
+candidatos high-priority. No se conecta a Neon.
