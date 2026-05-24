@@ -193,6 +193,42 @@ class DefinitionCandidateReportTests(unittest.TestCase):
         self.assertEqual(0, exit_code)
         self.assertTrue(output_exists)
 
+    def test_pdf_open_errors_are_reported_without_candidate_records(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data/raw/bad.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"not a pdf")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "Bad PDF",
+                            "expected_local_path": "data/raw/bad.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            with patch("scripts.locate_definition_candidates.PdfReader") as pdf_reader:
+                pdf_reader.side_effect = RuntimeError("cannot open")
+                report = build_definition_candidate_report(manifest_path, project_root)
+
+        self.assertEqual([], report["candidate_pages"])
+        self.assertEqual(1, report["summary"]["pdf_open_errors"])
+        self.assertEqual(
+            [
+                {
+                    "source_title": "Bad PDF",
+                    "expected_local_path": "data/raw/bad.pdf",
+                    "status": "pdf_open_error",
+                }
+            ],
+            report["source_statuses"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

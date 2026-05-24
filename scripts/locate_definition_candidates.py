@@ -39,13 +39,26 @@ def build_definition_candidate_report(manifest_path, project_root):
     missing_pdfs = 0
     existing_pdfs = 0
     no_match_pdfs = 0
+    pdf_open_errors = 0
     candidate_pages = []
+    source_statuses = []
 
     for entry in manifest_entries:
         pdf_path = project_root / entry["expected_local_path"]
         if pdf_path.exists():
             existing_pdfs += 1
-            reader = PdfReader(str(pdf_path))
+            try:
+                reader = PdfReader(str(pdf_path))
+            except Exception:
+                pdf_open_errors += 1
+                source_statuses.append(
+                    {
+                        "source_title": entry["title"],
+                        "expected_local_path": entry["expected_local_path"],
+                        "status": "pdf_open_error",
+                    }
+                )
+                continue
             pages = []
             for page_index, page in enumerate(reader.pages, start=1):
                 pages.append(
@@ -70,9 +83,11 @@ def build_definition_candidate_report(manifest_path, project_root):
             "existing_pdfs": existing_pdfs,
             "missing_pdfs": missing_pdfs,
             "no_match_pdfs": no_match_pdfs,
+            "pdf_open_errors": pdf_open_errors,
             "candidate_pages": len(candidate_pages),
         },
         "candidate_pages": candidate_pages,
+        "source_statuses": source_statuses,
     }
 
 
