@@ -1,12 +1,14 @@
 """Metadata-only scoring and ranking for definition candidate pages."""
 
-import json
 import argparse
+import json
+import subprocess
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "definition_candidate_pages.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
+DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/ranked_definition_candidates.json")
 
 STRONG_SIGNALS = {
     "definition",
@@ -133,6 +135,16 @@ def write_ranked_definition_candidate_report(input_path, output_path):
         json.dump(report, output_file, indent=2, sort_keys=True)
         output_file.write("\n")
     return report
+
+
+def ranked_report_output_is_ignored(run_command=subprocess.run):
+    result = run_command(
+        ["git", "check-ignore", DEFAULT_OUTPUT_RELATIVE_PATH.as_posix()],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def main(argv=None):

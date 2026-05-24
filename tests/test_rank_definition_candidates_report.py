@@ -8,6 +8,7 @@ from scripts.rank_definition_candidates import (
     DEFAULT_OUTPUT_PATH,
     build_ranked_definition_candidate_report,
     build_ranked_definition_candidate_rows,
+    ranked_report_output_is_ignored,
     write_ranked_definition_candidate_report,
 )
 
@@ -171,6 +172,23 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
         self.assertEqual(
             Path("data/processed/ranked_definition_candidates.json"),
             DEFAULT_OUTPUT_PATH.relative_to(DEFAULT_OUTPUT_PATH.parents[2]),
+        )
+
+    def test_ranked_report_output_path_is_confirmed_ignored(self):
+        calls = []
+
+        def fake_run(command, cwd, capture_output, text):
+            calls.append((command, cwd, capture_output, text))
+
+            class Result:
+                returncode = 0
+
+            return Result()
+
+        self.assertTrue(ranked_report_output_is_ignored(run_command=fake_run))
+        self.assertEqual(
+            ["git", "check-ignore", "data/processed/ranked_definition_candidates.json"],
+            calls[0][0],
         )
 
 
