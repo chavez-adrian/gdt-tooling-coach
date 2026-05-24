@@ -96,6 +96,37 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         self.assertNotIn("source_language", snippets[0])
         self.assertNotIn("source_path", snippets[0])
 
+    def test_missing_medium_and_low_candidates_do_not_open_or_extract_pages(self):
+        def fail_if_called(path):
+            raise AssertionError(f"unexpected PDF open: {path}")
+
+        candidates = [
+            {
+                "source_title": "Missing Path",
+                "page_number": 1,
+                "priority_bucket": "high",
+            },
+            {
+                "source_title": "Medium",
+                "expected_local_path": "data/raw/medium.pdf",
+                "page_number": 1,
+                "priority_bucket": "medium",
+            },
+            {
+                "source_title": "Low",
+                "expected_local_path": "data/raw/low.pdf",
+                "page_number": 1,
+                "priority_bucket": "low",
+            },
+        ]
+
+        snippets = build_candidate_snippets_from_ranked_candidates(
+            candidates,
+            pdf_reader_factory=fail_if_called,
+        )
+
+        self.assertEqual([], snippets)
+
 
 if __name__ == "__main__":
     unittest.main()
