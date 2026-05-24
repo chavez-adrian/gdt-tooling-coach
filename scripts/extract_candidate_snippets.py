@@ -10,11 +10,12 @@ def extract_candidate_snippets(candidates, page_text_by_key):
         lowered = text.lower()
         for signal in STRONG_SIGNALS:
             if signal in lowered:
+                snippet_words = text.split()[:80]
                 snippets.append(
                     {
                         "matched_signal": signal,
-                        "snippet_word_count": len(text.split()),
-                        "snippet_text": text,
+                        "snippet_word_count": len(snippet_words),
+                        "snippet_text": " ".join(snippet_words),
                     }
                 )
                 break

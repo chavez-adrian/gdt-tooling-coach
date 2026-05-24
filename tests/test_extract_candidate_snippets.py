@@ -45,6 +45,19 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
 
         self.assertEqual([], snippets)
 
+    def test_literal_snippet_is_capped_at_80_words(self):
+        candidate = {
+            "source_title": "Long Source",
+            "page_number": 7,
+            "priority_bucket": "high",
+        }
+        page_text = " ".join(["datum"] + [f"word{i}" for i in range(1, 100)])
+
+        snippets = extract_candidate_snippets([candidate], {("Long Source", 7): page_text})
+
+        self.assertEqual(80, snippets[0]["snippet_word_count"])
+        self.assertEqual(80, len(snippets[0]["snippet_text"].split()))
+
 
 if __name__ == "__main__":
     unittest.main()
