@@ -58,6 +58,23 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(80, snippets[0]["snippet_word_count"])
         self.assertEqual(80, len(snippets[0]["snippet_text"].split()))
 
+    def test_returns_at_most_three_snippets_per_page(self):
+        candidate = {
+            "source_title": "Crowded Source",
+            "page_number": 4,
+            "priority_bucket": "high",
+        }
+        page_text = (
+            "First datum sentence. "
+            "Second datum sentence. "
+            "Third datum sentence. "
+            "Fourth datum sentence."
+        )
+
+        snippets = extract_candidate_snippets([candidate], {("Crowded Source", 4): page_text})
+
+        self.assertEqual(3, len(snippets))
+
 
 if __name__ == "__main__":
     unittest.main()
