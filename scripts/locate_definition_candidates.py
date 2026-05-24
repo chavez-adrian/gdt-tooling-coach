@@ -1,6 +1,8 @@
 """Metadata-only definition-candidate detection for PDF page text."""
 
+import json
 import re
+from pathlib import Path
 
 SIGNALS = [
     "definition",
@@ -23,6 +25,30 @@ SIGNALS = [
 ]
 
 TEXT_METADATA_KEYS = {"content", "definition", "excerpt", "quote", "sample", "text"}
+
+
+def build_definition_candidate_report(manifest_path, project_root):
+    manifest_path = Path(manifest_path)
+    project_root = Path(project_root)
+    manifest_entries = json.loads(manifest_path.read_text(encoding="utf-8"))
+    missing_pdfs = 0
+    existing_pdfs = 0
+
+    for entry in manifest_entries:
+        pdf_path = project_root / entry["expected_local_path"]
+        if pdf_path.exists():
+            existing_pdfs += 1
+        else:
+            missing_pdfs += 1
+
+    return {
+        "summary": {
+            "total_sources": len(manifest_entries),
+            "existing_pdfs": existing_pdfs,
+            "missing_pdfs": missing_pdfs,
+        },
+        "candidate_pages": [],
+    }
 
 
 def locate_definition_candidates(pages):
