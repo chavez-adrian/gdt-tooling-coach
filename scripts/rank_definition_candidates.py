@@ -20,6 +20,8 @@ MEDIUM_SIGNALS = {
     "sÃ­mbolos",
 }
 GENERIC_SIGNALS = {"term", "terms", "tÃ©rmino", "tÃ©rminos"}
+PREFERRED_SOURCE_TYPES = {"standard", "official_standard", "norm"}
+SUPPORTED_LANGUAGES = {"en", "es", "english", "spanish"}
 
 
 def score_definition_candidates(candidates):
@@ -28,6 +30,10 @@ def score_definition_candidates(candidates):
         score = candidate.get("signal_count", 0)
         word_count = candidate.get("approximate_word_count", 0)
         if 100 <= word_count <= 1600:
+            score += 1
+        if candidate.get("source_type") in PREFERRED_SOURCE_TYPES:
+            score += 1
+        if candidate.get("language") in SUPPORTED_LANGUAGES:
             score += 1
         for signal in candidate.get("matched_signals", []):
             if signal in STRONG_SIGNALS:

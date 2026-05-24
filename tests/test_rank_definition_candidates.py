@@ -100,6 +100,27 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertEqual("useful-page", scored[0]["source_id"])
         self.assertEqual(scored[1]["definition_score"], scored[2]["definition_score"])
 
+    def test_source_type_and_language_metadata_can_influence_score(self):
+        scored = score_definition_candidates(
+            [
+                {
+                    "source_id": "unknown-source",
+                    "signal_count": 1,
+                    "source_type": "notes",
+                    "language": "unknown",
+                },
+                {
+                    "source_id": "standard-source",
+                    "signal_count": 1,
+                    "source_type": "standard",
+                    "language": "es",
+                },
+            ]
+        )
+
+        self.assertEqual("standard-source", scored[0]["source_id"])
+        self.assertGreater(scored[0]["definition_score"], scored[1]["definition_score"])
+
 
 if __name__ == "__main__":
     unittest.main()
