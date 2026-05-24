@@ -1,7 +1,9 @@
 """Local verification for the definition-candidate locator report."""
 
+import subprocess
 from collections import Counter
 
+REPORT_PATH = "data/processed/definition_candidate_pages.json"
 FORBIDDEN_CONTENT_KEYS = {
     "content",
     "definition",
@@ -53,4 +55,20 @@ def report_contains_forbidden_content_fields(report):
     return {
         "has_forbidden_content_fields": bool(field_paths),
         "field_paths": field_paths,
+    }
+
+
+def check_report_path_ignored(project_root, runner=subprocess.run):
+    result = runner(
+        ["git", "check-ignore", REPORT_PATH],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+    )
+    return {
+        "name": "generated report path is ignored by Git",
+        "command": f"git check-ignore {REPORT_PATH}",
+        "passed": result.returncode == 0,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
     }

@@ -1,6 +1,7 @@
 import unittest
 
 from scripts.verify_definition_candidates import (
+    check_report_path_ignored,
     report_contains_forbidden_content_fields,
     summarize_candidate_report,
 )
@@ -74,6 +75,28 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
         self.assertTrue(safety["has_forbidden_content_fields"])
         self.assertEqual(["candidate_pages[0].page_text"], safety["field_paths"])
         self.assertNotIn("definition sample", str(safety))
+
+    def test_checks_report_path_is_ignored_with_injectable_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append((command, cwd, capture_output, text))
+
+            class Result:
+                returncode = 0
+                stdout = "data/processed/definition_candidate_pages.json\n"
+                stderr = ""
+
+            return Result()
+
+        check = check_report_path_ignored("repo-root", runner=fake_runner)
+
+        self.assertTrue(check["passed"])
+        self.assertEqual(
+            ["git", "check-ignore", "data/processed/definition_candidate_pages.json"],
+            calls[0][0],
+        )
+        self.assertEqual("repo-root", calls[0][1])
 
 
 if __name__ == "__main__":
