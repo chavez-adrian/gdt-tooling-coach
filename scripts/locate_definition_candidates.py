@@ -1,5 +1,6 @@
 """Metadata-only definition-candidate detection for PDF page text."""
 
+import argparse
 import json
 import re
 from pathlib import Path
@@ -27,6 +28,8 @@ SIGNALS = [
 ]
 
 TEXT_METADATA_KEYS = {"content", "definition", "excerpt", "quote", "sample", "text"}
+DEFAULT_MANIFEST_PATH = Path("data/source_manifest.example.json")
+DEFAULT_OUTPUT_PATH = Path("data/processed/definition_candidate_pages.json")
 
 
 def build_definition_candidate_report(manifest_path, project_root):
@@ -84,6 +87,19 @@ def write_definition_candidate_report(manifest_path, output_path, project_root):
     return report
 
 
+def main(argv=None, project_root=None):
+    project_root = Path(project_root or Path(__file__).resolve().parents[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST_PATH))
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT_PATH))
+    args = parser.parse_args(argv)
+
+    manifest_path = project_root / args.manifest
+    output_path = project_root / args.output
+    write_definition_candidate_report(manifest_path, output_path, project_root)
+    return 0
+
+
 def locate_definition_candidates(pages):
     candidates = []
     for page in pages:
@@ -125,3 +141,7 @@ def analyze_definition_candidate_page(page_text, page_metadata=None):
         "approximate_word_count": len(re.findall(r"\w+", page_text)),
         "candidate_reason": candidate_reason,
     }
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

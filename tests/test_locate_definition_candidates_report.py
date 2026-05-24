@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from scripts.locate_definition_candidates import (
     build_definition_candidate_report,
+    main,
     write_definition_candidate_report,
 )
 
@@ -167,6 +168,30 @@ class DefinitionCandidateReportTests(unittest.TestCase):
 
         self.assertEqual(report, written_report)
         self.assertEqual([], written_report["candidate_pages"])
+
+    def test_cli_defaults_to_manifest_and_processed_report_paths(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            manifest_path = project_root / "data/source_manifest.example.json"
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "Missing Source",
+                            "expected_local_path": "data/raw/missing.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            exit_code = main([], project_root=project_root)
+            output_path = project_root / "data/processed/definition_candidate_pages.json"
+            output_exists = output_path.exists()
+
+        self.assertEqual(0, exit_code)
+        self.assertTrue(output_exists)
 
 
 if __name__ == "__main__":
