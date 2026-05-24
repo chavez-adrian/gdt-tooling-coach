@@ -9,6 +9,7 @@ from pypdf import PdfReader
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
+DEFAULT_MANIFEST_PATH = PROJECT_ROOT / "data" / "source_manifest.example.json"
 DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/candidate_snippets.json")
 MAX_TOTAL_SNIPPETS = 100
 REPORT_CONTRACT = {
@@ -80,6 +81,30 @@ def load_high_priority_ranked_candidates(ranked_report_path):
     ]
 
 
+def enrich_candidates_from_manifest(candidates, manifest_path=DEFAULT_MANIFEST_PATH):
+    with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+        manifest_entries = json.load(manifest_file)
+    source_metadata = {
+        entry["source_title"]: entry
+        for entry in manifest_entries
+        if "source_title" in entry
+    }
+    enriched = []
+    for candidate in candidates:
+        source_entry = source_metadata.get(candidate.get("source_title"), {})
+        enriched.append(
+            {
+                **candidate,
+                "expected_local_path": candidate.get("expected_local_path")
+                or source_entry.get("expected_local_path"),
+                "source_type": candidate.get("source_type")
+                or source_entry.get("source_type"),
+                "language": candidate.get("language") or source_entry.get("language"),
+            }
+        )
+    return enriched
+
+
 def build_candidate_snippets_from_ranked_candidates(
     candidates, pdf_reader_factory=PdfReader, max_total_snippets=MAX_TOTAL_SNIPPETS
 ):
@@ -107,10 +132,16 @@ def build_candidate_snippets_from_ranked_candidates(
 
 
 def write_candidate_snippets_report(
-    ranked_report_path, output_path, pdf_reader_factory=PdfReader
+    ranked_report_path,
+    output_path,
+    pdf_reader_factory=PdfReader,
+    manifest_path=DEFAULT_MANIFEST_PATH,
 ):
     snippets = build_candidate_snippets_from_ranked_candidates(
-        load_high_priority_ranked_candidates(ranked_report_path),
+        enrich_candidates_from_manifest(
+            load_high_priority_ranked_candidates(ranked_report_path),
+            manifest_path=manifest_path,
+        ),
         pdf_reader_factory=pdf_reader_factory,
     )
     report = {

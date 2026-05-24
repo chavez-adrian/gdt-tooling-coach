@@ -8,6 +8,7 @@ from scripts.extract_candidate_snippets import (
     DEFAULT_OUTPUT_PATH,
     candidate_snippets_report_is_ignored,
     build_candidate_snippets_from_ranked_candidates,
+    enrich_candidates_from_manifest,
     format_console_summary,
     load_high_priority_ranked_candidates,
     write_candidate_snippets_report,
@@ -113,6 +114,32 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         self.assertNotIn("source_language", snippets[0])
         self.assertNotIn("source_path", snippets[0])
 
+    def test_candidates_missing_pdf_metadata_are_enriched_from_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            manifest_path = Path(tmp_dir) / "source_manifest.example.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "ASME",
+                            "source_type": "asme_2018_en",
+                            "language": "en",
+                            "expected_local_path": "data/raw/asme.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            enriched = enrich_candidates_from_manifest(
+                [{"source_title": "ASME", "priority_bucket": "high"}],
+                manifest_path=manifest_path,
+            )
+
+        self.assertEqual("data/raw/asme.pdf", enriched[0]["expected_local_path"])
+        self.assertEqual("asme_2018_en", enriched[0]["source_type"])
+        self.assertEqual("en", enriched[0]["language"])
+
     def test_missing_medium_and_low_candidates_do_not_open_or_extract_pages(self):
         def fail_if_called(path):
             raise AssertionError(f"unexpected PDF open: {path}")
@@ -164,10 +191,14 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            manifest_path = Path(tmp_dir) / "source_manifest.example.json"
+            manifest_path.write_text("[]", encoding="utf-8")
+
             report = write_candidate_snippets_report(
                 ranked_path,
                 output_path,
                 pdf_reader_factory=FakePdfReader,
+                manifest_path=manifest_path,
             )
             written_report = json.loads(output_path.read_text(encoding="utf-8"))
 
@@ -231,10 +262,14 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            manifest_path = Path(tmp_dir) / "source_manifest.example.json"
+            manifest_path.write_text("[]", encoding="utf-8")
+
             report = write_candidate_snippets_report(
                 ranked_path,
                 output_path,
                 pdf_reader_factory=FakePdfReader,
+                manifest_path=manifest_path,
             )
 
         self.assertEqual(
