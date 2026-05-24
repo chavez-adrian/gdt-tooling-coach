@@ -139,6 +139,22 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(88, snippets[0]["candidate_score"])
         self.assertEqual(3, snippets[0]["global_rank"])
 
+    def test_validated_state_from_candidate_is_never_emitted(self):
+        candidate = {
+            "source_title": "Review Source",
+            "page_number": 9,
+            "priority_bucket": "high",
+            "review_state": "validated",
+            "proposed_review_state": "validated",
+            "validated": True,
+        }
+
+        snippets = extract_candidate_snippets([candidate], {("Review Source", 9): "A datum is referenced."})
+
+        self.assertEqual("raw_import", snippets[0]["proposed_review_state"])
+        self.assertNotIn("review_state", snippets[0])
+        self.assertNotIn("validated", snippets[0])
+
 
 if __name__ == "__main__":
     unittest.main()
