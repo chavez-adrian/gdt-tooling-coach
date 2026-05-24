@@ -145,6 +145,9 @@ class RankDefinitionCandidatesTests(unittest.TestCase):
         self.assertEqual("medium", buckets_by_source["medium"])
         self.assertEqual("low", buckets_by_source["low"])
 
+    def test_empty_candidate_input_returns_empty_list(self):
+        self.assertEqual([], score_definition_candidates([]))
+
 
 if __name__ == "__main__":
     unittest.main()
