@@ -74,6 +74,40 @@ class DefinitionCandidateReportTests(unittest.TestCase):
             report["candidate_pages"][0],
         )
 
+    def test_multiple_pages_include_only_candidate_pages(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data/raw/source.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "ASME Fake",
+                            "expected_local_path": "data/raw/source.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            pages = [Mock(), Mock(), Mock()]
+            pages[0].extract_text.return_value = "Practice problems only."
+            pages[1].extract_text.return_value = "Glossary page for feature control frame."
+            pages[2].extract_text.return_value = "Plain appendix index."
+
+            with patch("scripts.locate_definition_candidates.PdfReader") as pdf_reader:
+                pdf_reader.return_value.pages = pages
+                report = build_definition_candidate_report(manifest_path, project_root)
+
+        self.assertEqual(1, report["summary"]["candidate_pages"])
+        self.assertEqual([2], [page["page_number"] for page in report["candidate_pages"]])
+        self.assertEqual(
+            ["glossary", "feature control frame"],
+            report["candidate_pages"][0]["matched_signals"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

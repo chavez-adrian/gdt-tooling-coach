@@ -35,6 +35,7 @@ def build_definition_candidate_report(manifest_path, project_root):
     manifest_entries = json.loads(manifest_path.read_text(encoding="utf-8"))
     missing_pdfs = 0
     existing_pdfs = 0
+    candidate_pages = []
 
     for entry in manifest_entries:
         pdf_path = project_root / entry["expected_local_path"]
@@ -51,7 +52,7 @@ def build_definition_candidate_report(manifest_path, project_root):
                         "page_text": page.extract_text() or "",
                     }
                 )
-            candidate_pages = locate_definition_candidates(pages)
+            candidate_pages.extend(locate_definition_candidates(pages))
         else:
             missing_pdfs += 1
 
@@ -60,8 +61,9 @@ def build_definition_candidate_report(manifest_path, project_root):
             "total_sources": len(manifest_entries),
             "existing_pdfs": existing_pdfs,
             "missing_pdfs": missing_pdfs,
+            "candidate_pages": len(candidate_pages),
         },
-        "candidate_pages": candidate_pages if existing_pdfs else [],
+        "candidate_pages": candidate_pages,
     }
 
 
