@@ -29,6 +29,26 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
             summary["priority_buckets"],
         )
 
+    def test_summarizes_top_sources_by_high_priority_candidates(self):
+        report = {
+            "summary": {
+                "top_sources_by_high_priority_candidates": [
+                    {"source_title": "ASME Y14.5 2018", "high_priority_candidates": 4},
+                    {"source_title": "NOM Z 2010", "high_priority_candidates": 2},
+                ]
+            }
+        }
+
+        summary = summarize_ranked_report(report)
+
+        self.assertEqual(
+            [
+                {"source_title": "ASME Y14.5 2018", "high_priority_candidates": 4},
+                {"source_title": "NOM Z 2010", "high_priority_candidates": 2},
+            ],
+            summary["top_sources_by_high_priority_candidates"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

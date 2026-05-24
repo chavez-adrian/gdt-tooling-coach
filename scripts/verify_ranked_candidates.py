@@ -9,4 +9,7 @@ def summarize_ranked_report(report):
             "priority_buckets",
             {"high": 0, "medium": 0, "low": 0},
         ),
+        "top_sources_by_high_priority_candidates": summary.get(
+            "top_sources_by_high_priority_candidates", []
+        ),
     }
