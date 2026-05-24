@@ -92,3 +92,12 @@ def run_locator_command(project_root, runner=subprocess.run):
         project_root,
         runner=runner,
     )
+
+
+def run_unittest_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "unittest discovery command",
+        ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+        project_root,
+        runner=runner,
+    )
