@@ -30,6 +30,7 @@ Los reportes permitidos son:
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
 - `data/processed/ranked_definition_candidates.json`
+- `data/processed/candidate_snippets.json` en la fase controlada de snippets.
 
 Estos reportes no son ingestion. No insertan datos en Neon, no marcan contenido
 como validado, no guardan texto completo, no guardan definiciones, no guardan
@@ -39,3 +40,20 @@ manual o editorialmente en una fase posterior.
 El reporte rankeado prioriza paginas candidatas para revision editorial y el
 verificador resume candidatos totales, conteos high/medium/low y fuentes con mas
 candidatos high-priority. No se conecta a Neon.
+
+## Fase controlada de snippets
+
+La extraccion limitada de snippets debe partir solamente de paginas
+high-priority del reporte rankeado. Puede abrir PDFs y extraer texto solo de
+esas paginas, pero el reporte local debe quedar acotado:
+
+- maximo 80 palabras continuas por snippet literal;
+- maximo 3 snippets por pagina;
+- maximo 100 snippets totales en la fase;
+- `extraction_type = "literal_quote"`;
+- `proposed_review_state = "raw_import"`;
+- `requires_human_review = true`.
+
+Esta fase no inserta en Neon, no modifica tablas, no modifica `sources` ni
+`definitions`, y no marca contenido como validado. El resultado es material
+crudo para revision humana posterior.

@@ -164,6 +164,7 @@ Generated reports are written under `data/processed/`, which is ignored by Git:
 - `data/processed/pdf_text_probe.json`
 - `data/processed/definition_candidate_pages.json`
 - `data/processed/ranked_definition_candidates.json`
+- `data/processed/candidate_snippets.json` (planned controlled snippet phase)
 
 These reports contain metrics and page metadata only. They must not contain full
 page text, definitions, long quotes, textual samples, OCR output, credentials, or
@@ -172,3 +173,9 @@ validated source content. They do not connect to Neon.
 The ranked candidate report orders definition-candidate pages for editorial
 review and summarizes total candidates, high/medium/low priority counts, and top
 sources by high-priority candidates. No se conecta a Neon.
+
+The planned snippet phase is the first controlled step that may preserve brief
+literal text for human review. It is limited to high-priority ranked pages, at
+most 80 continuous words per snippet, at most 3 snippets per page, and at most
+100 snippets total for the phase. Snippets remain `raw_import`, require human
+review, and must never be inserted into Neon or marked validated by the script.

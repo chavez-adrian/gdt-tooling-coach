@@ -34,6 +34,21 @@ pagina necesarios para decidir que revisar primero.
 No debe guardar snippets, texto extraido, definiciones, citas largas, muestras
 textuales, OCR ni contenido validado. No se conecta a Neon.
 
+## Snippets controlados
+
+Los snippets literales solo pueden generarse desde paginas high-priority ya
+rankeadas. Cada snippet guardado debe ser breve y revisable:
+
+- maximo 80 palabras continuas;
+- maximo 3 snippets por pagina;
+- maximo 100 snippets en la fase;
+- `extraction_type = "literal_quote"`;
+- `proposed_review_state = "raw_import"`;
+- `requires_human_review = true`.
+
+Los snippets no son definiciones validadas. No deben insertarse en Neon ni
+marcarse como `validated` sin una revision humana posterior.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.
