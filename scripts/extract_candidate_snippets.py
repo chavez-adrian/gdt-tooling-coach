@@ -3,6 +3,8 @@ import re
 
 from pypdf import PdfReader
 
+MAX_TOTAL_SNIPPETS = 100
+
 
 STRONG_SIGNALS = (
     "definition",
@@ -67,7 +69,7 @@ def load_high_priority_ranked_candidates(ranked_report_path):
 
 
 def build_candidate_snippets_from_ranked_candidates(
-    candidates, pdf_reader_factory=PdfReader
+    candidates, pdf_reader_factory=PdfReader, max_total_snippets=MAX_TOTAL_SNIPPETS
 ):
     high_candidates = [
         candidate
@@ -89,7 +91,7 @@ def build_candidate_snippets_from_ranked_candidates(
     return [
         _to_public_report_row(snippet)
         for snippet in extract_candidate_snippets(normalized_candidates, page_text_by_key)
-    ]
+    ][:max_total_snippets]
 
 
 def write_candidate_snippets_report(

@@ -29,6 +29,18 @@ class FakePdfReader:
         ]
 
 
+class DenseFakePdfReader:
+    def __init__(self, path):
+        self.pages = [
+            FakePage(
+                "First datum sentence. "
+                "Second datum sentence. "
+                "Third datum sentence. "
+                "Fourth datum sentence."
+            )
+        ]
+
+
 class ExtractCandidateSnippetsReportTests(unittest.TestCase):
     def test_ranked_report_reader_filters_high_priority_candidates_only(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -161,6 +173,24 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
             "A datum is a theoretically exact reference.",
             written_report["candidate_snippets"][0]["snippet_text"],
         )
+
+    def test_report_is_capped_at_100_snippets_total(self):
+        candidates = [
+            {
+                "source_title": f"Source {index}",
+                "expected_local_path": f"data/raw/source-{index}.pdf",
+                "page_number": 1,
+                "priority_bucket": "high",
+            }
+            for index in range(34)
+        ]
+
+        snippets = build_candidate_snippets_from_ranked_candidates(
+            candidates,
+            pdf_reader_factory=DenseFakePdfReader,
+        )
+
+        self.assertEqual(100, len(snippets))
 
 
 if __name__ == "__main__":
