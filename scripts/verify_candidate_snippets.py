@@ -10,4 +10,7 @@ def summarize_candidate_snippet_report(report):
     return {
         "snippets_generated": len(snippets),
         "snippets_by_source": dict(sorted(snippets_by_source.items())),
+        "max_snippet_word_count": max(
+            [snippet.get("snippet_word_count", 0) for snippet in snippets] or [0]
+        ),
     }

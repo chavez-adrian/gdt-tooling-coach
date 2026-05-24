@@ -32,6 +32,19 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
             summary["snippets_by_source"],
         )
 
+    def test_reports_maximum_snippet_word_count(self):
+        report = {
+            "candidate_snippets": [
+                {"snippet_word_count": 12},
+                {"snippet_word_count": 80},
+                {"snippet_word_count": 5},
+            ]
+        }
+
+        summary = summarize_candidate_snippet_report(report)
+
+        self.assertEqual(80, summary["max_snippet_word_count"])
+
 
 if __name__ == "__main__":
     unittest.main()
