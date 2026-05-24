@@ -70,3 +70,21 @@ def run_ranker_command(project_root, runner=subprocess.run):
         project_root,
         runner=runner,
     )
+
+
+def run_verifier_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "ranked candidate verifier command",
+        ["python", "scripts/verify_ranked_candidates.py"],
+        project_root,
+        runner=runner,
+    )
+
+
+def run_unittest_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "unittest discovery command",
+        ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+        project_root,
+        runner=runner,
+    )

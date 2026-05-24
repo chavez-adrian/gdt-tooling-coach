@@ -3,6 +3,8 @@ import unittest
 from scripts.verify_ranked_candidates import (
     report_contains_forbidden_content_fields,
     run_ranker_command,
+    run_unittest_command,
+    run_verifier_command,
     summarize_ranked_report,
 )
 
@@ -90,6 +92,32 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
         self.assertEqual(
             "python scripts/rank_definition_candidates.py",
             check["command"],
+        )
+
+    def test_runs_verifier_and_unittest_commands_with_injectable_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append(command)
+
+            class Result:
+                returncode = 0
+                stdout = ""
+                stderr = "OK"
+
+            return Result()
+
+        verifier_check = run_verifier_command("repo-root", runner=fake_runner)
+        unittest_check = run_unittest_command("repo-root", runner=fake_runner)
+
+        self.assertTrue(verifier_check["passed"])
+        self.assertTrue(unittest_check["passed"])
+        self.assertEqual(
+            [
+                ["python", "scripts/verify_ranked_candidates.py"],
+                ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+            ],
+            calls,
         )
 
 
