@@ -170,6 +170,27 @@ def ranked_report_output_is_ignored(run_command=subprocess.run):
     return result.returncode == 0
 
 
+def format_console_summary(report):
+    summary = report["summary"]
+    buckets = summary["priority_buckets"]
+    lines = [
+        f"Total candidates: {summary['total_candidates']}",
+        f"High: {buckets['high']}",
+        f"Medium: {buckets['medium']}",
+        f"Low: {buckets['low']}",
+        "Top sources by high-priority candidates:",
+    ]
+    top_sources = summary["top_sources_by_high_priority_candidates"]
+    if not top_sources:
+        lines.append("  none")
+    else:
+        for source in top_sources:
+            lines.append(
+                f"  {source['source_title']}: {source['high_priority_candidates']}"
+            )
+    return "\n".join(lines)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Write a metadata-only ranked definition candidate report."
@@ -177,7 +198,8 @@ def main(argv=None):
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT_PATH)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
     args = parser.parse_args(argv)
-    write_ranked_definition_candidate_report(args.input, args.output)
+    report = write_ranked_definition_candidate_report(args.input, args.output)
+    print(format_console_summary(report))
     return 0
 
 

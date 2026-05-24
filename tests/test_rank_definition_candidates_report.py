@@ -8,6 +8,7 @@ from scripts.rank_definition_candidates import (
     DEFAULT_OUTPUT_PATH,
     build_ranked_definition_candidate_report,
     build_ranked_definition_candidate_rows,
+    format_console_summary,
     ranked_report_output_is_ignored,
     write_ranked_definition_candidate_report,
 )
@@ -228,6 +229,26 @@ class RankedDefinitionCandidatesReportTests(unittest.TestCase):
             set(row),
         )
         self.assertNotIn("definition text must not be stored", row.values())
+
+    def test_console_summary_includes_counts_and_top_sources(self):
+        report = build_ranked_definition_candidate_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "signal_count": 5,
+                    "matched_signals": ["definition", "glossary"],
+                },
+                {"source_title": "ISO", "signal_count": 1, "matched_signals": []},
+            ]
+        )
+
+        summary = format_console_summary(report)
+
+        self.assertIn("Total candidates: 2", summary)
+        self.assertIn("High: 1", summary)
+        self.assertIn("Medium: 0", summary)
+        self.assertIn("Low: 1", summary)
+        self.assertIn("ASME: 1", summary)
 
 
 if __name__ == "__main__":
