@@ -1,6 +1,8 @@
 import unittest
 
 from scripts.verify_ranked_candidates import (
+    check_report_path_ignored,
+    collect_git_evidence,
     report_contains_forbidden_content_fields,
     run_ranker_command,
     run_unittest_command,
@@ -119,6 +121,40 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
             ],
             calls,
         )
+
+    def test_collects_git_evidence_and_checks_ranked_report_path_is_ignored(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append(command)
+
+            class Result:
+                returncode = 0
+                stdout = (
+                    "data/processed/ranked_definition_candidates.json\n"
+                    if command[:2] == ["git", "check-ignore"]
+                    else "changed.py | 2 +-\n"
+                    if command[-1] == "--stat"
+                    else " M changed.py\n"
+                )
+                stderr = ""
+
+            return Result()
+
+        ignore_check = check_report_path_ignored("repo-root", runner=fake_runner)
+        evidence = collect_git_evidence("repo-root", runner=fake_runner)
+
+        self.assertTrue(ignore_check["passed"])
+        self.assertEqual(
+            [
+                ["git", "check-ignore", "data/processed/ranked_definition_candidates.json"],
+                ["git", "diff", "--stat"],
+                ["git", "status", "--short"],
+            ],
+            calls,
+        )
+        self.assertEqual("changed.py | 2 +-\n", evidence["git_diff_stat"]["stdout"])
+        self.assertEqual(" M changed.py\n", evidence["git_status_short"]["stdout"])
 
 
 if __name__ == "__main__":

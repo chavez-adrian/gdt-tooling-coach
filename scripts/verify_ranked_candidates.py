@@ -2,6 +2,7 @@
 
 import subprocess
 
+REPORT_PATH = "data/processed/ranked_definition_candidates.json"
 FORBIDDEN_CONTENT_KEYS = {
     "content",
     "definition",
@@ -88,3 +89,29 @@ def run_unittest_command(project_root, runner=subprocess.run):
         project_root,
         runner=runner,
     )
+
+
+def check_report_path_ignored(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "generated ranked report path is ignored by Git",
+        ["git", "check-ignore", REPORT_PATH],
+        project_root,
+        runner=runner,
+    )
+
+
+def collect_git_evidence(project_root, runner=subprocess.run):
+    return {
+        "git_diff_stat": _run_command_check(
+            "git diff stat",
+            ["git", "diff", "--stat"],
+            project_root,
+            runner=runner,
+        ),
+        "git_status_short": _run_command_check(
+            "git status short",
+            ["git", "status", "--short"],
+            project_root,
+            runner=runner,
+        ),
+    }
