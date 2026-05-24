@@ -72,3 +72,23 @@ def check_report_path_ignored(project_root, runner=subprocess.run):
         "stdout": result.stdout,
         "stderr": result.stderr,
     }
+
+
+def _run_command_check(name, command, project_root, runner=subprocess.run):
+    result = runner(command, cwd=project_root, capture_output=True, text=True)
+    return {
+        "name": name,
+        "command": " ".join(command),
+        "passed": result.returncode == 0,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def run_locator_command(project_root, runner=subprocess.run):
+    return _run_command_check(
+        "definition candidate locator command",
+        ["python", "scripts/locate_definition_candidates.py"],
+        project_root,
+        runner=runner,
+    )

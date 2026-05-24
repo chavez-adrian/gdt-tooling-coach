@@ -2,6 +2,7 @@ import unittest
 
 from scripts.verify_definition_candidates import (
     check_report_path_ignored,
+    run_locator_command,
     report_contains_forbidden_content_fields,
     summarize_candidate_report,
 )
@@ -97,6 +98,28 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
             calls[0][0],
         )
         self.assertEqual("repo-root", calls[0][1])
+
+    def test_runs_locator_command_with_injectable_runner(self):
+        calls = []
+
+        def fake_runner(command, cwd=None, capture_output=None, text=None):
+            calls.append(command)
+
+            class Result:
+                returncode = 0
+                stdout = "locator ok"
+                stderr = ""
+
+            return Result()
+
+        check = run_locator_command("repo-root", runner=fake_runner)
+
+        self.assertTrue(check["passed"])
+        self.assertEqual(["python", "scripts/locate_definition_candidates.py"], calls[0])
+        self.assertEqual(
+            "python scripts/locate_definition_candidates.py",
+            check["command"],
+        )
 
 
 if __name__ == "__main__":
