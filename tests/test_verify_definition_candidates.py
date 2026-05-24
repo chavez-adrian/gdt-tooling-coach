@@ -17,6 +17,13 @@ class VerifyDefinitionCandidatesTest(unittest.TestCase):
 
         self.assertEqual(9, summary["pdfs_processed"])
 
+    def test_summarizes_total_candidate_pages(self):
+        report = {"summary": {"candidate_pages": 12}}
+
+        summary = summarize_candidate_report(report)
+
+        self.assertEqual(12, summary["total_candidate_pages"])
+
 
 if __name__ == "__main__":
     unittest.main()
