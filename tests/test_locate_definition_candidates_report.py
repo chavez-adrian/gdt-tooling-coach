@@ -108,6 +108,35 @@ class DefinitionCandidateReportTests(unittest.TestCase):
             report["candidate_pages"][0]["matched_signals"],
         )
 
+    def test_no_match_pdf_produces_no_false_candidate_records(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            pdf_path = project_root / "data/raw/source.pdf"
+            pdf_path.parent.mkdir(parents=True)
+            pdf_path.write_bytes(b"%PDF fake")
+            manifest_path = project_root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "No Match",
+                            "expected_local_path": "data/raw/source.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            page = Mock()
+            page.extract_text.return_value = "Practice problems and answer key only."
+
+            with patch("scripts.locate_definition_candidates.PdfReader") as pdf_reader:
+                pdf_reader.return_value.pages = [page]
+                report = build_definition_candidate_report(manifest_path, project_root)
+
+        self.assertEqual([], report["candidate_pages"])
+        self.assertEqual(0, report["summary"]["candidate_pages"])
+        self.assertEqual(1, report["summary"]["no_match_pdfs"])
+
 
 if __name__ == "__main__":
     unittest.main()
