@@ -42,7 +42,27 @@ class DefinitionCandidateDetectionTests(unittest.TestCase):
             {"source_id": "fake-case", "page_number": 14},
         )
 
-        self.assertEqual(["definition", "MMC", "LMC", "RFS"], result["matched_signals"])
+        self.assertEqual(["definitions", "MMC", "LMC", "RFS"], result["matched_signals"])
+
+    def test_counts_unique_canonical_signals_in_stable_order(self):
+        result = analyze_definition_candidate_page(
+            "Definitions, terminology, terms, glossary, símbolos, definiciones, término.",
+            {"source_id": "fake-count", "page_number": 15},
+        )
+
+        self.assertEqual(
+            [
+                "definitions",
+                "terminology",
+                "terms",
+                "glossary",
+                "símbolos",
+                "definiciones",
+                "término",
+            ],
+            result["matched_signals"],
+        )
+        self.assertEqual(7, result["signal_count"])
 
 
 if __name__ == "__main__":
