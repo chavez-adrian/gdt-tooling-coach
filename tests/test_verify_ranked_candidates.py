@@ -11,6 +11,24 @@ class VerifyRankedCandidatesTest(unittest.TestCase):
 
         self.assertEqual(7, summary["total_ranked_candidates"])
 
+    def test_summarizes_priority_bucket_counts(self):
+        report = {
+            "summary": {
+                "priority_buckets": {
+                    "high": 3,
+                    "medium": 5,
+                    "low": 2,
+                }
+            }
+        }
+
+        summary = summarize_ranked_report(report)
+
+        self.assertEqual(
+            {"high": 3, "medium": 5, "low": 2},
+            summary["priority_buckets"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
