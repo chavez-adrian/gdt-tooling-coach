@@ -68,6 +68,18 @@ planificacion y seguridad. It must not print snippet_text, contenido normativo,
 SQL ejecutable ni campos de texto largo; must not connect to Neon, write to the
 database, or mark snippets validated.
 
+La insercion live de snippets solo puede pasar por
+`python scripts/insert_candidate_snippets.py --execute-approved-insert`. Sin esa
+bandera, el comando es dry-run. El gate debe bloquear cualquier fila sin
+`concept_id` explicito, `source_id`, `page_number`, estado `raw_import`,
+`requires_human_review = true`, `validated = false`, `literal_quote`, o con mas
+de 80 palabras. El script no puede validar conceptos automaticamente.
+
+El diagnostico `python scripts/diagnose_concept_readiness.py` solo puede usar
+metadatos permitidos para explicar readiness de conceptos. No debe imprimir
+`snippet_text`, credenciales ni contenido normativo, no debe escribir en Neon y
+no debe asignar `concept_id` automaticamente.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.

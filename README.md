@@ -207,3 +207,16 @@ source matching mismatches between `candidate_snippets.json` and Neon
 `sources`. It reports source titles, source_type/language values, exact
 comparison results, and normalized match candidates without printing
 `snippet_text` or credentials.
+
+`python scripts/insert_candidate_snippets.py` is the live insertion gate. It
+defaults to dry-run mode and can write to Neon only with
+`--execute-approved-insert`. The gate requires explicit `concept_id`,
+resolved `source_id`, `page_number`, `raw_import`,
+`requires_human_review = true`, `validated = false`, `literal_quote`, and
+80 words or fewer; it performs no automatic concept validation.
+
+`python scripts/diagnose_concept_readiness.py` is a SELECT-only readiness
+diagnostic for candidate snippets that still lack explicit `concept_id`
+mapping. It reads concepts metadata, summarizes missing mappings and candidate
+labels, writes `data/processed/concept_readiness_report.json`, and never prints
+snippet text or assigns concepts automatically.

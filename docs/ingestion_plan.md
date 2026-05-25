@@ -79,3 +79,17 @@ Debe confirmar totales, razones de bloqueo, resumen de matching de fuentes,
 metadata `raw_import`/`requires_human_review`/`validated = false`/`literal_quote`,
 salida ignorada por Git, ausencia de SQL ejecutable y contrato sin escrituras de
 base de datos. No es ingestion ni validacion.
+
+`python scripts/insert_candidate_snippets.py` es el unico punto permitido para
+preparar una insercion real de snippets. Por defecto opera como dry-run; solo
+puede escribir con `--execute-approved-insert`. La insercion queda bloqueada si
+falta `concept_id` explicito, `source_id` resuelto, `page_number`, estado
+`raw_import`, `requires_human_review = true`, `validated = false`,
+`literal_quote`, o si el snippet excede 80 palabras. No valida conceptos
+automaticamente.
+
+Antes de cualquier insercion live, `python scripts/diagnose_concept_readiness.py`
+debe explicar cuantos snippets siguen sin `concept_id`, que conceptos existen en
+Neon, que labels candidatas pueden derivarse solo de metadatos permitidos y
+cuantos snippets no tienen candidato confiable. Este diagnostico es SELECT-only,
+no imprime snippets y no asigna conceptos.
