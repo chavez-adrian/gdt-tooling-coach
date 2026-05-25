@@ -227,6 +227,71 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertIn("ASME: 1", printed)
         self.assertNotIn("do not print this", printed)
 
+    def test_cli_output_omits_forbidden_long_text_field_names(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ranked_path = Path(tmpdir) / "ranked_definition_candidates.json"
+            snippets_path = Path(tmpdir) / "candidate_snippets.json"
+            ranked_path.write_text(
+                json.dumps(
+                    {
+                        "ranked_candidates": [
+                            {
+                                "priority_bucket": "high",
+                                "source_title": "ASME",
+                                "page_number": 10,
+                                "page_text": "hidden",
+                                "content": "hidden",
+                                "definition": "hidden",
+                                "excerpt": "hidden",
+                                "sample": "hidden",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            snippets_path.write_text(
+                json.dumps(
+                    {
+                        "contract": {
+                            "neon_writes": False,
+                            "database_modifications": False,
+                            "validated_content": False,
+                        },
+                        "candidate_snippets": [
+                            {
+                                "source_title": "ASME",
+                                "page_number": 10,
+                                "snippet_text": "hidden",
+                                "text": "hidden",
+                                "quote": "hidden",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--ranked-report", str(ranked_path), "--snippet-report", str(snippets_path)]
+                )
+
+        self.assertEqual(0, exit_code)
+        printed = output.getvalue()
+        for field_name in (
+            "snippet_text",
+            "page_text",
+            "text",
+            "content",
+            "definition",
+            "quote",
+            "excerpt",
+            "sample",
+        ):
+            self.assertNotIn(field_name, printed)
+
     def test_summary_certifies_printable_output_excludes_long_text_fields(self):
         ranked_report = {
             "ranked_candidates": [
