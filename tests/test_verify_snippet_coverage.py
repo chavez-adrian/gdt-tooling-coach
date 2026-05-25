@@ -45,6 +45,25 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertEqual(3, summary["snippets_total"])
         self.assertEqual({"AAMC": 1, "ASME": 2}, summary["snippets_per_source"])
 
+    def test_counts_high_priority_pages_with_snippets(self):
+        ranked_report = {
+            "ranked_candidates": [
+                {"priority_bucket": "high", "source_title": "ASME", "page_number": 10},
+                {"priority_bucket": "high", "source_title": "ASME", "page_number": 11},
+            ]
+        }
+        snippet_report = {
+            "candidate_snippets": [
+                {"source_title": "ASME", "page_number": 10},
+                {"source_title": "ASME", "page_number": 10},
+                {"source_title": "Other", "page_number": 99},
+            ]
+        }
+
+        summary = summarize_snippet_coverage(ranked_report, snippet_report)
+
+        self.assertEqual(1, summary["high_priority_pages_with_snippets"])
+
 
 if __name__ == "__main__":
     unittest.main()
