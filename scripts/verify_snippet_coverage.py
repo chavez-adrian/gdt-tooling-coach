@@ -64,6 +64,10 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
             "opens_pdfs": False,
             "imports_pypdf": False,
         },
+        "verifier_runtime_contract": {
+            "contacts_neon": False,
+            "modifies_database": False,
+        },
     }
 
 
@@ -151,6 +155,10 @@ def print_coverage_summary(summary):
     print(
         "JSON-only/no-PDF verifier input contract: "
         f"{'PASS' if not summary['input_contract']['opens_pdfs'] else 'FAIL'}"
+    )
+    print(
+        "Verifier Neon/database runtime contract: "
+        f"{'PASS' if not summary['verifier_runtime_contract']['contacts_neon'] and not summary['verifier_runtime_contract']['modifies_database'] else 'FAIL'}"
     )
 
 

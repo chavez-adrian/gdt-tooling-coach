@@ -259,6 +259,20 @@ class VerifySnippetCoverageTest(unittest.TestCase):
             summary["input_contract"],
         )
 
+    def test_summary_declares_verifier_does_not_contact_neon_or_modify_database(self):
+        summary = summarize_snippet_coverage(
+            {"ranked_candidates": []},
+            {"candidate_snippets": []},
+        )
+
+        self.assertEqual(
+            {
+                "contacts_neon": False,
+                "modifies_database": False,
+            },
+            summary["verifier_runtime_contract"],
+        )
+
     def test_reports_no_neon_database_or_validated_content_contract(self):
         snippet_report = {
             "contract": {
