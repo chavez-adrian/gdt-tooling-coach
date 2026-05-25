@@ -29,6 +29,10 @@ def build_dry_run_report(snippets, source_rows):
             "matched_sources": matched_count,
             "unmatched_sources": blocked_count,
         },
+        "intended_review_state": "raw_import",
+        "intended_requires_human_review": True,
+        "intended_validated": False,
+        "intended_extraction_type": "literal_quote",
     }
 
 

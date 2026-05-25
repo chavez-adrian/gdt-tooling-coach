@@ -84,6 +84,14 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             report["source_match_summary"],
         )
 
+    def test_report_declares_intended_unvalidated_literal_review_state(self):
+        report = build_dry_run_report([], source_rows=[])
+
+        self.assertEqual("raw_import", report["intended_review_state"])
+        self.assertTrue(report["intended_requires_human_review"])
+        self.assertFalse(report["intended_validated"])
+        self.assertEqual("literal_quote", report["intended_extraction_type"])
+
 
 if __name__ == "__main__":
     unittest.main()
