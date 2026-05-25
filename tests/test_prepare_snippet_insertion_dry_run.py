@@ -116,6 +116,29 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertEqual(1, report["blocked_snippets"])
         self.assertEqual({"snippet_too_long": 1}, report["block_reasons"])
 
+    def test_report_blocks_snippets_with_validated_review_state(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "review_state": "validated",
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        self.assertEqual(0, report["insertable_snippets"])
+        self.assertEqual({"validated_review_state": 1}, report["block_reasons"])
+
     def test_report_declares_intended_unvalidated_literal_review_state(self):
         report = build_dry_run_report([], source_rows=[])
 

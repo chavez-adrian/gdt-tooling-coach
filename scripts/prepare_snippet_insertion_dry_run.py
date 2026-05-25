@@ -56,6 +56,8 @@ def build_dry_run_report(snippets, source_rows):
             reasons.append("source_not_found")
         if _word_count(snippet.get("snippet_text", "")) > 80:
             reasons.append("snippet_too_long")
+        if str(snippet.get("review_state", "")).lower() == "validated":
+            reasons.append("validated_review_state")
         if reasons:
             blocked_count += 1
             for reason in reasons:
