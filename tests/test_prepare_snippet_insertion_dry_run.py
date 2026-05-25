@@ -56,6 +56,34 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             report["source_match_summary"],
         )
 
+    def test_report_marks_snippets_insertable_when_source_matches(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        self.assertEqual(1, report["total_snippets"])
+        self.assertEqual(1, report["insertable_snippets"])
+        self.assertEqual(0, report["blocked_snippets"])
+        self.assertEqual({}, report["block_reasons"])
+        self.assertEqual(
+            {"matched_sources": 1, "unmatched_sources": 0},
+            report["source_match_summary"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

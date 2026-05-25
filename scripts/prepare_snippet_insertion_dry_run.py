@@ -14,13 +14,27 @@ def load_candidate_snippets(input_path=DEFAULT_INPUT_PATH):
 
 
 def build_dry_run_report(snippets, source_rows):
+    source_keys = {
+        _source_key(source)
+        for source in source_rows
+    }
+    matched_count = sum(1 for snippet in snippets if _source_key(snippet) in source_keys)
+    blocked_count = len(snippets) - matched_count
     return {
         "total_snippets": len(snippets),
-        "insertable_snippets": 0,
-        "blocked_snippets": len(snippets),
-        "block_reasons": {"source_not_found": len(snippets)} if snippets else {},
+        "insertable_snippets": matched_count,
+        "blocked_snippets": blocked_count,
+        "block_reasons": {"source_not_found": blocked_count} if blocked_count else {},
         "source_match_summary": {
-            "matched_sources": 0,
-            "unmatched_sources": len(snippets),
+            "matched_sources": matched_count,
+            "unmatched_sources": blocked_count,
         },
     }
+
+
+def _source_key(row):
+    return (
+        row.get("source_title") or row.get("title"),
+        row.get("source_type"),
+        row.get("language"),
+    )
