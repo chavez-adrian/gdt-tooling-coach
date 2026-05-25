@@ -220,3 +220,8 @@ diagnostic for candidate snippets that still lack explicit `concept_id`
 mapping. It reads concepts metadata, summarizes missing mappings and candidate
 labels, writes `data/processed/concept_readiness_report.json`, and never prints
 snippet text or assigns concepts automatically.
+
+`data/concept_seed_manifest.example.json` is the initial versioned list of
+reviewable GD&T concept labels for future explicit mapping. It stores no
+definitions or source excerpts, keeps every row in `needs_human_review`, and is
+not inserted into Neon by itself.

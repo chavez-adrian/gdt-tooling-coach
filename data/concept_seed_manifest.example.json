@@ -1,0 +1,56 @@
+[
+  {
+    "concept_key": "datum",
+    "preferred_label_en": "Datum",
+    "preferred_label_es": "Datum",
+    "concept_type": "reference",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal datum; no definition stored."
+  },
+  {
+    "concept_key": "feature_control_frame",
+    "preferred_label_en": "Feature control frame",
+    "preferred_label_es": "Marco de control de características",
+    "concept_type": "symbolic_notation",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal feature control frame; no definition stored."
+  },
+  {
+    "concept_key": "tolerance_zone",
+    "preferred_label_en": "Tolerance zone",
+    "preferred_label_es": "Zona de tolerancia",
+    "concept_type": "tolerance_concept",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal tolerance zone; no definition stored."
+  },
+  {
+    "concept_key": "maximum_material_condition",
+    "preferred_label_en": "Maximum material condition",
+    "preferred_label_es": "Condición de máximo material",
+    "concept_type": "material_condition",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal MMC; no definition stored."
+  },
+  {
+    "concept_key": "least_material_condition",
+    "preferred_label_en": "Least material condition",
+    "preferred_label_es": "Condición de mínimo material",
+    "concept_type": "material_condition",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal LMC; no definition stored."
+  },
+  {
+    "concept_key": "regardless_of_feature_size",
+    "preferred_label_en": "Regardless of feature size",
+    "preferred_label_es": "",
+    "concept_type": "material_condition",
+    "review_state": "needs_human_review",
+    "source_authority_hint": "ASME Y14.5 / GD&T course metadata",
+    "notes": "Seed label from matched_signal RFS; no definition stored."
+  }
+]

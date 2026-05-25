@@ -11,6 +11,13 @@
 - `tooling_examples`: aplicaciones practicas a componentes de troqueles.
 - `review_events`: historial de revision.
 
+## Manifest inicial de conceptos
+
+`data/concept_seed_manifest.example.json` enumera etiquetas iniciales de
+conceptos GD&T para revision humana. No es una insercion automatica, no guarda
+definiciones y no reemplaza la tabla `concepts`; solo prepara un vocabulario
+versionable para asignacion explicita posterior.
+
 ## Fuente maestra
 
 Las tablas relacionales son la fuente maestra. `v_glossary_flat` es solo una vista de lectura para revision/exportacion.

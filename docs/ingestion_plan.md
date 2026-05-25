@@ -93,3 +93,8 @@ debe explicar cuantos snippets siguen sin `concept_id`, que conceptos existen en
 Neon, que labels candidatas pueden derivarse solo de metadatos permitidos y
 cuantos snippets no tienen candidato confiable. Este diagnostico es SELECT-only,
 no imprime snippets y no asigna conceptos.
+
+`data/concept_seed_manifest.example.json` contiene las primeras etiquetas de
+conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
+versionable, no contiene definiciones, no inserta en Neon y mantiene
+`review_state = needs_human_review`.
