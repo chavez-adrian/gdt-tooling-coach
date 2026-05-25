@@ -1,9 +1,13 @@
+import argparse
+import json
 import subprocess
+import sys
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT_RELATIVE_PATH = Path("data/processed/snippet_insertion_dry_run.json")
+DEFAULT_REPORT_PATH = PROJECT_ROOT / DEFAULT_REPORT_RELATIVE_PATH
 REQUIRED_SUMMARY_FIELDS = {
     "total_snippets",
     "insertable_snippets",
@@ -55,10 +59,47 @@ def format_verification_summary(report, result):
             f"Insertable snippets: {report['insertable_snippets']}",
             f"Blocked snippets: {report['blocked_snippets']}",
             f"Block reasons: {_format_key_counts(report.get('block_reasons', {}))}",
+            f"Source match summary: {_format_key_counts(report.get('source_match_summary', {}))}",
             "No database writes: true",
             "Console output sanitized: true",
         ]
     )
+
+
+def load_report(report_path=DEFAULT_REPORT_PATH):
+    with open(report_path, "r", encoding="utf-8") as report_file:
+        return json.load(report_file)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Verify the snippet insertion dry-run report without database access."
+    )
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT_PATH)
+    parser.add_argument(
+        "--skip-ignore-check",
+        action="store_true",
+        help="Skip git ignore verification for temp-file tests.",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        report = load_report(args.report)
+        result = verify_dry_run_report(report)
+        if not args.skip_ignore_check and not verify_default_report_path_is_ignored():
+            result["errors"].append(
+                f"{DEFAULT_REPORT_RELATIVE_PATH.as_posix()} is not ignored by Git"
+            )
+        print(format_verification_summary(report, result))
+        if result["errors"]:
+            for error in result["errors"]:
+                print(f"ERROR: {error}", file=sys.stderr)
+            return 1
+        return 0
+    except Exception as exc:
+        print("Snippet insertion dry-run verification failed.", file=sys.stderr)
+        print(str(exc), file=sys.stderr)
+        return 1
 
 
 def verify_default_report_path_is_ignored(run_command=subprocess.run):
@@ -86,3 +127,7 @@ def _format_key_counts(counts):
     if not counts:
         return "none"
     return ", ".join(f"{key}={value}" for key, value in counts.items())
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

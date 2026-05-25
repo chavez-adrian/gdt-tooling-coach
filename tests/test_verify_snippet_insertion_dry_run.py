@@ -1,4 +1,8 @@
+import json
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.verify_snippet_insertion_dry_run import (
     DEFAULT_REPORT_RELATIVE_PATH,
@@ -120,6 +124,30 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
             ["git", "check-ignore", DEFAULT_REPORT_RELATIVE_PATH.as_posix()],
             calls[0][0],
         )
+
+    def test_cli_prints_safe_totals_source_matching_and_no_write_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            report_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
+            report_path.write_text(json.dumps(valid_report(total_snippets=2)), encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/verify_snippet_insertion_dry_run.py",
+                    "--report",
+                    str(report_path),
+                    "--skip-ignore-check",
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Total snippets: 2", result.stdout)
+        self.assertIn("Source match summary: matched_sources=0, unmatched_sources=0", result.stdout)
+        self.assertIn("No database writes: true", result.stdout)
+        self.assertNotIn("snippet_text", result.stdout)
 
 
 if __name__ == "__main__":
