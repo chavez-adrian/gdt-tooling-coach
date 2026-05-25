@@ -139,6 +139,20 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertEqual(0, report["insertable_snippets"])
         self.assertEqual({"validated_review_state": 1}, report["block_reasons"])
 
+    def test_report_blocks_snippets_missing_source_title(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+            source_rows=[],
+        )
+
+        self.assertEqual(0, report["insertable_snippets"])
+        self.assertEqual({"missing_source_title": 1}, report["block_reasons"])
+
     def test_report_declares_intended_unvalidated_literal_review_state(self):
         report = build_dry_run_report([], source_rows=[])
 
