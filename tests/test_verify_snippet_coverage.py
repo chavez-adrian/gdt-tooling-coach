@@ -9,6 +9,12 @@ from scripts.verify_snippet_coverage import main, summarize_snippet_coverage
 
 
 class VerifySnippetCoverageTest(unittest.TestCase):
+    def test_readme_documents_snippet_coverage_as_explanation_step(self):
+        readme = Path("README.md").read_text(encoding="utf-8")
+
+        self.assertIn("candidate-to-snippet coverage explanation", readme)
+        self.assertIn("python scripts/verify_snippet_coverage.py", readme)
+
     def test_counts_high_priority_candidates_from_ranked_report(self):
         ranked_report = {
             "ranked_candidates": [

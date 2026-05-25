@@ -189,3 +189,9 @@ validated by the script. `python scripts/verify_candidate_snippets.py` reports
 high-priority pages processed, snippets generated, snippets by source, maximum
 word count, safety checks, command checks, and Git evidence without printing
 snippet text. No se conecta a Neon.
+
+`python scripts/verify_snippet_coverage.py` is the candidate-to-snippet coverage explanation
+step. It compares ranked high-priority page metadata with generated
+snippet metadata and reports counts plus missing-page reason codes without
+opening PDFs, contacting Neon, marking anything validated, or printing snippet
+text.
