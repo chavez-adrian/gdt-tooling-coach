@@ -1,6 +1,9 @@
 import unittest
 
-from scripts.verify_snippet_insertion_dry_run import verify_dry_run_report
+from scripts.verify_snippet_insertion_dry_run import (
+    format_verification_summary,
+    verify_dry_run_report,
+)
 
 
 def valid_report(**overrides):
@@ -70,6 +73,23 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
         result = verify_dry_run_report(report)
 
         self.assertIn("executable SQL is not allowed in dry-run reports", result["errors"])
+
+    def test_console_summary_excludes_snippet_text_and_forbidden_text_fields(self):
+        report = valid_report(
+            total_snippets=2,
+            insertable_snippets=1,
+            blocked_snippets=1,
+            block_reasons={"missing_matched_signal": 1},
+            source_match_summary={"matched_sources": 1, "unmatched_sources": 1},
+        )
+        result = verify_dry_run_report(report)
+
+        summary = format_verification_summary(report, result)
+
+        self.assertIn("Total snippets: 2", summary)
+        self.assertNotIn("snippet_text", summary)
+        self.assertNotIn("definition_text", summary)
+        self.assertNotIn("literal quote", summary)
 
 
 if __name__ == "__main__":

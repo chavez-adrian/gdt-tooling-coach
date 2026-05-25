@@ -34,6 +34,21 @@ def verify_dry_run_report(report):
     }
 
 
+def format_verification_summary(report, result):
+    status = "passed" if not result["errors"] else "failed"
+    return "\n".join(
+        [
+            "Snippet insertion dry-run verification complete.",
+            f"Status: {status}",
+            f"Total snippets: {report['total_snippets']}",
+            f"Insertable snippets: {report['insertable_snippets']}",
+            f"Blocked snippets: {report['blocked_snippets']}",
+            f"Block reasons: {_format_key_counts(report.get('block_reasons', {}))}",
+            "Console output sanitized: true",
+        ]
+    )
+
+
 def _contains_executable_sql(value):
     if isinstance(value, dict):
         return any(_contains_executable_sql(item) for item in value.values())
@@ -43,3 +58,9 @@ def _contains_executable_sql(value):
         return False
     normalized = value.lower().replace(";", " ")
     return any(word in normalized.split() for word in FORBIDDEN_SQL_WORDS)
+
+
+def _format_key_counts(counts):
+    if not counts:
+        return "none"
+    return ", ".join(f"{key}={value}" for key, value in counts.items())
