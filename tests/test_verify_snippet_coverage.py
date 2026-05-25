@@ -99,6 +99,28 @@ class VerifySnippetCoverageTest(unittest.TestCase):
 
         self.assertEqual("unknown_reason", summary["pages_without_snippets"][0]["reason"])
 
+    def test_uses_explicit_metadata_reason_for_pages_without_snippets(self):
+        ranked_report = {
+            "ranked_candidates": [
+                {
+                    "priority_bucket": "high",
+                    "source_title": "ASME",
+                    "page_number": 11,
+                    "skip_reason": "missing_expected_local_path",
+                },
+            ]
+        }
+
+        summary = summarize_snippet_coverage(
+            ranked_report,
+            {"candidate_snippets": []},
+        )
+
+        self.assertEqual(
+            "missing_expected_local_path",
+            summary["pages_without_snippets"][0]["reason"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

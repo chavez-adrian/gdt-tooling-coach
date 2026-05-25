@@ -45,5 +45,12 @@ def _page_summary(row):
     }
     if row.get("expected_local_path") or row.get("source_path"):
         summary["source_path"] = row.get("expected_local_path") or row.get("source_path")
-    summary["reason"] = "unknown_reason"
+    summary["reason"] = _metadata_reason(row)
     return summary
+
+
+def _metadata_reason(row):
+    for field_name in ("skip_reason", "skipped_reason", "exclusion_reason", "reason"):
+        if row.get(field_name):
+            return row[field_name]
+    return "unknown_reason"
