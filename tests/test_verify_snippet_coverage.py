@@ -81,9 +81,23 @@ class VerifySnippetCoverageTest(unittest.TestCase):
 
         self.assertEqual(1, summary["high_priority_pages_without_snippets"])
         self.assertEqual(
-            [{"source_title": "ASME", "page_number": 11}],
+            [{"source_title": "ASME", "page_number": 11, "reason": "unknown_reason"}],
             summary["pages_without_snippets"],
         )
+
+    def test_reports_unknown_reason_for_pages_without_inferable_metadata_reason(self):
+        ranked_report = {
+            "ranked_candidates": [
+                {"priority_bucket": "high", "source_title": "ASME", "page_number": 11},
+            ]
+        }
+
+        summary = summarize_snippet_coverage(
+            ranked_report,
+            {"candidate_snippets": []},
+        )
+
+        self.assertEqual("unknown_reason", summary["pages_without_snippets"][0]["reason"])
 
 
 if __name__ == "__main__":

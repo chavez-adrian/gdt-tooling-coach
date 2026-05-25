@@ -45,4 +45,5 @@ def _page_summary(row):
     }
     if row.get("expected_local_path") or row.get("source_path"):
         summary["source_path"] = row.get("expected_local_path") or row.get("source_path")
+    summary["reason"] = "unknown_reason"
     return summary
