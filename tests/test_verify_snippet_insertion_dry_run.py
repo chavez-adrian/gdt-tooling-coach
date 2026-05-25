@@ -158,6 +158,20 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
         self.assertIn("dry-run planning and safety verification", readme)
         self.assertIn("not an ingestion or validation command", readme)
 
+    def test_ingestion_and_editorial_docs_keep_dry_run_verification_non_ingesting(self):
+        repo_root = Path(__file__).resolve().parents[1]
+        ingestion_plan = (repo_root / "docs" / "ingestion_plan.md").read_text(
+            encoding="utf-8"
+        )
+        editorial_rules = (repo_root / "docs" / "editorial_rules.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("verify_snippet_insertion_dry_run.py", ingestion_plan)
+        self.assertIn("dry-run planning and safety verification", ingestion_plan)
+        self.assertIn("verify_snippet_insertion_dry_run.py", editorial_rules)
+        self.assertIn("must not print snippet_text", editorial_rules)
+
 
 if __name__ == "__main__":
     unittest.main()

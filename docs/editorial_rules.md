@@ -62,6 +62,12 @@ contenido normativo. `python scripts/verify_snippet_coverage.py` solo puede
 explicar conteos, paginas con snippets y paginas sin snippets con codigos de
 razon metadata-only; must not mark snippets validated ni conectarse a Neon.
 
+La verificacion de `data/processed/snippet_insertion_dry_run.json` con
+`python scripts/verify_snippet_insertion_dry_run.py` es una revision de
+planificacion y seguridad. It must not print snippet_text, contenido normativo,
+SQL ejecutable ni campos de texto largo; must not connect to Neon, write to the
+database, or mark snippets validated.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.

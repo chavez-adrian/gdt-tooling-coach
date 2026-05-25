@@ -72,3 +72,10 @@ Compara paginas high-priority rankeadas contra
 metadatos de snippets generados para explicar cobertura y faltantes; does not open PDFs or contact Neon,
 no modifica base de datos y no marca contenido como
 validado.
+
+El verificador `python scripts/verify_snippet_insertion_dry_run.py` revisa
+`data/processed/snippet_insertion_dry_run.json` como dry-run planning and safety verification.
+Debe confirmar totales, razones de bloqueo, resumen de matching de fuentes,
+metadata `raw_import`/`requires_human_review`/`validated = false`/`literal_quote`,
+salida ignorada por Git, ausencia de SQL ejecutable y contrato sin escrituras de
+base de datos. No es ingestion ni validacion.
