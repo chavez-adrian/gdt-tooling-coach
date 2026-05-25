@@ -51,6 +51,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                     "source_type": "asme_2018_en",
                     "language": "en",
                     "page_number": 10,
+                    "snippet_text": "short literal quote",
                 }
             ],
             source_rows=[],
@@ -73,6 +74,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                     "source_type": "asme_2018_en",
                     "language": "en",
                     "page_number": 10,
+                    "snippet_text": "short literal quote",
                 }
             ],
             source_rows=[
@@ -128,6 +130,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                     "language": "en",
                     "page_number": 10,
                     "review_state": "validated",
+                    "snippet_text": "short literal quote",
                 }
             ],
             source_rows=[
@@ -150,6 +153,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                     "source_type": "asme_2018_en",
                     "language": "en",
                     "page_number": 10,
+                    "snippet_text": "short literal quote",
                 }
             ],
             source_rows=[],
@@ -165,6 +169,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                     "source_title": "ASME",
                     "source_type": "asme_2018_en",
                     "language": "en",
+                    "snippet_text": "short literal quote",
                 }
             ],
             source_rows=[
@@ -179,6 +184,29 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
 
         self.assertEqual(0, report["insertable_snippets"])
         self.assertEqual({"missing_page_number": 1}, report["block_reasons"])
+
+    def test_report_blocks_snippets_missing_snippet_text(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "page_number": 10,
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        self.assertEqual(0, report["insertable_snippets"])
+        self.assertEqual({"missing_snippet_text": 1}, report["block_reasons"])
 
     def test_report_declares_intended_unvalidated_literal_review_state(self):
         report = build_dry_run_report([], source_rows=[])
@@ -267,6 +295,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                             "source_type": "asme_2018_en",
                             "language": "en",
                             "page_number": 10,
+                            "snippet_text": "short literal quote",
                         }
                     ]
                     }
