@@ -260,6 +260,42 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             report["intended_insertion_metadata"],
         )
 
+    def test_report_includes_structured_block_details_with_multiple_reasons(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "review_state": "validated",
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        self.assertEqual(
+            [
+                {
+                    "snippet_index": 0,
+                    "reasons": [
+                        "missing_page_number",
+                        "missing_snippet_text",
+                        "missing_matched_signal",
+                        "validated_review_state",
+                    ],
+                }
+            ],
+            report["blocked_snippet_details"],
+        )
+        self.assertNotIn("short literal quote", json.dumps(report["blocked_snippet_details"]))
+
     def test_writes_snippet_insertion_dry_run_report_json(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"

@@ -48,9 +48,10 @@ def build_dry_run_report(snippets, source_rows):
         for source in source_rows
     }
     block_reasons = {}
+    blocked_snippet_details = []
     matched_count = 0
     blocked_count = 0
-    for snippet in snippets:
+    for snippet_index, snippet in enumerate(snippets):
         reasons = []
         if not snippet.get("source_title"):
             reasons.append("missing_source_title")
@@ -68,6 +69,9 @@ def build_dry_run_report(snippets, source_rows):
             reasons.append("validated_review_state")
         if reasons:
             blocked_count += 1
+            blocked_snippet_details.append(
+                {"snippet_index": snippet_index, "reasons": reasons}
+            )
             for reason in reasons:
                 block_reasons[reason] = block_reasons.get(reason, 0) + 1
         else:
@@ -77,6 +81,7 @@ def build_dry_run_report(snippets, source_rows):
         "insertable_snippets": matched_count,
         "blocked_snippets": blocked_count,
         "block_reasons": block_reasons,
+        "blocked_snippet_details": blocked_snippet_details,
         "source_match_summary": {
             "matched_sources": matched_count,
             "unmatched_sources": blocked_count,
