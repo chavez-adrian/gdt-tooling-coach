@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "snippet_insertion_dry_run.json"
+DEFAULT_OUTPUT_RELATIVE_PATH = Path("data/processed/snippet_insertion_dry_run.json")
 SELECT_SOURCES_SQL = """
 SELECT id, title, source_type, language
 FROM sources
@@ -60,6 +62,11 @@ def build_dry_run_report(snippets, source_rows):
         "intended_requires_human_review": True,
         "intended_validated": False,
         "intended_extraction_type": "literal_quote",
+        "contract": {
+            "database_writes": False,
+            "database_modifications": False,
+            "validated_content": False,
+        },
     }
 
 
@@ -76,6 +83,16 @@ def write_dry_run_report(report, output_path=DEFAULT_OUTPUT_PATH):
     with open(output_path, "w", encoding="utf-8") as output_file:
         json.dump(report, output_file, indent=2, sort_keys=True)
         output_file.write("\n")
+
+
+def dry_run_report_is_ignored(run_command=subprocess.run):
+    result = run_command(
+        ["git", "check-ignore", DEFAULT_OUTPUT_RELATIVE_PATH.as_posix()],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def fetch_source_rows(database_url, connect=psycopg.connect):

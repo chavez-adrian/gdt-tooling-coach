@@ -5,7 +5,9 @@ import unittest
 from pathlib import Path
 
 from scripts.prepare_snippet_insertion_dry_run import (
+    DEFAULT_OUTPUT_RELATIVE_PATH,
     build_dry_run_report,
+    dry_run_report_is_ignored,
     fetch_source_rows,
     format_console_summary,
     load_database_url,
@@ -253,6 +255,34 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertIn("Total snippets: 0", result.stdout)
         self.assertNotIn("snippet_text", result.stdout)
+
+    def test_report_declares_no_database_writes_or_modifications(self):
+        report = build_dry_run_report([], source_rows=[])
+
+        self.assertEqual(
+            {
+                "database_writes": False,
+                "database_modifications": False,
+                "validated_content": False,
+            },
+            report["contract"],
+        )
+
+    def test_dry_run_report_path_is_checked_with_git_ignore(self):
+        calls = []
+
+        class Result:
+            returncode = 0
+
+        def fake_run(command, cwd, capture_output, text):
+            calls.append((command, cwd, capture_output, text))
+            return Result()
+
+        self.assertTrue(dry_run_report_is_ignored(run_command=fake_run))
+        self.assertEqual(
+            ["git", "check-ignore", DEFAULT_OUTPUT_RELATIVE_PATH.as_posix()],
+            calls[0][0],
+        )
 
 
 if __name__ == "__main__":
