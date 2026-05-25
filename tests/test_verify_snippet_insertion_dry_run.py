@@ -149,6 +149,15 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
         self.assertIn("No database writes: true", result.stdout)
         self.assertNotIn("snippet_text", result.stdout)
 
+    def test_readme_documents_dry_run_verifier_as_planning_not_ingestion(self):
+        readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("python scripts/verify_snippet_insertion_dry_run.py", readme)
+        self.assertIn("dry-run planning and safety verification", readme)
+        self.assertIn("not an ingestion or validation command", readme)
+
 
 if __name__ == "__main__":
     unittest.main()

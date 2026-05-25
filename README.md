@@ -195,3 +195,9 @@ step. It compares ranked high-priority page metadata with generated
 snippet metadata and reports counts plus missing-page reason codes without
 opening PDFs, contacting Neon, marking anything validated, or printing snippet
 text.
+
+`python scripts/verify_snippet_insertion_dry_run.py` verifies
+`data/processed/snippet_insertion_dry_run.json` as a dry-run planning and safety verification
+report. It checks required summary fields, intended raw/unvalidated
+literal-quote metadata, ignored-output status, no executable SQL, sanitized
+console output, and no database writes. It is not an ingestion or validation command.
