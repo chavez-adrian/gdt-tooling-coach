@@ -1,5 +1,13 @@
 """Local coverage verification for ranked candidates and generated snippets."""
 
+import argparse
+import json
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_RANKED_REPORT = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
+DEFAULT_SNIPPET_REPORT = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
+
 
 def summarize_snippet_coverage(ranked_report, snippet_report):
     high_priority_candidates = [
@@ -23,6 +31,7 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
     return {
         "high_priority_candidates_total": len(high_priority_candidates),
         "unique_high_priority_pages_total": len(high_priority_pages),
+        "high_priority_pages_processed": len(snippet_pages),
         "high_priority_pages_with_snippets": len(high_priority_pages_with_snippets),
         "high_priority_pages_without_snippets": len(pages_without_snippets),
         "pages_without_snippets": pages_without_snippets,
@@ -54,3 +63,48 @@ def _metadata_reason(row):
         if row.get(field_name):
             return row[field_name]
     return "unknown_reason"
+
+
+def print_coverage_summary(summary):
+    print("Snippet coverage verification")
+    print(f"High-priority candidates total: {summary['high_priority_candidates_total']}")
+    print(f"Unique high-priority pages total: {summary['unique_high_priority_pages_total']}")
+    print(f"High-priority pages processed: {summary['high_priority_pages_processed']}")
+    print(f"High-priority pages with snippets: {summary['high_priority_pages_with_snippets']}")
+    print(
+        "High-priority pages without snippets: "
+        f"{summary['high_priority_pages_without_snippets']}"
+    )
+    print(f"Snippets total: {summary['snippets_total']}")
+    print("Snippets per source:")
+    if not summary["snippets_per_source"]:
+        print("  none")
+    else:
+        for source_title, count in summary["snippets_per_source"].items():
+            print(f"  {source_title}: {count}")
+    print("Pages without snippets:")
+    if not summary["pages_without_snippets"]:
+        print("  none")
+    else:
+        for page in summary["pages_without_snippets"]:
+            print(
+                "  "
+                f"{page.get('source_title')} page {page.get('page_number')}: "
+                f"{page.get('reason')}"
+            )
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ranked-report", type=Path, default=DEFAULT_RANKED_REPORT)
+    parser.add_argument("--snippet-report", type=Path, default=DEFAULT_SNIPPET_REPORT)
+    args = parser.parse_args(argv)
+
+    ranked_report = json.loads(args.ranked_report.read_text(encoding="utf-8"))
+    snippet_report = json.loads(args.snippet_report.read_text(encoding="utf-8"))
+    print_coverage_summary(summarize_snippet_coverage(ranked_report, snippet_report))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

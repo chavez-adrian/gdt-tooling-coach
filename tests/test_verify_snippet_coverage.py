@@ -1,6 +1,11 @@
+import io
+import json
+import tempfile
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
-from scripts.verify_snippet_coverage import summarize_snippet_coverage
+from scripts.verify_snippet_coverage import main, summarize_snippet_coverage
 
 
 class VerifySnippetCoverageTest(unittest.TestCase):
@@ -120,6 +125,54 @@ class VerifySnippetCoverageTest(unittest.TestCase):
             "missing_expected_local_path",
             summary["pages_without_snippets"][0]["reason"],
         )
+
+    def test_cli_reads_reports_and_prints_metadata_summary_without_snippet_text(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ranked_path = Path(tmpdir) / "ranked_definition_candidates.json"
+            snippets_path = Path(tmpdir) / "candidate_snippets.json"
+            ranked_path.write_text(
+                json.dumps(
+                    {
+                        "ranked_candidates": [
+                            {
+                                "priority_bucket": "high",
+                                "source_title": "ASME",
+                                "page_number": 10,
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            snippets_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_snippets": [
+                            {
+                                "source_title": "ASME",
+                                "page_number": 10,
+                                "snippet_text": "do not print this",
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--ranked-report", str(ranked_path), "--snippet-report", str(snippets_path)]
+                )
+
+        printed = output.getvalue()
+        self.assertEqual(0, exit_code)
+        self.assertIn("Snippet coverage verification", printed)
+        self.assertIn("High-priority candidates total: 1", printed)
+        self.assertIn("High-priority pages processed: 1", printed)
+        self.assertIn("Snippets total: 1", printed)
+        self.assertIn("ASME: 1", printed)
+        self.assertNotIn("do not print this", printed)
 
 
 if __name__ == "__main__":
