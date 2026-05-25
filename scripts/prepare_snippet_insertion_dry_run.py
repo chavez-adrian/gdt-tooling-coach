@@ -1,5 +1,7 @@
+import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
 import psycopg
@@ -20,6 +22,11 @@ def load_candidate_snippets(input_path=DEFAULT_INPUT_PATH):
     with open(input_path, "r", encoding="utf-8") as input_file:
         report = json.load(input_file)
     return report.get("candidate_snippets", [])
+
+
+def load_source_rows_fixture(source_rows_path):
+    with open(source_rows_path, "r", encoding="utf-8") as source_rows_file:
+        return json.load(source_rows_file)
 
 
 def load_database_url(env=os.environ, env_path=PROJECT_ROOT / ".env"):
@@ -91,3 +98,62 @@ def prepare_dry_run_report(
     report = build_dry_run_report(snippets, source_rows)
     write_dry_run_report(report, output_path)
     return report
+
+
+def format_console_summary(report):
+    block_reasons = _format_key_counts(report.get("block_reasons", {}))
+    source_match_summary = _format_key_counts(report.get("source_match_summary", {}))
+    return "\n".join(
+        [
+            "Snippet insertion dry-run complete.",
+            f"Total snippets: {report['total_snippets']}",
+            f"Insertable snippets: {report['insertable_snippets']}",
+            f"Blocked snippets: {report['blocked_snippets']}",
+            f"Block reasons: {block_reasons}",
+            f"Source match summary: {source_match_summary}",
+            "No database writes: true",
+        ]
+    )
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Prepare a local dry-run report for candidate snippet insertion."
+    )
+    parser.add_argument("--input", type=Path, default=DEFAULT_INPUT_PATH)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
+    parser.add_argument("--database-url")
+    parser.add_argument(
+        "--sources-fixture",
+        type=Path,
+        help="Use a local JSON source-row fixture instead of live Neon SELECT.",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        source_fetcher = fetch_source_rows
+        if args.sources_fixture is not None:
+            source_fetcher = lambda database_url: load_source_rows_fixture(args.sources_fixture)
+        report = prepare_dry_run_report(
+            input_path=args.input,
+            output_path=args.output,
+            database_url=args.database_url,
+            source_fetcher=source_fetcher,
+        )
+    except Exception as exc:
+        print("Snippet insertion dry-run failed.", file=sys.stderr)
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(format_console_summary(report))
+    return 0
+
+
+def _format_key_counts(counts):
+    if not counts:
+        return "none"
+    return ", ".join(f"{key}={value}" for key, value in counts.items())
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

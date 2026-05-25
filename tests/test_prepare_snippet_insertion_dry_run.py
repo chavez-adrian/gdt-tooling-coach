@@ -1,4 +1,5 @@
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -6,6 +7,7 @@ from pathlib import Path
 from scripts.prepare_snippet_insertion_dry_run import (
     build_dry_run_report,
     fetch_source_rows,
+    format_console_summary,
     load_database_url,
     load_candidate_snippets,
     prepare_dry_run_report,
@@ -199,6 +201,58 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
 
         self.assertEqual(report, written_report)
         self.assertEqual(1, written_report["insertable_snippets"])
+
+    def test_console_summary_reports_counts_without_snippet_text(self):
+        summary = format_console_summary(
+            {
+                "total_snippets": 2,
+                "insertable_snippets": 1,
+                "blocked_snippets": 1,
+                "block_reasons": {"source_not_found": 1},
+                "source_match_summary": {"matched_sources": 1, "unmatched_sources": 1},
+            }
+        )
+
+        self.assertIn("Total snippets: 2", summary)
+        self.assertIn("Insertable snippets: 1", summary)
+        self.assertIn("Blocked snippets: 1", summary)
+        self.assertIn("Block reasons: source_not_found=1", summary)
+        self.assertIn("Source match summary: matched_sources=1, unmatched_sources=1", summary)
+        self.assertIn("No database writes: true", summary)
+        self.assertNotIn("snippet_text", summary)
+
+    def test_cli_prints_metadata_only_summary(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            input_path = Path(tmp_dir) / "candidate_snippets.json"
+            output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
+            sources_path = Path(tmp_dir) / "sources.json"
+            input_path.write_text(
+                json.dumps({"candidate_snippets": []}),
+                encoding="utf-8",
+            )
+            sources_path.write_text("[]", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/prepare_snippet_insertion_dry_run.py",
+                    "--input",
+                    str(input_path),
+                    "--output",
+                    str(output_path),
+                    "--database-url",
+                    "postgresql://readonly",
+                    "--sources-fixture",
+                    str(sources_path),
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Total snippets: 0", result.stdout)
+        self.assertNotIn("snippet_text", result.stdout)
 
 
 if __name__ == "__main__":
