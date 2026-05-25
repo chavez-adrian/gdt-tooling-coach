@@ -31,6 +31,11 @@ def verify_dry_run_report(report):
     return {
         "checks": checks,
         "errors": errors,
+        "runtime_contract": {
+            "database_access_required": False,
+            "database_writes_attempted": False,
+            "neon_required": False,
+        },
     }
 
 
@@ -44,6 +49,7 @@ def format_verification_summary(report, result):
             f"Insertable snippets: {report['insertable_snippets']}",
             f"Blocked snippets: {report['blocked_snippets']}",
             f"Block reasons: {_format_key_counts(report.get('block_reasons', {}))}",
+            "No database writes: true",
             "Console output sanitized: true",
         ]
     )

@@ -91,6 +91,18 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
         self.assertNotIn("definition_text", summary)
         self.assertNotIn("literal quote", summary)
 
+    def test_verifier_declares_no_database_access_or_writes_required(self):
+        result = verify_dry_run_report(valid_report())
+
+        self.assertEqual(
+            {
+                "database_access_required": False,
+                "database_writes_attempted": False,
+                "neon_required": False,
+            },
+            result["runtime_contract"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
