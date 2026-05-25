@@ -1,7 +1,9 @@
 import unittest
 
 from scripts.verify_snippet_insertion_dry_run import (
+    DEFAULT_REPORT_RELATIVE_PATH,
     format_verification_summary,
+    verify_default_report_path_is_ignored,
     verify_dry_run_report,
 )
 
@@ -101,6 +103,22 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
                 "neon_required": False,
             },
             result["runtime_contract"],
+        )
+
+    def test_verifies_default_dry_run_report_path_is_ignored(self):
+        calls = []
+
+        class Result:
+            returncode = 0
+
+        def fake_run(command, cwd, capture_output, text):
+            calls.append((command, cwd, capture_output, text))
+            return Result()
+
+        self.assertTrue(verify_default_report_path_is_ignored(run_command=fake_run))
+        self.assertEqual(
+            ["git", "check-ignore", DEFAULT_REPORT_RELATIVE_PATH.as_posix()],
+            calls[0][0],
         )
 
 

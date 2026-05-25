@@ -1,3 +1,9 @@
+import subprocess
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_REPORT_RELATIVE_PATH = Path("data/processed/snippet_insertion_dry_run.json")
 REQUIRED_SUMMARY_FIELDS = {
     "total_snippets",
     "insertable_snippets",
@@ -53,6 +59,16 @@ def format_verification_summary(report, result):
             "Console output sanitized: true",
         ]
     )
+
+
+def verify_default_report_path_is_ignored(run_command=subprocess.run):
+    result = run_command(
+        ["git", "check-ignore", DEFAULT_REPORT_RELATIVE_PATH.as_posix()],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def _contains_executable_sql(value):
