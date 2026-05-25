@@ -172,6 +172,22 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
         self.assertIn("verify_snippet_insertion_dry_run.py", editorial_rules)
         self.assertIn("must not print snippet_text", editorial_rules)
 
+    def test_rejects_report_contract_that_claims_writes_or_validated_content(self):
+        report = valid_report(
+            contract={
+                "database_writes": True,
+                "database_modifications": False,
+                "validated_content": True,
+                "executable_sql_saved": True,
+            }
+        )
+
+        result = verify_dry_run_report(report)
+
+        self.assertIn("dry-run contract cannot declare database writes", result["errors"])
+        self.assertIn("dry-run contract cannot declare validated content", result["errors"])
+        self.assertIn("dry-run contract cannot declare saved executable SQL", result["errors"])
+
 
 if __name__ == "__main__":
     unittest.main()

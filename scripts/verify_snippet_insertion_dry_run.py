@@ -38,6 +38,22 @@ def verify_dry_run_report(report):
         errors.append("executable SQL is not allowed in dry-run reports")
     else:
         checks.append("no_executable_sql")
+    contract = report.get("contract", {})
+    if contract.get("database_writes") or contract.get("database_modifications"):
+        errors.append("dry-run contract cannot declare database writes")
+    if contract.get("validated_content"):
+        errors.append("dry-run contract cannot declare validated content")
+    if contract.get("executable_sql_saved"):
+        errors.append("dry-run contract cannot declare saved executable SQL")
+    if not any(
+        [
+            contract.get("database_writes"),
+            contract.get("database_modifications"),
+            contract.get("validated_content"),
+            contract.get("executable_sql_saved"),
+        ]
+    ):
+        checks.append("safe_report_contract")
     return {
         "checks": checks,
         "errors": errors,
