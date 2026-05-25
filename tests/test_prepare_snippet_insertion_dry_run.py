@@ -6,6 +6,7 @@ from pathlib import Path
 from scripts.prepare_snippet_insertion_dry_run import (
     build_dry_run_report,
     load_candidate_snippets,
+    write_dry_run_report,
 )
 
 
@@ -91,6 +92,16 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertTrue(report["intended_requires_human_review"])
         self.assertFalse(report["intended_validated"])
         self.assertEqual("literal_quote", report["intended_extraction_type"])
+
+    def test_writes_snippet_insertion_dry_run_report_json(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
+
+            write_dry_run_report({"total_snippets": 0}, output_path)
+
+            written_report = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual({"total_snippets": 0}, written_report)
 
 
 if __name__ == "__main__":

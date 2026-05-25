@@ -42,3 +42,10 @@ def _source_key(row):
         row.get("source_type"),
         row.get("language"),
     )
+
+
+def write_dry_run_report(report, output_path=DEFAULT_OUTPUT_PATH):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        json.dump(report, output_file, indent=2, sort_keys=True)
+        output_file.write("\n")
