@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scripts.prepare_snippet_insertion_dry_run import (
     build_dry_run_report,
+    fetch_source_rows,
     load_candidate_snippets,
     write_dry_run_report,
 )
@@ -102,6 +103,55 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             written_report = json.loads(output_path.read_text(encoding="utf-8"))
 
         self.assertEqual({"total_snippets": 0}, written_report)
+
+    def test_fetch_source_rows_uses_select_only_query(self):
+        class FakeCursor:
+            def __init__(self):
+                self.sql = None
+                self.description = [("id",), ("title",), ("source_type",), ("language",)]
+
+            def execute(self, sql):
+                self.sql = sql
+
+            def fetchall(self):
+                return [("source-1", "ASME", "asme_2018_en", "en")]
+
+        class FakeConnection:
+            def __init__(self):
+                self.cursor_instance = FakeCursor()
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def cursor(self):
+                return self.cursor_instance
+
+        fake_connection = FakeConnection()
+
+        def fake_connect(database_url):
+            self.assertEqual("postgresql://readonly", database_url)
+            return fake_connection
+
+        sources = fetch_source_rows("postgresql://readonly", connect=fake_connect)
+
+        normalized_sql = " ".join(fake_connection.cursor_instance.sql.split()).lower()
+        self.assertTrue(normalized_sql.startswith("select "))
+        self.assertIn(" from sources", normalized_sql)
+        self.assertNotRegex(normalized_sql, r"\b(insert|update|delete|create|drop|alter)\b")
+        self.assertEqual(
+            [
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+            sources,
+        )
 
 
 if __name__ == "__main__":

@@ -1,10 +1,17 @@
 import json
 from pathlib import Path
 
+import psycopg
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "snippet_insertion_dry_run.json"
+SELECT_SOURCES_SQL = """
+SELECT id, title, source_type, language
+FROM sources
+ORDER BY title, source_type, language;
+"""
 
 
 def load_candidate_snippets(input_path=DEFAULT_INPUT_PATH):
@@ -49,3 +56,11 @@ def write_dry_run_report(report, output_path=DEFAULT_OUTPUT_PATH):
     with open(output_path, "w", encoding="utf-8") as output_file:
         json.dump(report, output_file, indent=2, sort_keys=True)
         output_file.write("\n")
+
+
+def fetch_source_rows(database_url, connect=psycopg.connect):
+    with connect(database_url) as conn:
+        cur = conn.cursor()
+        cur.execute(SELECT_SOURCES_SQL)
+        column_names = [column[0] for column in cur.description]
+        return [dict(zip(column_names, row)) for row in cur.fetchall()]
