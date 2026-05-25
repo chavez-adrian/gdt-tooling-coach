@@ -47,13 +47,26 @@ def build_dry_run_report(snippets, source_rows):
         _source_key(source)
         for source in source_rows
     }
-    matched_count = sum(1 for snippet in snippets if _source_key(snippet) in source_keys)
-    blocked_count = len(snippets) - matched_count
+    block_reasons = {}
+    matched_count = 0
+    blocked_count = 0
+    for snippet in snippets:
+        reasons = []
+        if _source_key(snippet) not in source_keys:
+            reasons.append("source_not_found")
+        if _word_count(snippet.get("snippet_text", "")) > 80:
+            reasons.append("snippet_too_long")
+        if reasons:
+            blocked_count += 1
+            for reason in reasons:
+                block_reasons[reason] = block_reasons.get(reason, 0) + 1
+        else:
+            matched_count += 1
     return {
         "total_snippets": len(snippets),
         "insertable_snippets": matched_count,
         "blocked_snippets": blocked_count,
-        "block_reasons": {"source_not_found": blocked_count} if blocked_count else {},
+        "block_reasons": block_reasons,
         "source_match_summary": {
             "matched_sources": matched_count,
             "unmatched_sources": blocked_count,
@@ -76,6 +89,10 @@ def _source_key(row):
         row.get("source_type"),
         row.get("language"),
     )
+
+
+def _word_count(text):
+    return len(str(text).split())
 
 
 def write_dry_run_report(report, output_path=DEFAULT_OUTPUT_PATH):

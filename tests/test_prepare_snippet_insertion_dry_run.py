@@ -92,6 +92,30 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             report["source_match_summary"],
         )
 
+    def test_report_blocks_snippets_longer_than_80_words(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "snippet_text": " ".join(f"word{i}" for i in range(81)),
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        self.assertEqual(0, report["insertable_snippets"])
+        self.assertEqual(1, report["blocked_snippets"])
+        self.assertEqual({"snippet_too_long": 1}, report["block_reasons"])
+
     def test_report_declares_intended_unvalidated_literal_review_state(self):
         report = build_dry_run_report([], source_rows=[])
 
