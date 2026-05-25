@@ -296,6 +296,32 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         )
         self.assertNotIn("short literal quote", json.dumps(report["blocked_snippet_details"]))
 
+    def test_report_is_metadata_only_and_declares_no_executable_sql_saved(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "page_number": 10,
+                    "snippet_text": "literal quote that must never be saved in the dry run report",
+                    "matched_signal": "definition",
+                }
+            ],
+            source_rows=[
+                {
+                    "id": "source-1",
+                    "title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+        )
+
+        serialized_report = json.dumps(report)
+        self.assertNotIn("literal quote that must never be saved", serialized_report)
+        self.assertFalse(report["contract"]["executable_sql_saved"])
+
     def test_writes_snippet_insertion_dry_run_report_json(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
@@ -463,6 +489,7 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
                 "database_writes": False,
                 "database_modifications": False,
                 "validated_content": False,
+                "executable_sql_saved": False,
             },
             report["contract"],
         )

@@ -100,6 +100,7 @@ def build_dry_run_report(snippets, source_rows):
             "database_writes": False,
             "database_modifications": False,
             "validated_content": False,
+            "executable_sql_saved": False,
         },
     }
 
