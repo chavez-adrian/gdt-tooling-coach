@@ -58,6 +58,12 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
             "passed": True,
             "forbidden_output_fields": [],
         },
+        "input_contract": {
+            "ranked_json": True,
+            "snippet_json": True,
+            "opens_pdfs": False,
+            "imports_pypdf": False,
+        },
     }
 
 
@@ -141,6 +147,10 @@ def print_coverage_summary(summary):
     print(
         "Metadata-only printable output: "
         f"{'PASS' if summary['metadata_only_output']['passed'] else 'FAIL'}"
+    )
+    print(
+        "JSON-only/no-PDF verifier input contract: "
+        f"{'PASS' if not summary['input_contract']['opens_pdfs'] else 'FAIL'}"
     )
 
 

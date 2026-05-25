@@ -243,6 +243,22 @@ class VerifySnippetCoverageTest(unittest.TestCase):
             summary["metadata_only_output"],
         )
 
+    def test_summary_declares_json_only_inputs_and_no_pdf_access(self):
+        summary = summarize_snippet_coverage(
+            {"ranked_candidates": []},
+            {"candidate_snippets": []},
+        )
+
+        self.assertEqual(
+            {
+                "ranked_json": True,
+                "snippet_json": True,
+                "opens_pdfs": False,
+                "imports_pypdf": False,
+            },
+            summary["input_contract"],
+        )
+
     def test_reports_no_neon_database_or_validated_content_contract(self):
         snippet_report = {
             "contract": {
