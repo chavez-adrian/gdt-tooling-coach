@@ -150,7 +150,7 @@ def print_coverage_summary(summary):
     else:
         for source_title, count in summary["snippets_per_source"].items():
             print(f"  {source_title}: {count}")
-    print("Pages without snippets:")
+    print("Pages without snippets and reasons:")
     if not summary["pages_without_snippets"]:
         print("  none")
     else:
