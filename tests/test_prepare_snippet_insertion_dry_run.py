@@ -247,6 +247,19 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertFalse(report["intended_validated"])
         self.assertEqual("literal_quote", report["intended_extraction_type"])
 
+    def test_report_declares_intended_insertion_metadata_contract(self):
+        report = build_dry_run_report([], source_rows=[])
+
+        self.assertEqual(
+            {
+                "review_state": "raw_import",
+                "requires_human_review": True,
+                "validated": False,
+                "extraction_type": "literal_quote",
+            },
+            report["intended_insertion_metadata"],
+        )
+
     def test_writes_snippet_insertion_dry_run_report_json(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"

@@ -85,6 +85,12 @@ def build_dry_run_report(snippets, source_rows):
         "intended_requires_human_review": True,
         "intended_validated": False,
         "intended_extraction_type": "literal_quote",
+        "intended_insertion_metadata": {
+            "review_state": "raw_import",
+            "requires_human_review": True,
+            "validated": False,
+            "extraction_type": "literal_quote",
+        },
         "contract": {
             "database_writes": False,
             "database_modifications": False,
