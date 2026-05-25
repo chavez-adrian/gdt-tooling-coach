@@ -206,6 +206,7 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertIn("Snippet coverage verification", printed)
         self.assertIn("High-priority candidates total: 1", printed)
         self.assertIn("High-priority pages processed: 1", printed)
+        self.assertIn("Pages with snippets: 1", printed)
         self.assertIn("Snippets total: 1", printed)
         self.assertIn("ASME: 1", printed)
         self.assertNotIn("do not print this", printed)

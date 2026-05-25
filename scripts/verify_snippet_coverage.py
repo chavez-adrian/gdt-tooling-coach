@@ -138,6 +138,7 @@ def print_coverage_summary(summary):
     print(f"Unique high-priority pages total: {summary['unique_high_priority_pages_total']}")
     print(f"High-priority pages processed: {summary['high_priority_pages_processed']}")
     print(f"High-priority pages with snippets: {summary['high_priority_pages_with_snippets']}")
+    print(f"Pages with snippets: {summary['high_priority_pages_with_snippets']}")
     print(
         "High-priority pages without snippets: "
         f"{summary['high_priority_pages_without_snippets']}"
