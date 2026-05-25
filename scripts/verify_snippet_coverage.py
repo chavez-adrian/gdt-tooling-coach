@@ -54,6 +54,7 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
         "snippets_total": len(snippets),
         "snippets_per_source": dict(sorted(snippets_per_source.items())),
         "contract": _contract_summary(snippet_report),
+        "validated_state": _validated_state_summary(snippets),
         "metadata_only_output": {
             "passed": True,
             "forbidden_output_fields": [],
@@ -117,6 +118,20 @@ def _contract_summary(snippet_report):
     }
 
 
+def _validated_state_summary(snippets):
+    validated_indexes = [
+        index
+        for index, snippet in enumerate(snippets)
+        if snippet.get("review_status") == "validated"
+        or snippet.get("validated") is True
+        or snippet.get("is_validated") is True
+    ]
+    return {
+        "passed": not validated_indexes,
+        "validated_indexes": validated_indexes,
+    }
+
+
 def print_coverage_summary(summary):
     print("Snippet coverage verification")
     print(f"High-priority candidates total: {summary['high_priority_candidates_total']}")
@@ -149,6 +164,10 @@ def print_coverage_summary(summary):
         f"{'PASS' if summary['contract']['passed'] else 'FAIL'}"
     )
     print(
+        "No validated snippet states: "
+        f"{'PASS' if summary['validated_state']['passed'] else 'FAIL'}"
+    )
+    print(
         "Metadata-only printable output: "
         f"{'PASS' if summary['metadata_only_output']['passed'] else 'FAIL'}"
     )
@@ -172,7 +191,7 @@ def main(argv=None):
     snippet_report = json.loads(args.snippet_report.read_text(encoding="utf-8"))
     summary = summarize_snippet_coverage(ranked_report, snippet_report)
     print_coverage_summary(summary)
-    return 0 if summary["contract"]["passed"] else 1
+    return 0 if summary["contract"]["passed"] and summary["validated_state"]["passed"] else 1
 
 
 if __name__ == "__main__":

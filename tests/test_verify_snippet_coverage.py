@@ -316,6 +316,29 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertEqual(1, exit_code)
         self.assertIn("No Neon/database/validated contract: FAIL", output.getvalue())
 
+    def test_reports_validated_state_markers_without_printing_content(self):
+        snippet_report = {
+            "contract": {
+                "neon_writes": False,
+                "database_modifications": False,
+                "validated_content": False,
+            },
+            "candidate_snippets": [
+                {"review_status": "raw_import"},
+                {"review_status": "validated", "snippet_text": "do not print"},
+            ],
+        }
+
+        summary = summarize_snippet_coverage({"ranked_candidates": []}, snippet_report)
+
+        self.assertEqual(
+            {
+                "passed": False,
+                "validated_indexes": [1],
+            },
+            summary["validated_state"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
