@@ -11,12 +11,38 @@ class VerifySnippetInsertionDryRunTests(unittest.TestCase):
             "blocked_snippets": 0,
             "block_reasons": {},
             "source_match_summary": {"matched_sources": 1, "unmatched_sources": 0},
+            "intended_insertion_metadata": {
+                "review_state": "raw_import",
+                "requires_human_review": True,
+                "validated": False,
+                "extraction_type": "literal_quote",
+            },
         }
 
         result = verify_dry_run_report(report)
 
         self.assertEqual([], result["errors"])
         self.assertIn("required_summary_fields", result["checks"])
+
+    def test_verifies_intended_insertion_constants(self):
+        report = {
+            "total_snippets": 0,
+            "insertable_snippets": 0,
+            "blocked_snippets": 0,
+            "block_reasons": {},
+            "source_match_summary": {"matched_sources": 0, "unmatched_sources": 0},
+            "intended_insertion_metadata": {
+                "review_state": "raw_import",
+                "requires_human_review": True,
+                "validated": False,
+                "extraction_type": "literal_quote",
+            },
+        }
+
+        result = verify_dry_run_report(report)
+
+        self.assertEqual([], result["errors"])
+        self.assertIn("intended_insertion_constants", result["checks"])
 
 
 if __name__ == "__main__":
