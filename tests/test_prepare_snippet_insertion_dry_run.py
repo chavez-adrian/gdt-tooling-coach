@@ -3,7 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.prepare_snippet_insertion_dry_run import load_candidate_snippets
+from scripts.prepare_snippet_insertion_dry_run import (
+    build_dry_run_report,
+    load_candidate_snippets,
+)
 
 
 class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
@@ -31,6 +34,27 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
 
         self.assertEqual(1, len(snippets))
         self.assertEqual("ASME", snippets[0]["source_title"])
+
+    def test_report_blocks_snippets_when_no_source_matches(self):
+        report = build_dry_run_report(
+            [
+                {
+                    "source_title": "Unknown",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                }
+            ],
+            source_rows=[],
+        )
+
+        self.assertEqual(1, report["total_snippets"])
+        self.assertEqual(0, report["insertable_snippets"])
+        self.assertEqual(1, report["blocked_snippets"])
+        self.assertEqual({"source_not_found": 1}, report["block_reasons"])
+        self.assertEqual(
+            {"matched_sources": 0, "unmatched_sources": 1},
+            report["source_match_summary"],
+        )
 
 
 if __name__ == "__main__":
