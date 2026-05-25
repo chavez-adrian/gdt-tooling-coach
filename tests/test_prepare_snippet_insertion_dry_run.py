@@ -6,6 +6,7 @@ from pathlib import Path
 from scripts.prepare_snippet_insertion_dry_run import (
     build_dry_run_report,
     fetch_source_rows,
+    load_database_url,
     load_candidate_snippets,
     write_dry_run_report,
 )
@@ -152,6 +153,13 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
             ],
             sources,
         )
+
+    def test_database_url_loader_fails_clearly_when_missing(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            missing_env_path = Path(tmp_dir) / ".env"
+
+            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL is not set"):
+                load_database_url(env={}, env_path=missing_env_path)
 
 
 if __name__ == "__main__":

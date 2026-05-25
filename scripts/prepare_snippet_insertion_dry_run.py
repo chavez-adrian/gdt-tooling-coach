@@ -1,7 +1,9 @@
 import json
+import os
 from pathlib import Path
 
 import psycopg
+from dotenv import load_dotenv
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +20,17 @@ def load_candidate_snippets(input_path=DEFAULT_INPUT_PATH):
     with open(input_path, "r", encoding="utf-8") as input_file:
         report = json.load(input_file)
     return report.get("candidate_snippets", [])
+
+
+def load_database_url(env=os.environ, env_path=PROJECT_ROOT / ".env"):
+    if env_path.exists():
+        load_dotenv(env_path)
+    database_url = env.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError(
+            "DATABASE_URL is not set. Provide read-only Neon config via .env or environment."
+        )
+    return database_url
 
 
 def build_dry_run_report(snippets, source_rows):
