@@ -60,6 +60,8 @@ def build_dry_run_report(snippets, source_rows):
             reasons.append("missing_page_number")
         if not snippet.get("snippet_text"):
             reasons.append("missing_snippet_text")
+        if not snippet.get("matched_signal"):
+            reasons.append("missing_matched_signal")
         if _word_count(snippet.get("snippet_text", "")) > 80:
             reasons.append("snippet_too_long")
         if str(snippet.get("review_state", "")).lower() == "validated":
