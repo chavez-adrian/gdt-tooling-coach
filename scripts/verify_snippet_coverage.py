@@ -7,6 +7,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RANKED_REPORT = PROJECT_ROOT / "data" / "processed" / "ranked_definition_candidates.json"
 DEFAULT_SNIPPET_REPORT = PROJECT_ROOT / "data" / "processed" / "candidate_snippets.json"
+SAFE_CONTRACT_FLAGS = {
+    "neon_writes": False,
+    "database_modifications": False,
+    "validated_content": False,
+}
 
 
 def summarize_snippet_coverage(ranked_report, snippet_report):
@@ -37,6 +42,7 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
         "pages_without_snippets": pages_without_snippets,
         "snippets_total": len(snippets),
         "snippets_per_source": dict(sorted(snippets_per_source.items())),
+        "contract": _contract_summary(snippet_report),
     }
 
 
@@ -63,6 +69,19 @@ def _metadata_reason(row):
         if row.get(field_name):
             return row[field_name]
     return "unknown_reason"
+
+
+def _contract_summary(snippet_report):
+    contract = snippet_report.get("contract", {})
+    violated_flags = [
+        flag
+        for flag, expected_value in SAFE_CONTRACT_FLAGS.items()
+        if contract.get(flag) != expected_value
+    ]
+    return {
+        "passed": not violated_flags,
+        "violated_flags": violated_flags,
+    }
 
 
 def print_coverage_summary(summary):
@@ -92,6 +111,10 @@ def print_coverage_summary(summary):
                 f"{page.get('source_title')} page {page.get('page_number')}: "
                 f"{page.get('reason')}"
             )
+    print(
+        "No Neon/database/validated contract: "
+        f"{'PASS' if summary['contract']['passed'] else 'FAIL'}"
+    )
 
 
 def main(argv=None):

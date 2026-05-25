@@ -174,6 +174,21 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertIn("ASME: 1", printed)
         self.assertNotIn("do not print this", printed)
 
+    def test_reports_no_neon_database_or_validated_content_contract(self):
+        snippet_report = {
+            "contract": {
+                "neon_writes": False,
+                "database_modifications": False,
+                "validated_content": False,
+            },
+            "candidate_snippets": [],
+        }
+
+        summary = summarize_snippet_coverage({"ranked_candidates": []}, snippet_report)
+
+        self.assertTrue(summary["contract"]["passed"])
+        self.assertEqual([], summary["contract"]["violated_flags"])
+
 
 if __name__ == "__main__":
     unittest.main()
