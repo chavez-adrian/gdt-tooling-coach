@@ -11,6 +11,7 @@ EXPECTED_INTENDED_INSERTION_METADATA = {
     "validated": False,
     "extraction_type": "literal_quote",
 }
+FORBIDDEN_SQL_WORDS = {"insert", "update", "delete", "create", "drop", "alter"}
 
 
 def verify_dry_run_report(report):
@@ -23,7 +24,22 @@ def verify_dry_run_report(report):
         errors.append("intended insertion metadata does not match raw unvalidated literal quote contract")
     else:
         checks.append("intended_insertion_constants")
+    if _contains_executable_sql(report):
+        errors.append("executable SQL is not allowed in dry-run reports")
+    else:
+        checks.append("no_executable_sql")
     return {
         "checks": checks,
         "errors": errors,
     }
+
+
+def _contains_executable_sql(value):
+    if isinstance(value, dict):
+        return any(_contains_executable_sql(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_executable_sql(item) for item in value)
+    if not isinstance(value, str):
+        return False
+    normalized = value.lower().replace(";", " ")
+    return any(word in normalized.split() for word in FORBIDDEN_SQL_WORDS)
