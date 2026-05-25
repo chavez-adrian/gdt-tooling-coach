@@ -481,6 +481,65 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
         self.assertIn("Total snippets: 0", result.stdout)
         self.assertNotIn("snippet_text", result.stdout)
 
+    def test_cli_reports_block_reasons_and_safety_contract_without_snippet_text(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            input_path = Path(tmp_dir) / "candidate_snippets.json"
+            output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
+            sources_path = Path(tmp_dir) / "sources.json"
+            input_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_snippets": [
+                            {
+                                "source_title": "ASME",
+                                "source_type": "asme_2018_en",
+                                "language": "en",
+                                "page_number": 10,
+                                "snippet_text": "literal quote that must not print",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            sources_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "source-1",
+                            "title": "ASME",
+                            "source_type": "asme_2018_en",
+                            "language": "en",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/prepare_snippet_insertion_dry_run.py",
+                    "--input",
+                    str(input_path),
+                    "--output",
+                    str(output_path),
+                    "--database-url",
+                    "postgresql://readonly",
+                    "--sources-fixture",
+                    str(sources_path),
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Block reasons: missing_matched_signal=1", result.stdout)
+        self.assertIn("No database writes: true", result.stdout)
+        self.assertIn("No executable SQL saved: true", result.stdout)
+        self.assertNotIn("literal quote that must not print", result.stdout)
+
     def test_report_declares_no_database_writes_or_modifications(self):
         report = build_dry_run_report([], source_rows=[])
 

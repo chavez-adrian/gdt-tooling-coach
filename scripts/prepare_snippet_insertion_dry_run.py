@@ -168,6 +168,7 @@ def format_console_summary(report):
             f"Block reasons: {block_reasons}",
             f"Source match summary: {source_match_summary}",
             "No database writes: true",
+            "No executable SQL saved: true",
         ]
     )
 
