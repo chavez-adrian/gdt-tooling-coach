@@ -8,9 +8,16 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
         if candidate.get("priority_bucket") == "high"
     ]
     high_priority_pages = {_page_key(candidate) for candidate in high_priority_candidates}
+    snippets = snippet_report.get("candidate_snippets", [])
+    snippets_per_source = {}
+    for snippet in snippets:
+        source_title = snippet.get("source_title") or "unknown"
+        snippets_per_source[source_title] = snippets_per_source.get(source_title, 0) + 1
     return {
         "high_priority_candidates_total": len(high_priority_candidates),
         "unique_high_priority_pages_total": len(high_priority_pages),
+        "snippets_total": len(snippets),
+        "snippets_per_source": dict(sorted(snippets_per_source.items())),
     }
 
 
