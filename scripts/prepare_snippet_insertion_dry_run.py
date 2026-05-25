@@ -77,3 +77,17 @@ def fetch_source_rows(database_url, connect=psycopg.connect):
         cur.execute(SELECT_SOURCES_SQL)
         column_names = [column[0] for column in cur.description]
         return [dict(zip(column_names, row)) for row in cur.fetchall()]
+
+
+def prepare_dry_run_report(
+    input_path=DEFAULT_INPUT_PATH,
+    output_path=DEFAULT_OUTPUT_PATH,
+    database_url=None,
+    source_fetcher=fetch_source_rows,
+):
+    resolved_database_url = database_url or load_database_url()
+    snippets = load_candidate_snippets(input_path)
+    source_rows = source_fetcher(resolved_database_url)
+    report = build_dry_run_report(snippets, source_rows)
+    write_dry_run_report(report, output_path)
+    return report

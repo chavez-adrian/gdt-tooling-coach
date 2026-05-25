@@ -8,6 +8,7 @@ from scripts.prepare_snippet_insertion_dry_run import (
     fetch_source_rows,
     load_database_url,
     load_candidate_snippets,
+    prepare_dry_run_report,
     write_dry_run_report,
 )
 
@@ -160,6 +161,44 @@ class PrepareSnippetInsertionDryRunTests(unittest.TestCase):
 
             with self.assertRaisesRegex(RuntimeError, "DATABASE_URL is not set"):
                 load_database_url(env={}, env_path=missing_env_path)
+
+    def test_prepares_dry_run_report_from_candidate_file_and_source_lookup(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            input_path = Path(tmp_dir) / "candidate_snippets.json"
+            output_path = Path(tmp_dir) / "snippet_insertion_dry_run.json"
+            input_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_snippets": [
+                            {
+                                "source_title": "ASME",
+                                "source_type": "asme_2018_en",
+                                "language": "en",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            report = prepare_dry_run_report(
+                input_path=input_path,
+                output_path=output_path,
+                database_url="postgresql://readonly",
+                source_fetcher=lambda database_url: [
+                    {
+                        "id": "source-1",
+                        "title": "ASME",
+                        "source_type": "asme_2018_en",
+                        "language": "en",
+                    }
+                ],
+            )
+
+            written_report = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(report, written_report)
+        self.assertEqual(1, written_report["insertable_snippets"])
 
 
 if __name__ == "__main__":
