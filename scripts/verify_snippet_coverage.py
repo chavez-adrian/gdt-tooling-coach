@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -81,8 +82,16 @@ def _page_summary(row):
 def _metadata_reason(row):
     for field_name in ("skip_reason", "skipped_reason", "exclusion_reason", "reason"):
         if row.get(field_name):
-            return row[field_name]
+            return _safe_reason_code(row[field_name])
     return "unknown_reason"
+
+
+def _safe_reason_code(reason):
+    if reason in FORBIDDEN_LONG_TEXT_FIELDS:
+        return "unsafe_reason_metadata"
+    if not re.fullmatch(r"[A-Za-z0-9_:-]+", str(reason)):
+        return "unsafe_reason_metadata"
+    return reason
 
 
 def _contract_summary(snippet_report):

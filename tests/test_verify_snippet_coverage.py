@@ -129,6 +129,34 @@ class VerifySnippetCoverageTest(unittest.TestCase):
             summary["pages_without_snippets"][0]["reason"],
         )
 
+    def test_sanitizes_unsafe_missing_snippet_reasons(self):
+        ranked_report = {
+            "ranked_candidates": [
+                {
+                    "priority_bucket": "high",
+                    "source_title": "ASME",
+                    "page_number": 11,
+                    "reason": "page_text",
+                },
+                {
+                    "priority_bucket": "high",
+                    "source_title": "AAMC",
+                    "page_number": 12,
+                    "skip_reason": "this looks like source prose and must not print",
+                },
+            ]
+        }
+
+        summary = summarize_snippet_coverage(
+            ranked_report,
+            {"candidate_snippets": []},
+        )
+
+        self.assertEqual(
+            ["unsafe_reason_metadata", "unsafe_reason_metadata"],
+            [page["reason"] for page in summary["pages_without_snippets"]],
+        )
+
     def test_cli_reads_reports_and_prints_metadata_summary_without_snippet_text(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             ranked_path = Path(tmpdir) / "ranked_definition_candidates.json"
