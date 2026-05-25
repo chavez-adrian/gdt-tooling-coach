@@ -59,8 +59,11 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         }
         snippet_report = {
             "candidate_snippets": [
-                {"source_title": "ASME", "page_number": 10},
-                {"source_title": "ASME", "page_number": 10},
+                {
+                    "source_title": "ASME",
+                    "expected_local_path": "data/raw/asme.pdf",
+                    "page_number": 10,
+                },
                 {"source_title": "Other", "page_number": 99},
             ]
         }
@@ -147,6 +150,11 @@ class VerifySnippetCoverageTest(unittest.TestCase):
             snippets_path.write_text(
                 json.dumps(
                     {
+                        "contract": {
+                            "neon_writes": False,
+                            "database_modifications": False,
+                            "validated_content": False,
+                        },
                         "candidate_snippets": [
                             {
                                 "source_title": "ASME",
@@ -188,6 +196,34 @@ class VerifySnippetCoverageTest(unittest.TestCase):
 
         self.assertTrue(summary["contract"]["passed"])
         self.assertEqual([], summary["contract"]["violated_flags"])
+
+    def test_cli_returns_failure_when_contract_is_violated(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ranked_path = Path(tmpdir) / "ranked_definition_candidates.json"
+            snippets_path = Path(tmpdir) / "candidate_snippets.json"
+            ranked_path.write_text(json.dumps({"ranked_candidates": []}), encoding="utf-8")
+            snippets_path.write_text(
+                json.dumps(
+                    {
+                        "contract": {
+                            "neon_writes": True,
+                            "database_modifications": False,
+                            "validated_content": False,
+                        },
+                        "candidate_snippets": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--ranked-report", str(ranked_path), "--snippet-report", str(snippets_path)]
+                )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("No Neon/database/validated contract: FAIL", output.getvalue())
 
 
 if __name__ == "__main__":

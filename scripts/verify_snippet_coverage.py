@@ -48,7 +48,7 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
 
 def _page_key(row):
     return (
-        row.get("expected_local_path") or row.get("source_path") or row.get("source_title"),
+        row.get("source_title"),
         row.get("page_number"),
     )
 
@@ -125,8 +125,9 @@ def main(argv=None):
 
     ranked_report = json.loads(args.ranked_report.read_text(encoding="utf-8"))
     snippet_report = json.loads(args.snippet_report.read_text(encoding="utf-8"))
-    print_coverage_summary(summarize_snippet_coverage(ranked_report, snippet_report))
-    return 0
+    summary = summarize_snippet_coverage(ranked_report, snippet_report)
+    print_coverage_summary(summary)
+    return 0 if summary["contract"]["passed"] else 1
 
 
 if __name__ == "__main__":
