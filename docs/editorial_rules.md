@@ -57,6 +57,11 @@ imprimir conteos, fuentes, maximo conteo de palabras, estados `raw_import`,
 debe imprimir `snippet_text` ni contenido normativo literal. No se conecta a
 Neon.
 
+La coverage verification must not print snippet text, campos de texto largo ni
+contenido normativo. `python scripts/verify_snippet_coverage.py` solo puede
+explicar conteos, paginas con snippets y paginas sin snippets con codigos de
+razon metadata-only; must not mark snippets validated ni conectarse a Neon.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.

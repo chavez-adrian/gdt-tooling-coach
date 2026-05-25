@@ -66,3 +66,9 @@ generados, snippets por fuente, maximo conteo de palabras, confirmacion del
 limite de 80 palabras, campos `raw_import` y `requires_human_review`, contrato
 sin Neon ni modificaciones de base de datos, `git diff --stat` y
 `git status --short`. No imprime texto de snippets. No se conecta a Neon.
+
+El verificador `python scripts/verify_snippet_coverage.py` es metadata-only snippet coverage verification.
+Compara paginas high-priority rankeadas contra
+metadatos de snippets generados para explicar cobertura y faltantes; does not open PDFs or contact Neon,
+no modifica base de datos y no marca contenido como
+validado.

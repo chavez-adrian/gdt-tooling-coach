@@ -15,6 +15,15 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertIn("candidate-to-snippet coverage explanation", readme)
         self.assertIn("python scripts/verify_snippet_coverage.py", readme)
 
+    def test_process_docs_describe_snippet_coverage_as_metadata_only(self):
+        ingestion_plan = Path("docs/ingestion_plan.md").read_text(encoding="utf-8")
+        editorial_rules = Path("docs/editorial_rules.md").read_text(encoding="utf-8")
+
+        self.assertIn("metadata-only snippet coverage verification", ingestion_plan)
+        self.assertIn("does not open PDFs or contact Neon", ingestion_plan)
+        self.assertIn("coverage verification must not print snippet text", editorial_rules)
+        self.assertIn("must not mark snippets validated", editorial_rules)
+
     def test_counts_high_priority_candidates_from_ranked_report(self):
         ranked_report = {
             "ranked_candidates": [
