@@ -56,6 +56,8 @@ def build_dry_run_report(snippets, source_rows):
             reasons.append("missing_source_title")
         elif _source_key(snippet) not in source_keys:
             reasons.append("source_not_found")
+        if snippet.get("page_number") is None:
+            reasons.append("missing_page_number")
         if _word_count(snippet.get("snippet_text", "")) > 80:
             reasons.append("snippet_too_long")
         if str(snippet.get("review_state", "")).lower() == "validated":
