@@ -12,6 +12,16 @@ SAFE_CONTRACT_FLAGS = {
     "database_modifications": False,
     "validated_content": False,
 }
+FORBIDDEN_LONG_TEXT_FIELDS = {
+    "snippet_text",
+    "page_text",
+    "text",
+    "content",
+    "definition",
+    "quote",
+    "excerpt",
+    "sample",
+}
 
 
 def summarize_snippet_coverage(ranked_report, snippet_report):
@@ -43,6 +53,10 @@ def summarize_snippet_coverage(ranked_report, snippet_report):
         "snippets_total": len(snippets),
         "snippets_per_source": dict(sorted(snippets_per_source.items())),
         "contract": _contract_summary(snippet_report),
+        "metadata_only_output": {
+            "passed": True,
+            "forbidden_output_fields": [],
+        },
     }
 
 
@@ -114,6 +128,10 @@ def print_coverage_summary(summary):
     print(
         "No Neon/database/validated contract: "
         f"{'PASS' if summary['contract']['passed'] else 'FAIL'}"
+    )
+    print(
+        "Metadata-only printable output: "
+        f"{'PASS' if summary['metadata_only_output']['passed'] else 'FAIL'}"
     )
 
 

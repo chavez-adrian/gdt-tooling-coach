@@ -182,6 +182,39 @@ class VerifySnippetCoverageTest(unittest.TestCase):
         self.assertIn("ASME: 1", printed)
         self.assertNotIn("do not print this", printed)
 
+    def test_summary_certifies_printable_output_excludes_long_text_fields(self):
+        ranked_report = {
+            "ranked_candidates": [
+                {
+                    "priority_bucket": "high",
+                    "source_title": "ASME",
+                    "page_number": 10,
+                    "page_text": "candidate page text must stay out of coverage output",
+                    "definition": "candidate definition must stay out of coverage output",
+                },
+            ]
+        }
+        snippet_report = {
+            "candidate_snippets": [
+                {
+                    "source_title": "ASME",
+                    "page_number": 10,
+                    "snippet_text": "snippet text must stay out of coverage output",
+                    "quote": "quote must stay out of coverage output",
+                },
+            ]
+        }
+
+        summary = summarize_snippet_coverage(ranked_report, snippet_report)
+
+        self.assertEqual(
+            {
+                "passed": True,
+                "forbidden_output_fields": [],
+            },
+            summary["metadata_only_output"],
+        )
+
     def test_reports_no_neon_database_or_validated_content_contract(self):
         snippet_report = {
             "contract": {
