@@ -96,7 +96,7 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         candidate = {
             "source_title": "ASME",
             "source_type": "standard",
-            "source_language": "en",
+            "language": "en",
             "source_path": "data/raw/asme.pdf",
             "page_number": 2,
             "candidate_score": 91,
@@ -113,6 +113,48 @@ class ExtractCandidateSnippetsReportTests(unittest.TestCase):
         self.assertEqual("data/raw/asme.pdf", snippets[0]["expected_local_path"])
         self.assertNotIn("source_language", snippets[0])
         self.assertNotIn("source_path", snippets[0])
+
+    def test_report_rows_preserve_language_enriched_from_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            ranked_path = Path(tmp_dir) / "ranked_definition_candidates.json"
+            output_path = Path(tmp_dir) / "candidate_snippets.json"
+            manifest_path = Path(tmp_dir) / "source_manifest.example.json"
+            ranked_path.write_text(
+                json.dumps(
+                    {
+                        "ranked_candidates": [
+                            {
+                                "source_title": "ASME",
+                                "page_number": 2,
+                                "priority_bucket": "high",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "source_title": "ASME",
+                            "source_type": "asme_2018_en",
+                            "language": "en",
+                            "expected_local_path": "data/raw/asme.pdf",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            report = write_candidate_snippets_report(
+                ranked_path,
+                output_path,
+                pdf_reader_factory=FakePdfReader,
+                manifest_path=manifest_path,
+            )
+
+        self.assertEqual("en", report["candidate_snippets"][0]["language"])
 
     def test_candidates_missing_pdf_metadata_are_enriched_from_manifest(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

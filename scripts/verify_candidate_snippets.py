@@ -65,6 +65,34 @@ def verify_review_state_fields(report):
     }
 
 
+def verify_required_snippet_fields(report):
+    required_fields = (
+        "source_title",
+        "source_type",
+        "language",
+        "page_number",
+        "snippet_text",
+        "extraction_type",
+        "proposed_review_state",
+        "requires_human_review",
+    )
+    invalid_indexes = [
+        index
+        for index, snippet in enumerate(report.get("candidate_snippets", []))
+        if any(snippet.get(field) in (None, "") for field in required_fields)
+    ]
+    missing_language_count = sum(
+        1
+        for snippet in report.get("candidate_snippets", [])
+        if snippet.get("language") in (None, "")
+    )
+    return {
+        "passed": not invalid_indexes,
+        "invalid_required_field_indexes": invalid_indexes,
+        "missing_language_count": missing_language_count,
+    }
+
+
 def verify_report_contract(report):
     contract = report.get("contract", {})
     violated_flags = [
@@ -136,6 +164,7 @@ def collect_git_evidence(project_root, runner=subprocess.run):
 def build_verification(report, project_root, runner=subprocess.run):
     word_limit = verify_snippet_word_limit(report)
     review_state = verify_review_state_fields(report)
+    required_fields = verify_required_snippet_fields(report)
     contract = verify_report_contract(report)
     command_checks = [
         run_extractor_command(project_root, runner=runner),
@@ -146,6 +175,7 @@ def build_verification(report, project_root, runner=subprocess.run):
     passed = (
         word_limit["passed"]
         and review_state["passed"]
+        and required_fields["passed"]
         and contract["passed"]
         and all(check["passed"] for check in command_checks)
     )
@@ -154,6 +184,7 @@ def build_verification(report, project_root, runner=subprocess.run):
         "summary": summarize_candidate_snippet_report(report),
         "word_limit": word_limit,
         "review_state": review_state,
+        "required_fields": required_fields,
         "contract": contract,
         "command_checks": command_checks,
         "git_evidence": git_evidence,
@@ -183,6 +214,11 @@ def print_metrics_summary(verification):
     print(
         "Raw literal human-review fields: "
         f"{'PASS' if verification['review_state']['passed'] else 'FAIL'}"
+    )
+    print(f"Snippets with language=None: {verification['required_fields']['missing_language_count']}")
+    print(
+        "Required snippet fields: "
+        f"{'PASS' if verification['required_fields']['passed'] else 'FAIL'}"
     )
     print(
         "No Neon/database/validated contract: "

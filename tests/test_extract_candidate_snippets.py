@@ -121,7 +121,7 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
         candidate = {
             "source_title": "ASME Y14.5",
             "source_type": "standard",
-            "source_language": "en",
+            "language": "en",
             "source_path": "data/sources/asme-y14-5.pdf",
             "page_number": 42,
             "candidate_score": 88,
@@ -133,7 +133,7 @@ class ExtractCandidateSnippetsTests(unittest.TestCase):
 
         self.assertEqual("ASME Y14.5", snippets[0]["source_title"])
         self.assertEqual("standard", snippets[0]["source_type"])
-        self.assertEqual("en", snippets[0]["source_language"])
+        self.assertEqual("en", snippets[0]["language"])
         self.assertEqual("data/sources/asme-y14-5.pdf", snippets[0]["source_path"])
         self.assertEqual(42, snippets[0]["page_number"])
         self.assertEqual(88, snippets[0]["candidate_score"])

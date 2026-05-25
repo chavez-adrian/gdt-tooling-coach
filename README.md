@@ -201,3 +201,9 @@ text.
 report. It checks required summary fields, intended raw/unvalidated
 literal-quote metadata, ignored-output status, no executable SQL, sanitized
 console output, and no database writes. It is not an ingestion or validation command.
+
+`python scripts/diagnose_source_matching.py` is a SELECT-only diagnostic for
+source matching mismatches between `candidate_snippets.json` and Neon
+`sources`. It reports source titles, source_type/language values, exact
+comparison results, and normalized match candidates without printing
+`snippet_text` or credentials.

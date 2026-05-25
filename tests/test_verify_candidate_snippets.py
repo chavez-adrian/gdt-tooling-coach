@@ -13,6 +13,7 @@ from scripts.verify_candidate_snippets import (
     run_unittest_command,
     summarize_candidate_snippet_report,
     verify_report_contract,
+    verify_required_snippet_fields,
     verify_review_state_fields,
     verify_snippet_word_limit,
 )
@@ -94,6 +95,38 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
 
         self.assertFalse(safety["passed"])
         self.assertEqual([1], safety["invalid_review_state_indexes"])
+
+    def test_fails_required_field_safety_when_language_is_missing(self):
+        report = {
+            "candidate_snippets": [
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": "en",
+                    "page_number": 1,
+                    "snippet_text": "short quote",
+                    "extraction_type": "literal_quote",
+                    "proposed_review_state": "raw_import",
+                    "requires_human_review": True,
+                },
+                {
+                    "source_title": "ASME",
+                    "source_type": "asme_2018_en",
+                    "language": None,
+                    "page_number": 2,
+                    "snippet_text": "short quote",
+                    "extraction_type": "literal_quote",
+                    "proposed_review_state": "raw_import",
+                    "requires_human_review": True,
+                },
+            ]
+        }
+
+        safety = verify_required_snippet_fields(report)
+
+        self.assertFalse(safety["passed"])
+        self.assertEqual([1], safety["invalid_required_field_indexes"])
+        self.assertEqual(1, safety["missing_language_count"])
 
     def test_fails_contract_safety_when_report_touches_neon_database_or_validation(self):
         report = {
@@ -192,6 +225,8 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
                         "candidate_snippets": [
                             {
                                 "source_title": "ASME",
+                                "source_type": "asme_2018_en",
+                                "language": "en",
                                 "expected_local_path": "data/raw/asme.pdf",
                                 "page_number": 10,
                                 "snippet_word_count": 7,
@@ -202,6 +237,8 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
                             },
                             {
                                 "source_title": "ASME",
+                                "source_type": "asme_2018_en",
+                                "language": "en",
                                 "expected_local_path": "data/raw/asme.pdf",
                                 "page_number": 10,
                                 "snippet_word_count": 5,
@@ -240,6 +277,8 @@ class VerifyCandidateSnippetsTest(unittest.TestCase):
         self.assertIn("Maximum snippet word count observed: 7", printed)
         self.assertIn("No snippet exceeds 80 words: PASS", printed)
         self.assertIn("Raw literal human-review fields: PASS", printed)
+        self.assertIn("Snippets with language=None: 0", printed)
+        self.assertIn("Required snippet fields: PASS", printed)
         self.assertIn("No Neon/database/validated contract: PASS", printed)
         self.assertNotIn("text must not be printed", printed)
 

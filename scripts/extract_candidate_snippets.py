@@ -51,7 +51,8 @@ def extract_candidate_snippets(candidates, page_text_by_key):
                         {
                             "source_title": candidate.get("source_title"),
                             "source_type": candidate.get("source_type"),
-                            "source_language": candidate.get("source_language"),
+                            "language": candidate.get("language")
+                            or candidate.get("source_language"),
                             "source_path": candidate.get("source_path"),
                             "page_number": candidate.get("page_number"),
                             "candidate_score": candidate.get("candidate_score"),
