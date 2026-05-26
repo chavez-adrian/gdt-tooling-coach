@@ -1,4 +1,8 @@
+import json
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.verify_snippet_concept_assignment import verify_assignment_draft
 
@@ -177,6 +181,56 @@ class VerifySnippetConceptAssignmentTests(unittest.TestCase):
             },
             result["block_reasons"],
         )
+
+    def test_cli_reads_artifacts_and_prints_sanitized_total_assignment_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            snippets_path = Path(tmp_dir) / "candidate_snippets.json"
+            draft_path = Path(tmp_dir) / "snippet_concept_assignment_draft.json"
+            concepts_path = Path(tmp_dir) / "concepts.json"
+            manifest_path = Path(tmp_dir) / "manifest.json"
+            snippets_path.write_text(
+                json.dumps({"candidate_snippets": [snippet()]}),
+                encoding="utf-8",
+            )
+            draft_path.write_text(
+                json.dumps({"assignments": [assignment()]}),
+                encoding="utf-8",
+            )
+            concepts_path.write_text(json.dumps([concept()]), encoding="utf-8")
+            manifest_path.write_text(json.dumps([{"concept_key": "datum"}]), encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/verify_snippet_concept_assignment.py",
+                    "--input",
+                    str(snippets_path),
+                    "--assignment-draft",
+                    str(draft_path),
+                    "--concepts-fixture",
+                    str(concepts_path),
+                    "--manifest",
+                    str(manifest_path),
+                    "--expected-total",
+                    "1",
+                    "--database-url",
+                    "postgresql://user:password@hidden-host/db",
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Snippet concept assignment verification complete.", result.stdout)
+        self.assertIn("Total assignments: 1", result.stdout)
+        self.assertIn("Assignments by concept_key: datum=1", result.stdout)
+        self.assertIn("No database writes: true", result.stdout)
+        self.assertNotIn("literal text must never appear", result.stdout)
+        self.assertNotIn("snippet_text", result.stdout)
+        self.assertNotIn("DATABASE_URL", result.stdout)
+        self.assertNotIn("password", result.stdout)
+        self.assertNotIn("hidden-host", result.stdout)
 
 
 if __name__ == "__main__":
