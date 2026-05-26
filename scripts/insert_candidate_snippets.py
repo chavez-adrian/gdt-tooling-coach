@@ -59,13 +59,15 @@ def calculate_import_fingerprint(snippet, source_id):
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def build_insertion_plan(snippets, source_rows, execute=False):
+def build_insertion_plan(snippets, source_rows, execute=False, existing_definition_fingerprints=None):
+    existing_definition_fingerprints = set(existing_definition_fingerprints or [])
     source_ids_by_key = {
         _source_key(source): source["id"]
         for source in source_rows
     }
     rows = []
     blocked_details = []
+    duplicate_details = []
     block_reasons = {}
     matched_sources = 0
     unmatched_sources = 0
@@ -83,7 +85,16 @@ def build_insertion_plan(snippets, source_rows, execute=False):
             for reason in reasons:
                 block_reasons[reason] = block_reasons.get(reason, 0) + 1
             continue
-        rows.append(_insertion_row(snippet, source_id))
+        row = _insertion_row(snippet, source_id)
+        if row["import_fingerprint"] in existing_definition_fingerprints:
+            duplicate_details.append(
+                {
+                    "snippet_index": index,
+                    "import_fingerprint": row["import_fingerprint"],
+                }
+            )
+            continue
+        rows.append(row)
 
     return {
         "mode": "execute" if execute else "dry-run",
@@ -92,8 +103,11 @@ def build_insertion_plan(snippets, source_rows, execute=False):
         "total_snippets": len(snippets),
         "ready_to_insert": len(rows),
         "blocked_snippets": len(blocked_details),
+        "duplicate_snippets": len(duplicate_details),
+        "skipped_existing_definitions": len(duplicate_details),
         "block_reasons": block_reasons,
         "blocked_snippet_details": blocked_details,
+        "duplicate_details": duplicate_details,
         "source_match_summary": {
             "matched_sources": matched_sources,
             "unmatched_sources": unmatched_sources,

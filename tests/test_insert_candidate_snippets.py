@@ -96,6 +96,22 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(1, plan["blocked_snippets"])
         self.assertEqual({"missing_concept_id": 1}, plan["block_reasons"])
 
+    def test_dry_run_skips_existing_definition_fingerprints_as_duplicates(self):
+        fingerprint = calculate_import_fingerprint(valid_snippet(), "source-1")
+
+        plan = build_insertion_plan(
+            [valid_snippet()],
+            SOURCE_ROWS,
+            execute=False,
+            existing_definition_fingerprints={fingerprint},
+        )
+
+        self.assertEqual(0, plan["ready_to_insert"])
+        self.assertEqual(1, plan["duplicate_snippets"])
+        self.assertEqual(1, plan["skipped_existing_definitions"])
+        self.assertEqual([{"snippet_index": 0, "import_fingerprint": fingerprint}], plan["duplicate_details"])
+        self.assertFalse(plan["database_writes_attempted"])
+
     def test_plan_enforces_non_negotiable_raw_literal_contract(self):
         plan = build_insertion_plan(
             [
