@@ -136,6 +136,19 @@ class RawImportReviewHtmlTests(unittest.TestCase):
         ]:
             self.assertIn(marker, html)
 
+    def test_html_contains_json_download_export_markers(self):
+        html = build_review_html([review_row()])
+
+        for marker in [
+            "exportDecisions",
+            "raw_import_review_decisions.json",
+            "application/json",
+            "URL.createObjectURL",
+            "download",
+            'id="export-decisions"',
+        ]:
+            self.assertIn(marker, html)
+
 
 if __name__ == "__main__":
     unittest.main()

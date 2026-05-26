@@ -78,6 +78,16 @@ def build_review_html(rows):
         }});
       }});
     }}
+    function exportDecisions() {{
+      const payload = JSON.stringify(readDecisions(), null, 2);
+      const blob = new Blob([payload], {{ type: "application/json" }});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "raw_import_review_decisions.json";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }}
+    document.getElementById("export-decisions").addEventListener("click", exportDecisions);
     restoreDecisions();
   </script>
 </body>
@@ -95,6 +105,7 @@ def _render_controls(rows):
       <label>Language <select id="filter-language"><option value="">All languages</option>{_render_options(languages)}</select></label>
       <label>Review decision <select id="filter-review-decision"><option value="">All decisions</option>{_render_options(ALLOWED_REVIEW_DECISIONS)}</select></label>
       <label>Search <input id="filter-search" type="search"></label>
+      <button id="export-decisions" type="button">Export JSON</button>
     </section>"""
 
 
