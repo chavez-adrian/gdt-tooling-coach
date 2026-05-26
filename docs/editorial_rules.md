@@ -93,6 +93,14 @@ archivo debe conservar `raw_import`, `requires_human_review = true`,
 `validated = false`, fingerprint unico y campos vacios para recomendacion/notas
 del revisor.
 
+La interfaz `data/processed/raw_import_review.html` tambien permanece ignorada
+por Git y puede mostrar `definition_text` solo para revision local. Debe ser
+autocontenida, no usar URLs externas, no modificar Neon, no marcar contenido
+como validado y no alterar el CSV original. Las decisiones permitidas son
+`accept_as_candidate`, `reject_not_definition`, `wrong_concept`, `duplicate`,
+`needs_more_context`, `needs_2018_comparison`, y
+`needs_spanish_term_review`.
+
 El diagnostico `python scripts/diagnose_concept_readiness.py` solo puede usar
 metadatos permitidos para explicar readiness de conceptos. No debe imprimir
 `snippet_text`, credenciales ni contenido normativo, no debe escribir en Neon y

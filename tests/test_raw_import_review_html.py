@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -190,6 +191,19 @@ class RawImportReviewHtmlTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertTrue(unsafe_result["no_neon_modification_path"])
         self.assertTrue(unsafe_result["passed"])
+
+    def test_building_html_preserves_original_csv_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_path = Path(tmp_dir) / "raw_import_review_export.csv"
+            html_path = Path(tmp_dir) / "raw_import_review.html"
+            write_fixture_csv(csv_path, [review_row()])
+            before_hash = hashlib.sha256(csv_path.read_bytes()).hexdigest()
+
+            rows = load_review_rows(csv_path)
+            write_review_html(build_review_html(rows), html_path)
+            after_hash = hashlib.sha256(csv_path.read_bytes()).hexdigest()
+
+        self.assertEqual(before_hash, after_hash)
 
 
 if __name__ == "__main__":

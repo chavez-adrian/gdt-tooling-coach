@@ -135,6 +135,18 @@ The CSV is written to `data/processed/raw_import_review_export.csv`, remains
 ignored by Git, and includes blank `review_recommendation` and `reviewer_notes`
 columns. These commands are SELECT-only and do not mark definitions validated.
 
+Build the local browser review UI from the ignored CSV:
+
+```powershell
+python scripts/build_raw_import_review_html.py
+python scripts/verify_raw_import_review_html.py
+```
+
+The generated `data/processed/raw_import_review.html` is ignored by Git,
+self-contained, and local-only. It stores draft browser progress in
+`localStorage`, exports decisions as `raw_import_review_decisions.json` on
+demand, and does not connect to Neon or modify the original CSV.
+
 ## Troubleshooting
 
 - Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set

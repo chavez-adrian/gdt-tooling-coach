@@ -251,6 +251,13 @@ reviewer fields. `python scripts/verify_raw_import_review_export.py` verifies
 the CSV shape, 100 expected rows, raw review contract, duplicate fingerprints,
 and Git-ignore status without printing definition text.
 
+`python scripts/build_raw_import_review_html.py` turns that ignored CSV into
+`data/processed/raw_import_review.html`, a self-contained local review UI. It
+does not alter the CSV, contact Neon, mark rows validated, or write exported
+decisions; browser progress stays in `localStorage` and can be downloaded as
+`raw_import_review_decisions.json`. Verify it with
+`python scripts/verify_raw_import_review_html.py`.
+
 `data/concept_seed_manifest.example.json` is the initial versioned list of
 reviewable GD&T concept labels for future explicit mapping. It stores no
 definitions or source excerpts, keeps every row in `needs_human_review`, and is

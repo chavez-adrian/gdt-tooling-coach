@@ -130,6 +130,18 @@ Puede contener texto literal acotado para revision, pero los scripts no deben
 imprimir ese texto ni modificar Neon. Nada se marca como `validated` en esta
 fase.
 
+Para revision humana local, generar la interfaz HTML ignorada por Git:
+
+```powershell
+python scripts/build_raw_import_review_html.py
+python scripts/verify_raw_import_review_html.py
+```
+
+`data/processed/raw_import_review.html` es autocontenida, no usa CDN ni URLs
+externas, no modifica el CSV y no escribe decisiones al repositorio. Las
+decisiones quedan en `localStorage` hasta que el revisor descarga
+`raw_import_review_decisions.json` para una fase posterior controlada.
+
 `data/concept_seed_manifest.example.json` contiene las primeras etiquetas de
 conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
 versionable, no contiene definiciones, no inserta en Neon y mantiene
