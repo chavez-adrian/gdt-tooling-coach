@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from scripts.build_raw_import_review_html import (
+    ALLOWED_REVIEW_DECISIONS,
     build_review_html,
     load_review_rows,
     write_review_html,
@@ -80,6 +81,32 @@ class RawImportReviewHtmlTests(unittest.TestCase):
             "fingerprint-1",
         ]:
             self.assertIn(expected, html)
+
+    def test_html_exposes_exact_review_decisions_and_filter_controls(self):
+        html = build_review_html([review_row()])
+
+        self.assertEqual(
+            [
+                "accept_as_candidate",
+                "reject_not_definition",
+                "wrong_concept",
+                "duplicate",
+                "needs_more_context",
+                "needs_2018_comparison",
+                "needs_spanish_term_review",
+            ],
+            ALLOWED_REVIEW_DECISIONS,
+        )
+        for decision in ALLOWED_REVIEW_DECISIONS:
+            self.assertEqual(1, html.count(f'value="{decision}"'))
+        for control in [
+            'id="filter-concept"',
+            'id="filter-source"',
+            'id="filter-language"',
+            'id="filter-review-decision"',
+            'id="filter-search"',
+        ]:
+            self.assertIn(control, html)
 
 
 if __name__ == "__main__":
