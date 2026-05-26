@@ -9,6 +9,7 @@ from scripts.build_raw_import_review_html import (
     load_review_rows,
     write_review_html,
 )
+from scripts.verify_raw_import_review_html import verify_review_html
 
 
 def review_row(**overrides):
@@ -148,6 +149,25 @@ class RawImportReviewHtmlTests(unittest.TestCase):
             'id="export-decisions"',
         ]:
             self.assertIn(marker, html)
+
+    def test_verify_review_html_checks_count_decisions_and_external_urls(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            html_path = Path(tmp_dir) / "raw_import_review.html"
+            html = build_review_html(
+                [
+                    review_row(definition_id="definition-1"),
+                    review_row(definition_id="definition-2", import_fingerprint="fingerprint-2"),
+                ]
+            )
+            write_review_html(html, html_path)
+
+            result = verify_review_html(html_path, expected_rows=2, check_ignore_func=lambda _path: True)
+
+        self.assertTrue(result["html_exists"])
+        self.assertEqual(2, result["definition_id_entries"])
+        self.assertTrue(result["allowed_decisions_present"])
+        self.assertTrue(result["no_external_urls"])
+        self.assertTrue(result["passed"])
 
 
 if __name__ == "__main__":
