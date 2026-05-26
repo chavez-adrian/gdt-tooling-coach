@@ -18,11 +18,24 @@ def build_assignment_draft(snippets, concepts):
     missing_concept_id = 0
     for index, snippet in enumerate(snippets):
         concept_key = _concept_key_for_signal(snippet.get("matched_signal"))
+        signal_is_approved = concept_key is not None
         concept_id = concept_ids_by_key.get(concept_key)
         if concept_id:
             ready_to_insert += 1
         else:
             missing_concept_id += 1
+        reason_codes = []
+        audit_notes = []
+        if signal_is_approved:
+            audit_notes.append("matched_signal normalized to approved concept_key")
+        else:
+            reason_codes.append("unmatched_signal")
+            audit_notes.append("matched_signal is not one of the approved assignment signals")
+        if concept_id:
+            audit_notes.append("concept_id resolved from existing concepts metadata")
+        else:
+            reason_codes.append("missing_concept_id")
+            audit_notes.append("concept_id not found in existing concepts metadata")
         assignments.append(
             {
                 "snippet_index": index,
@@ -32,13 +45,8 @@ def build_assignment_draft(snippets, concepts):
                 "concept_id": concept_id,
                 "confidence": "high" if concept_id else "none",
                 "status": "ready_to_insert" if concept_id else "blocked",
-                "reason_codes": [] if concept_id else ["missing_concept_id"],
-                "audit_notes": [
-                    "matched_signal normalized to approved concept_key",
-                    "concept_id resolved from existing concepts metadata",
-                ]
-                if concept_id
-                else ["concept_id not found in existing concepts metadata"],
+                "reason_codes": reason_codes,
+                "audit_notes": audit_notes,
             }
         )
     return {
@@ -58,4 +66,4 @@ def build_assignment_draft(snippets, concepts):
 
 def _concept_key_for_signal(signal):
     normalized_signal = " ".join(str(signal or "").strip().lower().split())
-    return SIGNAL_TO_CONCEPT_KEY.get(normalized_signal, normalized_signal)
+    return SIGNAL_TO_CONCEPT_KEY.get(normalized_signal)

@@ -98,6 +98,33 @@ class PrepareSnippetConceptAssignmentDraftTests(unittest.TestCase):
             [assignment["concept_id"] for assignment in draft["assignments"]],
         )
 
+    def test_unmatched_signal_is_blocked_with_explicit_reason_codes(self):
+        draft = build_assignment_draft(
+            [snippet(matched_signal="thread profile")],
+            [concept()],
+        )
+
+        self.assertEqual(0, draft["ready_to_insert"])
+        self.assertEqual(1, draft["blocked_snippets"])
+        self.assertEqual(1, draft["missing_concept_id"])
+        self.assertEqual(
+            {
+                "snippet_index": 0,
+                "matched_signal": "thread profile",
+                "metadata_reason": None,
+                "concept_key": None,
+                "concept_id": None,
+                "confidence": "none",
+                "status": "blocked",
+                "reason_codes": ["unmatched_signal", "missing_concept_id"],
+                "audit_notes": [
+                    "matched_signal is not one of the approved assignment signals",
+                    "concept_id not found in existing concepts metadata",
+                ],
+            },
+            draft["assignments"][0],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
