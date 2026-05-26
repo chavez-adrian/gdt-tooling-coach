@@ -265,6 +265,7 @@ def _insertion_row(snippet, source_id):
     return {
         "concept_id": snippet["concept_id"],
         "source_id": source_id,
+        "import_fingerprint": calculate_import_fingerprint(snippet, source_id),
         "definition_type": "candidate_snippet",
         "text": snippet["snippet_text"],
         "word_count": _word_count(snippet["snippet_text"]),

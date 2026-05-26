@@ -71,6 +71,10 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertFalse(plan["execute_requested"])
         self.assertFalse(plan["database_writes_attempted"])
         self.assertEqual({"matched_sources": 1, "unmatched_sources": 0}, plan["source_match_summary"])
+        self.assertEqual(
+            calculate_import_fingerprint(valid_snippet(), "source-1"),
+            plan["insertion_rows"][0]["import_fingerprint"],
+        )
 
     def test_plan_blocks_without_explicit_concept_id_to_avoid_automatic_validation(self):
         plan = build_insertion_plan(
