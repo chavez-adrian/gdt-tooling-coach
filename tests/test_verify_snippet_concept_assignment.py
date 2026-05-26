@@ -124,6 +124,60 @@ class VerifySnippetConceptAssignmentTests(unittest.TestCase):
         self.assertEqual(["concept-datum-duplicate", "concept-missing"], result["unknown_concept_ids"])
         self.assertEqual([2], result["snippets_without_assignment"])
 
+    def test_rejects_manifest_mismatch_signal_mismatch_and_validated_concepts(self):
+        result = verify_assignment_draft(
+            snippets=[
+                snippet(matched_signal="datum"),
+                snippet(matched_signal="MMC"),
+                snippet(matched_signal="RFS"),
+            ],
+            assignment_draft={
+                "assignments": [
+                    assignment(
+                        concept_key="tolerance_zone",
+                        concept_id="concept-tolerance-zone",
+                    ),
+                    assignment(
+                        snippet_index=1,
+                        matched_signal="MMC",
+                        concept_key="outside_manifest",
+                        concept_id="concept-outside",
+                    ),
+                    assignment(
+                        snippet_index=2,
+                        matched_signal="RFS",
+                        concept_key="regardless_of_feature_size",
+                        concept_id="concept-rfs",
+                    ),
+                ]
+            },
+            concepts=[
+                concept(id="concept-tolerance-zone", slug="tolerance_zone"),
+                concept(id="concept-outside", slug="outside_manifest"),
+                concept(
+                    id="concept-rfs",
+                    slug="regardless_of_feature_size",
+                    current_status="validated",
+                ),
+            ],
+            manifest_concepts=[
+                {"concept_key": "datum"},
+                {"concept_key": "tolerance_zone"},
+                {"concept_key": "maximum_material_condition"},
+                {"concept_key": "regardless_of_feature_size"},
+            ],
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(
+            {
+                "automatically_validated_concept": 1,
+                "concept_key_not_in_manifest": 1,
+                "signal_concept_mismatch": 2,
+            },
+            result["block_reasons"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
