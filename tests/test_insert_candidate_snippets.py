@@ -8,6 +8,7 @@ from scripts.insert_candidate_snippets import (
     INSERT_DEFINITION_SQL,
     apply_assignment_draft,
     build_insertion_plan,
+    calculate_import_fingerprint,
     execute_approved_insert,
     format_console_summary,
 )
@@ -42,6 +43,13 @@ SOURCE_ROWS = [
 
 
 class InsertCandidateSnippetsTests(unittest.TestCase):
+    def test_import_fingerprint_is_stable_for_same_snippet_identity(self):
+        first = calculate_import_fingerprint(valid_snippet(), "source-1")
+        second = calculate_import_fingerprint(valid_snippet(), "source-1")
+
+        self.assertEqual(first, second)
+        self.assertEqual(64, len(first))
+
     def test_default_plan_is_dry_run_and_contains_no_database_writes(self):
         plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
 

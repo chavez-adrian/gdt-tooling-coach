@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -41,6 +42,19 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
 REVIEW_STATE = "raw_import"
 EXTRACTION_TYPE = "literal_quote"
 MAX_WORDS = 80
+
+
+def calculate_import_fingerprint(snippet, source_id):
+    parts = [
+        str(source_id),
+        str(snippet["concept_id"]),
+        str(snippet["page_number"]),
+        str(snippet.get("matched_signal") or ""),
+        EXTRACTION_TYPE,
+        _normalize_snippet_text(snippet["snippet_text"]),
+    ]
+    payload = json.dumps(parts, ensure_ascii=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def build_insertion_plan(snippets, source_rows, execute=False):
@@ -280,6 +294,10 @@ def _source_key(row):
 
 def _word_count(text):
     return len(str(text).split())
+
+
+def _normalize_snippet_text(text):
+    return " ".join(str(text).split()).strip().casefold()
 
 
 def _format_key_counts(counts):
