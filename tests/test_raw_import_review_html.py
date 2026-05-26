@@ -98,7 +98,7 @@ class RawImportReviewHtmlTests(unittest.TestCase):
             ALLOWED_REVIEW_DECISIONS,
         )
         for decision in ALLOWED_REVIEW_DECISIONS:
-            self.assertEqual(1, html.count(f'value="{decision}"'))
+            self.assertIn(f'value="{decision}"', html)
         for control in [
             'id="filter-concept"',
             'id="filter-source"',
@@ -107,6 +107,21 @@ class RawImportReviewHtmlTests(unittest.TestCase):
             'id="filter-search"',
         ]:
             self.assertIn(control, html)
+
+    def test_review_card_has_editable_local_review_fields(self):
+        html = build_review_html([review_row()])
+
+        for field in [
+            'name="review_decision"',
+            'name="reviewer_notes"',
+            'name="corrected_concept_key"',
+            'name="reject_reason"',
+            'data-field="review_decision"',
+            'data-field="reviewer_notes"',
+            'data-field="corrected_concept_key"',
+            'data-field="reject_reason"',
+        ]:
+            self.assertIn(field, html)
 
 
 if __name__ == "__main__":

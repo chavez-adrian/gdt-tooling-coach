@@ -118,6 +118,12 @@ def _render_card(row):
   <dl>
     {fields}
   </dl>
+  <div class="review-fields">
+    <label>Decision <select name="review_decision" data-field="review_decision"><option value="">Unreviewed</option>{_render_options(ALLOWED_REVIEW_DECISIONS)}</select></label>
+    <label>Reviewer notes <textarea name="reviewer_notes" data-field="reviewer_notes"></textarea></label>
+    <label>Corrected concept <input name="corrected_concept_key" data-field="corrected_concept_key" type="text"></label>
+    <label>Reject reason <input name="reject_reason" data-field="reject_reason" type="text"></label>
+  </div>
 </article>"""
 
 
