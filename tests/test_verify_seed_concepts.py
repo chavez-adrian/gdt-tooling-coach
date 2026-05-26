@@ -36,6 +36,36 @@ class VerifySeedConceptsTests(unittest.TestCase):
         self.assertEqual(["--execute-approved-insert"], result["live_write_gates"])
         self.assertEqual([], result["forbidden_sql_verbs_found"])
 
+    def test_verifies_invalid_manifest_concepts_are_blocked(self):
+        result = verify_seed_gate(
+            [
+                valid_concept(concept_key="published", review_state="published"),
+                valid_concept(concept_key="validated", review_state="validated"),
+                valid_concept(concept_key="definition_field", definition="forbidden"),
+                valid_concept(
+                    concept_key="long_content",
+                    notes=" ".join(f"word{i}" for i in range(25)),
+                ),
+                valid_concept(concept_key="duplicate"),
+                valid_concept(concept_key="duplicate"),
+                valid_concept(concept_key="already_exists"),
+            ],
+            existing_concepts=[{"slug": "already_exists"}],
+        )
+
+        self.assertTrue(result["invalid_manifest_blocks_verified"])
+        self.assertEqual(
+            {
+                "concept_already_exists": 1,
+                "content_too_long": 1,
+                "definition_field_not_allowed": 1,
+                "duplicate_concept_key": 2,
+                "review_state_not_needs_human_review": 2,
+                "validated_state_not_allowed": 1,
+            },
+            result["block_reasons"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
