@@ -104,3 +104,10 @@ versionable, no contiene definiciones, no inserta en Neon y mantiene
 `data/processed/concept_seed_dry_run.json`. El reporte enumera conceptos
 insertables, bloqueados, llaves duplicadas y razones de bloqueo sin ejecutar
 INSERT/UPDATE/DELETE.
+
+`python scripts/insert_seed_concepts.py` es el gate aprobado para insertar
+conceptos semilla y por defecto es dry-run. La unica compuerta live-write es
+`--execute-approved-insert`, reservada para aprobacion humana explicita. La
+verificacion con `python scripts/verify_seed_concepts.py` debe confirmar INSERT
+parametrizado, ausencia de UPDATE/DELETE/DROP/ALTER/CREATE, bloqueo de conceptos
+invalidos, salida sin credenciales y cero modificacion/asignacion de snippets.

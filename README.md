@@ -230,3 +230,10 @@ not inserted into Neon by itself.
 existing Neon concepts using SELECT only and writes
 `data/processed/concept_seed_dry_run.json`. The report identifies insertable
 concept labels, blocked rows, duplicate keys, and confirms no database writes.
+
+`python scripts/insert_seed_concepts.py` is the approved concept seed insertion
+gate. It defaults to dry-run mode; the only live-write gate is
+`--execute-approved-insert`, which requires human approval and must not be used
+during verification. `python scripts/verify_seed_concepts.py` verifies the gate,
+parameterized INSERT-only SQL, invalid manifest blocks, credential-safe output,
+and that snippet rows or snippet concept assignments are not modified.

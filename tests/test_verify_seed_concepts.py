@@ -1,4 +1,8 @@
+import json
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.verify_seed_concepts import format_verification_summary, verify_seed_gate
 
@@ -81,6 +85,33 @@ class VerifySeedConceptsTests(unittest.TestCase):
         self.assertNotIn("postgresql://", summary)
         self.assertNotIn("password", summary.lower())
         self.assertNotIn("token", summary.lower())
+
+    def test_cli_verifier_runs_with_fixture_inputs(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            manifest_path = Path(tmp_dir) / "concept_seed_manifest.json"
+            concepts_path = Path(tmp_dir) / "concepts.json"
+            manifest_path.write_text(json.dumps([valid_concept()]), encoding="utf-8")
+            concepts_path.write_text("[]", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/verify_seed_concepts.py",
+                    "--manifest",
+                    str(manifest_path),
+                    "--concepts-fixture",
+                    str(concepts_path),
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Approved concept seed gate verification complete.", result.stdout)
+        self.assertIn("Default database writes attempted: false", result.stdout)
+        self.assertIn("Approved live-write gates: --execute-approved-insert", result.stdout)
+        self.assertIn("Invalid manifest blocks verified: true", result.stdout)
 
 
 if __name__ == "__main__":

@@ -80,6 +80,12 @@ metadatos permitidos para explicar readiness de conceptos. No debe imprimir
 `snippet_text`, credenciales ni contenido normativo, no debe escribir en Neon y
 no debe asignar `concept_id` automaticamente.
 
+La insercion aprobada de conceptos semilla solo puede pasar por
+`python scripts/insert_seed_concepts.py --execute-approved-insert` despues de
+aprobacion humana. Sin esa bandera, el comando es dry-run. La verificacion
+`python scripts/verify_seed_concepts.py` no debe ejecutar writes, imprimir
+credenciales, modificar snippets ni asignar snippets a conceptos.
+
 ## Uso de vista plana
 
 La vista plana sirve para revision humana y exportacion. No es la fuente maestra.

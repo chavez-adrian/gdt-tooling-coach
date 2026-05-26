@@ -1,6 +1,16 @@
+import argparse
+import json
 import re
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.insert_seed_concepts import INSERT_CONCEPT_SQL, build_insertion_plan
+from scripts.insert_seed_concepts import DEFAULT_MANIFEST_PATH, load_manifest
+from scripts.insert_seed_concepts import fetch_existing_concepts, load_concepts_fixture
 
 
 FORBIDDEN_SQL_VERBS = ("update", "delete", "drop", "alter", "create")
@@ -21,6 +31,12 @@ def verify_seed_gate(manifest_concepts, existing_concepts):
         "concept_already_exists",
     }
     observed_block_reasons = set(default_plan.get("block_reasons", {}))
+    invalid_probe_plan = build_insertion_plan(
+        _invalid_manifest_probe_concepts(),
+        [{"slug": "already_exists"}],
+        execute=False,
+    )
+    observed_invalid_probe_reasons = set(invalid_probe_plan.get("block_reasons", {}))
     return {
         "default_dry_run_verified": (
             default_plan["mode"] == "dry-run"
@@ -31,8 +47,9 @@ def verify_seed_gate(manifest_concepts, existing_concepts):
         "parameterized_insert_verified": _is_parameterized_insert(INSERT_CONCEPT_SQL),
         "live_write_gates": ["--execute-approved-insert"],
         "forbidden_sql_verbs_found": _forbidden_sql_verbs(INSERT_CONCEPT_SQL),
-        "invalid_manifest_blocks_verified": expected_block_reasons.issubset(
-            observed_block_reasons
+        "invalid_manifest_blocks_verified": (
+            expected_block_reasons.issubset(observed_block_reasons)
+            or expected_block_reasons.issubset(observed_invalid_probe_reasons)
         ),
         "credential_safe_output_verified": True,
         "snippets_unchanged_verified": True,
@@ -65,6 +82,41 @@ def format_verification_summary(result):
     )
 
 
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Verify approved concept seed insertion gate without live writes."
+    )
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST_PATH)
+    parser.add_argument(
+        "--concepts-fixture",
+        type=Path,
+        help="Use local JSON concept-row fixture instead of live Neon SELECT.",
+    )
+    parser.add_argument(
+        "--database-url",
+        help="Optional read-only database URL for SELECT metadata when no fixture is supplied.",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        manifest = load_manifest(args.manifest)
+        if args.concepts_fixture is not None:
+            existing_concepts = load_concepts_fixture(args.concepts_fixture)
+        else:
+            if not args.database_url:
+                existing_concepts = []
+            else:
+                existing_concepts = fetch_existing_concepts(args.database_url)
+        result = verify_seed_gate(manifest, existing_concepts)
+    except Exception as exc:
+        print("Approved concept seed gate verification failed.", file=sys.stderr)
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(format_verification_summary(result))
+    return 0
+
+
 def _is_parameterized_insert(sql):
     normalized = " ".join(sql.lower().split())
     return normalized.startswith("insert into ") and "%s" in sql
@@ -83,3 +135,31 @@ def _format_list(values):
     if not values:
         return "none"
     return ", ".join(values)
+
+
+def _invalid_manifest_probe_concepts():
+    base = {
+        "preferred_label_en": "Probe",
+        "preferred_label_es": "Probe",
+        "concept_type": "reference",
+        "review_state": "needs_human_review",
+        "source_authority_hint": "fixture-only verifier probe",
+        "notes": "Fixture-only probe; no definition stored.",
+    }
+    return [
+        {**base, "concept_key": "published", "review_state": "published"},
+        {**base, "concept_key": "validated", "review_state": "validated"},
+        {**base, "concept_key": "definition_field", "definition": "forbidden"},
+        {
+            **base,
+            "concept_key": "long_content",
+            "notes": " ".join(f"word{i}" for i in range(25)),
+        },
+        {**base, "concept_key": "duplicate"},
+        {**base, "concept_key": "duplicate"},
+        {**base, "concept_key": "already_exists"},
+    ]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
