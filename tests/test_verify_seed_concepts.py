@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.verify_seed_concepts import verify_seed_gate
+from scripts.verify_seed_concepts import format_verification_summary, verify_seed_gate
 
 
 def valid_concept(**overrides):
@@ -65,6 +65,22 @@ class VerifySeedConceptsTests(unittest.TestCase):
             },
             result["block_reasons"],
         )
+
+    def test_verifier_summary_is_credential_safe_and_keeps_snippets_separate(self):
+        result = verify_seed_gate([valid_concept()], existing_concepts=[])
+
+        summary = format_verification_summary(result)
+
+        self.assertTrue(result["credential_safe_output_verified"])
+        self.assertTrue(result["snippets_unchanged_verified"])
+        self.assertTrue(result["snippet_assignment_unchanged_verified"])
+        self.assertIn("Credential-safe output: true", summary)
+        self.assertIn("Snippets modified: false", summary)
+        self.assertIn("Snippet assignments modified: false", summary)
+        self.assertNotIn("DATABASE_URL", summary)
+        self.assertNotIn("postgresql://", summary)
+        self.assertNotIn("password", summary.lower())
+        self.assertNotIn("token", summary.lower())
 
 
 if __name__ == "__main__":

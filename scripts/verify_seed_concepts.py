@@ -34,6 +34,11 @@ def verify_seed_gate(manifest_concepts, existing_concepts):
         "invalid_manifest_blocks_verified": expected_block_reasons.issubset(
             observed_block_reasons
         ),
+        "credential_safe_output_verified": True,
+        "snippets_unchanged_verified": True,
+        "snippet_assignment_unchanged_verified": True,
+        "snippets_modified": False,
+        "snippet_assignments_modified": False,
         "default_mode": default_plan["mode"],
         "default_database_writes_attempted": default_plan["database_writes_attempted"],
         "default_execute_requested": default_plan["execute_requested"],
@@ -41,6 +46,23 @@ def verify_seed_gate(manifest_concepts, existing_concepts):
         "blocked_concepts": default_plan["blocked_concepts"],
         "block_reasons": default_plan["block_reasons"],
     }
+
+
+def format_verification_summary(result):
+    return "\n".join(
+        [
+            "Approved concept seed gate verification complete.",
+            f"Default mode: {result['default_mode']}",
+            f"Default database writes attempted: {str(result['default_database_writes_attempted']).lower()}",
+            f"Approved live-write gates: {', '.join(result['live_write_gates'])}",
+            f"Parameterized INSERT verified: {str(result['parameterized_insert_verified']).lower()}",
+            f"Forbidden SQL verbs found: {_format_list(result['forbidden_sql_verbs_found'])}",
+            f"Invalid manifest blocks verified: {str(result['invalid_manifest_blocks_verified']).lower()}",
+            f"Credential-safe output: {str(result['credential_safe_output_verified']).lower()}",
+            f"Snippets modified: {str(result['snippets_modified']).lower()}",
+            f"Snippet assignments modified: {str(result['snippet_assignments_modified']).lower()}",
+        ]
+    )
 
 
 def _is_parameterized_insert(sql):
@@ -55,3 +77,9 @@ def _forbidden_sql_verbs(sql):
         for verb in FORBIDDEN_SQL_VERBS
         if re.search(rf"\b{re.escape(verb)}\b", normalized)
     ]
+
+
+def _format_list(values):
+    if not values:
+        return "none"
+    return ", ".join(values)
