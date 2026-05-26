@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import sys
+from collections import Counter
 from pathlib import Path
 
 import psycopg
@@ -15,6 +16,14 @@ SELECT id, slug, category, current_status
 FROM concepts
 ORDER BY slug;
 """
+FORBIDDEN_DEFINITION_FIELDS = {
+    "definition",
+    "definition_en",
+    "definition_es",
+    "text",
+    "snippet_text",
+}
+MAX_FIELD_WORDS = 24
 
 
 def load_manifest(manifest_path=DEFAULT_MANIFEST_PATH):
@@ -45,8 +54,20 @@ def fetch_existing_concepts(database_url, connect=psycopg.connect):
 def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
     rows = []
     blocked_details = []
+    block_reasons = Counter()
 
     for index, concept in enumerate(manifest_concepts):
+        reasons = _concept_block_reasons(concept)
+        if reasons:
+            blocked_details.append(
+                {
+                    "concept_index": index,
+                    "concept_key": concept.get("concept_key"),
+                    "reasons": reasons,
+                }
+            )
+            block_reasons.update(reasons)
+            continue
         rows.append(
             {
                 "concept_index": index,
@@ -63,6 +84,7 @@ def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
         "total_manifest_concepts": len(manifest_concepts),
         "ready_to_insert": len(rows),
         "blocked_concepts": len(blocked_details),
+        "block_reasons": dict(sorted(block_reasons.items())),
         "blocked_concept_details": blocked_details,
         "inserted_concepts": 0,
         "insertion_rows": rows,
@@ -78,6 +100,7 @@ def format_console_summary(result):
             f"Total manifest concepts: {result['total_manifest_concepts']}",
             f"Ready to insert: {result['ready_to_insert']}",
             f"Blocked concepts: {result['blocked_concepts']}",
+            f"Block reasons: {_format_key_counts(result.get('block_reasons', {}))}",
             f"Inserted concepts: {result.get('inserted_concepts', 0)}",
             f"Database writes attempted: {str(result['database_writes_attempted']).lower()}",
         ]
@@ -117,6 +140,34 @@ def main(argv=None):
 
     print(format_console_summary(result))
     return 0
+
+
+def _concept_block_reasons(concept):
+    reasons = []
+    if concept.get("review_state") != "needs_human_review":
+        reasons.append("review_state_not_needs_human_review")
+    if concept.get("review_state") == "validated" or concept.get("validated") is True:
+        reasons.append("validated_state_not_allowed")
+    if FORBIDDEN_DEFINITION_FIELDS.intersection(concept):
+        reasons.append("definition_field_not_allowed")
+    if _has_long_field(concept):
+        reasons.append("content_too_long")
+    return reasons
+
+
+def _has_long_field(concept):
+    for field, value in concept.items():
+        if field in FORBIDDEN_DEFINITION_FIELDS:
+            continue
+        if isinstance(value, str) and len(value.split()) > MAX_FIELD_WORDS:
+            return True
+    return False
+
+
+def _format_key_counts(counts):
+    if not counts:
+        return "none"
+    return ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
 
 
 if __name__ == "__main__":

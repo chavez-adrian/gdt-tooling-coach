@@ -47,6 +47,33 @@ class InsertSeedConceptsTests(unittest.TestCase):
         self.assertNotIn("password", summary.lower())
         self.assertNotIn("token", summary.lower())
 
+    def test_blocks_unsafe_manifest_concepts(self):
+        plan = build_insertion_plan(
+            [
+                valid_concept(concept_key="published", review_state="published"),
+                valid_concept(concept_key="validated", review_state="validated"),
+                valid_concept(concept_key="definition_field", definition="forbidden"),
+                valid_concept(
+                    concept_key="long_content",
+                    notes=" ".join(f"word{i}" for i in range(25)),
+                ),
+            ],
+            existing_concepts=[],
+            execute=False,
+        )
+
+        self.assertEqual(0, plan["ready_to_insert"])
+        self.assertEqual(4, plan["blocked_concepts"])
+        self.assertEqual(
+            {
+                "review_state_not_needs_human_review": 2,
+                "validated_state_not_allowed": 1,
+                "definition_field_not_allowed": 1,
+                "content_too_long": 1,
+            },
+            plan["block_reasons"],
+        )
+
     def test_cli_defaults_to_dry_run_with_fixture_concepts(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             manifest_path = Path(tmp_dir) / "concept_seed_manifest.example.json"
