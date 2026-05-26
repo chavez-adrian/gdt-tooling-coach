@@ -52,17 +52,28 @@ def fetch_existing_concepts(database_url, connect=psycopg.connect):
 
 
 def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
+    duplicate_keys = _duplicate_concept_keys(manifest_concepts)
+    existing_keys = {
+        concept.get("slug")
+        for concept in existing_concepts
+        if concept.get("slug")
+    }
     rows = []
     blocked_details = []
     block_reasons = Counter()
 
     for index, concept in enumerate(manifest_concepts):
         reasons = _concept_block_reasons(concept)
+        concept_key = concept.get("concept_key")
+        if concept_key in duplicate_keys:
+            reasons.append("duplicate_concept_key")
+        if concept_key in existing_keys:
+            reasons.append("concept_already_exists")
         if reasons:
             blocked_details.append(
                 {
                     "concept_index": index,
-                    "concept_key": concept.get("concept_key"),
+                    "concept_key": concept_key,
                     "reasons": reasons,
                 }
             )
@@ -85,6 +96,7 @@ def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
         "ready_to_insert": len(rows),
         "blocked_concepts": len(blocked_details),
         "block_reasons": dict(sorted(block_reasons.items())),
+        "duplicate_keys": sorted(duplicate_keys),
         "blocked_concept_details": blocked_details,
         "inserted_concepts": 0,
         "insertion_rows": rows,
@@ -162,6 +174,15 @@ def _has_long_field(concept):
         if isinstance(value, str) and len(value.split()) > MAX_FIELD_WORDS:
             return True
     return False
+
+
+def _duplicate_concept_keys(concepts):
+    counts = Counter(
+        concept.get("concept_key")
+        for concept in concepts
+        if concept.get("concept_key") not in (None, "")
+    )
+    return {key for key, count in counts.items() if count > 1}
 
 
 def _format_key_counts(counts):

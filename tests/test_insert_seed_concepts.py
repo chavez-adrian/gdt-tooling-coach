@@ -74,6 +74,26 @@ class InsertSeedConceptsTests(unittest.TestCase):
             plan["block_reasons"],
         )
 
+    def test_blocks_duplicate_and_existing_concept_keys(self):
+        plan = build_insertion_plan(
+            [
+                valid_concept(concept_key="datum"),
+                valid_concept(concept_key="datum"),
+                valid_concept(concept_key="feature_control_frame"),
+            ],
+            existing_concepts=[
+                {"slug": "feature_control_frame", "category": "symbolic_notation"}
+            ],
+            execute=False,
+        )
+
+        self.assertEqual(0, plan["ready_to_insert"])
+        self.assertEqual(3, plan["blocked_concepts"])
+        self.assertEqual(
+            {"duplicate_concept_key": 2, "concept_already_exists": 1},
+            plan["block_reasons"],
+        )
+
     def test_cli_defaults_to_dry_run_with_fixture_concepts(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             manifest_path = Path(tmp_dir) / "concept_seed_manifest.example.json"
