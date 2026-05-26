@@ -34,9 +34,11 @@ INSERT INTO definitions (
   extraction_type,
   is_literal,
   review_status,
+  import_fingerprint,
   notes
 )
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+ON CONFLICT (import_fingerprint) DO NOTHING;
 """
 
 REVIEW_STATE = "raw_import"
@@ -164,6 +166,7 @@ def insert_rows(database_url, rows, connect=psycopg.connect):
                             row["extraction_type"],
                             row["is_literal"],
                             row["review_status"],
+                            row["import_fingerprint"],
                             row["notes"],
                         ),
                     )

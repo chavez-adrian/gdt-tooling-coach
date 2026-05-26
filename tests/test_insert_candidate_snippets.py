@@ -147,6 +147,8 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual("concept-1", captured_rows[0]["concept_id"])
         self.assertNotIn("short literal quote", INSERT_DEFINITION_SQL)
         self.assertNotIn("validated", INSERT_DEFINITION_SQL.lower())
+        self.assertIn("import_fingerprint", INSERT_DEFINITION_SQL)
+        self.assertIn("ON CONFLICT (import_fingerprint) DO NOTHING", INSERT_DEFINITION_SQL)
 
     def test_console_summary_does_not_print_snippet_text(self):
         plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
