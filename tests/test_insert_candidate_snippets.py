@@ -84,6 +84,7 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertIn("create unique index if not exists", migration)
         self.assertIn("definitions", migration)
         self.assertIn("import_fingerprint", migration)
+        self.assertNotIn("where import_fingerprint is not null", migration)
 
     def test_import_fingerprint_is_stable_for_same_snippet_identity(self):
         first = calculate_import_fingerprint(valid_snippet(), "source-1")
@@ -195,6 +196,22 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
 
         plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
         result = execute_approved_insert(plan, insert_rows=fail_if_called)
+
+        self.assertEqual(0, result["inserted_snippets"])
+        self.assertFalse(result["database_writes_attempted"])
+        self.assertEqual([], calls)
+
+    def test_execute_approved_insert_skips_duplicate_only_plan(self):
+        calls = []
+        fingerprint = calculate_import_fingerprint(valid_snippet(), "source-1")
+        plan = build_insertion_plan(
+            [valid_snippet()],
+            SOURCE_ROWS,
+            execute=True,
+            existing_definition_fingerprints={fingerprint},
+        )
+
+        result = execute_approved_insert(plan, insert_rows=calls.extend)
 
         self.assertEqual(0, result["inserted_snippets"])
         self.assertFalse(result["database_writes_attempted"])
