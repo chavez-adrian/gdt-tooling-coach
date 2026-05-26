@@ -50,6 +50,18 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(64, len(first))
 
+    def test_import_fingerprint_changes_when_identity_fields_change(self):
+        base = calculate_import_fingerprint(valid_snippet(), "source-1")
+
+        changed = {
+            "source_id": calculate_import_fingerprint(valid_snippet(), "source-2"),
+            "concept_id": calculate_import_fingerprint(valid_snippet(concept_id="concept-2"), "source-1"),
+            "page_number": calculate_import_fingerprint(valid_snippet(page_number=13), "source-1"),
+            "snippet_text": calculate_import_fingerprint(valid_snippet(snippet_text="different quote"), "source-1"),
+        }
+
+        self.assertNotIn(base, changed.values())
+
     def test_default_plan_is_dry_run_and_contains_no_database_writes(self):
         plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
 
