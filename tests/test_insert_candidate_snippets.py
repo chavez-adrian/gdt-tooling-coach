@@ -12,6 +12,7 @@ from scripts.insert_candidate_snippets import (
     execute_approved_insert,
     fetch_existing_definition_fingerprints,
     format_console_summary,
+    mark_idempotency_schema_missing,
 )
 
 
@@ -86,6 +87,16 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertIn("import_fingerprint", migration)
         self.assertNotIn("where import_fingerprint is not null", migration)
 
+    def test_docs_describe_idempotent_candidate_snippet_insertion_gate(self):
+        readme = Path("README.md").read_text(encoding="utf-8")
+        runbook = Path("docs/database_runbook.md").read_text(encoding="utf-8")
+
+        combined = f"{readme}\n{runbook}"
+        self.assertIn("003_definition_import_fingerprint.sql", combined)
+        self.assertIn("import_fingerprint", combined)
+        self.assertIn("ON CONFLICT DO NOTHING", combined)
+        self.assertIn("does not print `snippet_text`", combined)
+
     def test_import_fingerprint_is_stable_for_same_snippet_identity(self):
         first = calculate_import_fingerprint(valid_snippet(), "source-1")
         second = calculate_import_fingerprint(valid_snippet(), "source-1")
@@ -145,6 +156,17 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(1, plan["skipped_existing_definitions"])
         self.assertEqual([{"snippet_index": 0, "import_fingerprint": fingerprint}], plan["duplicate_details"])
         self.assertFalse(plan["database_writes_attempted"])
+
+    def test_missing_idempotency_schema_blocks_ready_rows_without_writes(self):
+        plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
+
+        blocked = mark_idempotency_schema_missing(plan)
+
+        self.assertEqual(0, blocked["ready_to_insert"])
+        self.assertEqual(1, blocked["blocked_snippets"])
+        self.assertEqual({"import_fingerprint_schema_missing": 1}, blocked["block_reasons"])
+        self.assertEqual([], blocked["insertion_rows"])
+        self.assertFalse(blocked["database_writes_attempted"])
 
     def test_fetch_existing_definition_fingerprints_uses_select_only_lookup(self):
         connection = FakeConnection([("fp-existing",)])

@@ -46,6 +46,10 @@ EXTRACTION_TYPE = "literal_quote"
 MAX_WORDS = 80
 
 
+class IdempotencySchemaMissing(RuntimeError):
+    pass
+
+
 def calculate_import_fingerprint(snippet, source_id):
     parts = [
         str(source_id),
@@ -126,6 +130,30 @@ def build_insertion_plan(snippets, source_rows, execute=False, existing_definiti
     }
 
 
+def mark_idempotency_schema_missing(plan):
+    ready_rows = plan.get("insertion_rows", [])
+    block_reasons = dict(plan.get("block_reasons", {}))
+    if ready_rows:
+        block_reasons["import_fingerprint_schema_missing"] = len(ready_rows)
+    return {
+        **plan,
+        "ready_to_insert": 0,
+        "blocked_snippets": plan.get("blocked_snippets", 0) + len(ready_rows),
+        "block_reasons": block_reasons,
+        "blocked_snippet_details": plan.get("blocked_snippet_details", [])
+        + [
+            {
+                "snippet_index": index,
+                "reasons": ["import_fingerprint_schema_missing"],
+            }
+            for index, _row in enumerate(ready_rows)
+        ],
+        "insertion_rows": [],
+        "idempotency_schema_ready": False,
+        "database_writes_attempted": False,
+    }
+
+
 def load_assignment_draft(path):
     with open(path, "r", encoding="utf-8") as draft_file:
         return json.load(draft_file)
@@ -168,17 +196,22 @@ def fetch_existing_definition_fingerprints(database_url, fingerprints, connect=p
     fingerprints = sorted(set(fingerprints))
     if not fingerprints:
         return set()
-    with connect(database_url) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT import_fingerprint
-                FROM definitions
-                WHERE import_fingerprint = ANY(%s)
-                """,
-                (fingerprints,),
-            )
-            return {row[0] for row in cur.fetchall()}
+    try:
+        with connect(database_url) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT import_fingerprint
+                    FROM definitions
+                    WHERE import_fingerprint = ANY(%s)
+                    """,
+                    (fingerprints,),
+                )
+                return {row[0] for row in cur.fetchall()}
+    except psycopg.errors.UndefinedColumn as exc:
+        raise IdempotencySchemaMissing(
+            "definitions.import_fingerprint is missing; apply migration 003 before live insert."
+        ) from exc
 
 
 def load_existing_definition_fingerprints_fixture(path):
@@ -223,6 +256,7 @@ def format_console_summary(result):
             f"Source match summary: {_format_key_counts(result.get('source_match_summary', {}))}",
             f"Duplicate snippets skipped: {result.get('duplicate_snippets', 0)}",
             f"Existing definitions skipped: {result.get('skipped_existing_definitions', 0)}",
+            f"Idempotency schema ready: {str(result.get('idempotency_schema_ready', True)).lower()}",
             f"Inserted snippets: {result.get('inserted_snippets', 0)}",
             f"Database writes attempted: {str(result['database_writes_attempted']).lower()}",
             "Review state: raw_import",
@@ -277,18 +311,23 @@ def main(argv=None):
             execute=args.execute_approved_insert,
         )
         if args.existing_definitions_fixture is None:
-            existing_fingerprints = fetch_existing_definition_fingerprints(
-                database_url,
-                [row["import_fingerprint"] for row in plan["insertion_rows"]],
-            )
+            try:
+                existing_fingerprints = fetch_existing_definition_fingerprints(
+                    database_url,
+                    [row["import_fingerprint"] for row in plan["insertion_rows"]],
+                )
+            except IdempotencySchemaMissing:
+                plan = mark_idempotency_schema_missing(plan)
+                existing_fingerprints = None
         else:
             existing_fingerprints = load_existing_definition_fingerprints_fixture(args.existing_definitions_fixture)
-        plan = build_insertion_plan(
-            snippets,
-            source_rows,
-            execute=args.execute_approved_insert,
-            existing_definition_fingerprints=existing_fingerprints,
-        )
+        if existing_fingerprints is not None:
+            plan = build_insertion_plan(
+                snippets,
+                source_rows,
+                execute=args.execute_approved_insert,
+                existing_definition_fingerprints=existing_fingerprints,
+            )
         result = execute_approved_insert(
             plan,
             insert_rows=lambda rows: insert_rows(database_url, rows),

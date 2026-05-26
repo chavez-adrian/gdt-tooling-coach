@@ -101,6 +101,18 @@ to raw review material:
 Snippet extraction must not insert into Neon, modify tables, update `sources` or
 `definitions`, mark content as validated, or print snippets in verification output.
 
+## Candidate Snippet Insert Idempotency
+
+Apply `db/migrations/003_definition_import_fingerprint.sql` before any approved
+candidate snippet insertion. It adds `definitions.import_fingerprint` and a
+unique index used by `scripts/insert_candidate_snippets.py`.
+
+The insertion gate remains dry-run by default. It calculates the fingerprint
+from stable source/concept/page/signal/type metadata plus normalized snippet
+text, SELECTs existing `definitions.import_fingerprint` values, reports
+duplicate/skipped counts, uses parameterized INSERT with `ON CONFLICT DO
+NOTHING`, and does not print `snippet_text`.
+
 ## Troubleshooting
 
 - Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set

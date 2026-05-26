@@ -88,6 +88,13 @@ falta `concept_id` explicito, `source_id` resuelto, `page_number`, estado
 `literal_quote`, o si el snippet excede 80 palabras. No valida conceptos
 automaticamente.
 
+Antes de cualquier insercion aprobada, la migracion
+`db/migrations/003_definition_import_fingerprint.sql` debe estar aplicada. El
+gate calcula `import_fingerprint` desde `source_id`, `concept_id`,
+`page_number`, `matched_signal`, `extraction_type` y texto normalizado, consulta
+huellas existentes en `definitions`, reporta duplicados/skips sin imprimir
+`snippet_text`, y usa `ON CONFLICT DO NOTHING` como respaldo idempotente.
+
 Antes de cualquier insercion live, `python scripts/diagnose_concept_readiness.py`
 debe explicar cuantos snippets siguen sin `concept_id`, que conceptos existen en
 Neon, que labels candidatas pueden derivarse solo de metadatos permitidos y

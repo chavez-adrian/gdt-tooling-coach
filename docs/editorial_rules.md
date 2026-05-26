@@ -81,6 +81,10 @@ bandera, el comando es dry-run. El gate debe bloquear cualquier fila sin
 `concept_id` explicito, `source_id`, `page_number`, estado `raw_import`,
 `requires_human_review = true`, `validated = false`, `literal_quote`, o con mas
 de 80 palabras. El script no puede validar conceptos automaticamente.
+La insercion tambien debe ser idempotente: cada fila planeada lleva
+`import_fingerprint`, se omiten huellas ya presentes en `definitions`, se
+reportan solo conteos de duplicados/skips, se usa `ON CONFLICT DO NOTHING` y no
+se imprime `snippet_text`.
 
 El diagnostico `python scripts/diagnose_concept_readiness.py` solo puede usar
 metadatos permitidos para explicar readiness de conceptos. No debe imprimir

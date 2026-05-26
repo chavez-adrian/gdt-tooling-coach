@@ -216,6 +216,11 @@ resolved `source_id`, `page_number`, `raw_import`,
 80 words or fewer; it performs no automatic concept validation. For review
 dry-runs, pass `--assignment-draft data/processed/snippet_concept_assignment_draft.json`
 to overlay local concept ids without modifying the candidate snippet artifact.
+Migration `db/migrations/003_definition_import_fingerprint.sql` adds
+`definitions.import_fingerprint` and a unique index. The gate hashes stable
+metadata plus normalized snippet text, SELECTs existing fingerprints before
+planning, reports duplicate/skipped counts, and the live SQL uses
+`ON CONFLICT DO NOTHING`; it does not print `snippet_text`.
 
 `python scripts/diagnose_concept_readiness.py` is a SELECT-only readiness
 diagnostic for candidate snippets that still lack explicit `concept_id`
