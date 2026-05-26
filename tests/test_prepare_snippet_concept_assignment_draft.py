@@ -1,5 +1,8 @@
 import json
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.prepare_snippet_concept_assignment_draft import build_assignment_draft
 
@@ -124,6 +127,62 @@ class PrepareSnippetConceptAssignmentDraftTests(unittest.TestCase):
             },
             draft["assignments"][0],
         )
+
+    def test_cli_writes_local_assignment_draft_without_snippet_text(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            input_path = Path(tmp_dir) / "candidate_snippets.json"
+            concepts_path = Path(tmp_dir) / "concepts.json"
+            output_path = Path(tmp_dir) / "snippet_concept_assignment_draft.json"
+            input_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_snippets": [
+                            snippet(matched_signal="definición", page_number=214)
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            concepts_path.write_text(
+                json.dumps(
+                    [
+                        concept(
+                            id="concept-tolerance-zone",
+                            slug="tolerance_zone",
+                        )
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    "python",
+                    "scripts/prepare_snippet_concept_assignment_draft.py",
+                    "--input",
+                    str(input_path),
+                    "--concepts-fixture",
+                    str(concepts_path),
+                    "--output",
+                    str(output_path),
+                    "--skip-ignore-check",
+                ],
+                cwd=Path(__file__).resolve().parents[1],
+                capture_output=True,
+                text=True,
+            )
+            written = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("Snippet concept assignment draft complete.", result.stdout)
+        self.assertIn("Ready to insert: 1", result.stdout)
+        self.assertNotIn("snippet_text", result.stdout)
+        self.assertEqual("tolerance_zone", written["assignments"][0]["concept_key"])
+        self.assertEqual(
+            "spanish_definition_signal_allowed_metadata",
+            written["assignments"][0]["metadata_reason"],
+        )
+        self.assertNotIn("snippet_text", json.dumps(written))
 
 
 if __name__ == "__main__":
