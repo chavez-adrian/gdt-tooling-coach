@@ -1,3 +1,13 @@
+SIGNAL_TO_CONCEPT_KEY = {
+    "datum": "datum",
+    "feature control frame": "feature_control_frame",
+    "tolerance zone": "tolerance_zone",
+    "mmc": "maximum_material_condition",
+    "lmc": "least_material_condition",
+    "rfs": "regardless_of_feature_size",
+}
+
+
 def build_assignment_draft(snippets, concepts):
     concept_ids_by_key = {
         concept["slug"]: concept["id"]
@@ -7,7 +17,7 @@ def build_assignment_draft(snippets, concepts):
     ready_to_insert = 0
     missing_concept_id = 0
     for index, snippet in enumerate(snippets):
-        concept_key = snippet.get("matched_signal")
+        concept_key = _concept_key_for_signal(snippet.get("matched_signal"))
         concept_id = concept_ids_by_key.get(concept_key)
         if concept_id:
             ready_to_insert += 1
@@ -44,3 +54,8 @@ def build_assignment_draft(snippets, concepts):
             "concept_ids_assigned_in_database": False,
         },
     }
+
+
+def _concept_key_for_signal(signal):
+    normalized_signal = " ".join(str(signal or "").strip().lower().split())
+    return SIGNAL_TO_CONCEPT_KEY.get(normalized_signal, normalized_signal)
