@@ -3,7 +3,12 @@ from collections import Counter
 
 def verify_assignment_draft(snippets, assignment_draft, concepts, manifest_concepts):
     assignments = assignment_draft.get("assignments", [])
-    assignments_by_index = {assignment.get("snippet_index"): assignment for assignment in assignments}
+    assignments_by_index = {}
+    assignment_counts_by_index = Counter()
+    for assignment in assignments:
+        snippet_index = assignment.get("snippet_index")
+        assignment_counts_by_index[snippet_index] += 1
+        assignments_by_index[snippet_index] = assignment
     existing_concept_ids = {str(concept.get("id")) for concept in concepts if concept.get("id")}
     approved_concept_keys = {
         concept.get("concept_key")
@@ -18,6 +23,8 @@ def verify_assignment_draft(snippets, assignment_draft, concepts, manifest_conce
     by_matched_signal = Counter()
 
     for index, snippet in enumerate(snippets):
+        if assignment_counts_by_index[index] > 1:
+            block_reasons["duplicate_assignment"] += 1
         assignment = assignments_by_index.get(index)
         if assignment is None:
             snippets_without_assignment.append(index)

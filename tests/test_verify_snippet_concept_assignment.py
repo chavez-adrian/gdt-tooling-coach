@@ -82,6 +82,48 @@ class VerifySnippetConceptAssignmentTests(unittest.TestCase):
         self.assertEqual([], result["snippets_without_assignment"])
         self.assertTrue(result["no_database_writes"])
 
+    def test_rejects_missing_duplicate_and_unknown_assignment_cardinality(self):
+        result = verify_assignment_draft(
+            snippets=[
+                snippet(),
+                snippet(matched_signal="MMC"),
+                snippet(matched_signal="RFS"),
+            ],
+            assignment_draft={
+                "assignments": [
+                    assignment(),
+                    assignment(
+                        snippet_index=0,
+                        concept_id="concept-datum-duplicate",
+                    ),
+                    assignment(
+                        snippet_index=1,
+                        matched_signal="MMC",
+                        concept_key="maximum_material_condition",
+                        concept_id="concept-missing",
+                    ),
+                ]
+            },
+            concepts=[concept()],
+            manifest_concepts=[
+                {"concept_key": "datum"},
+                {"concept_key": "maximum_material_condition"},
+                {"concept_key": "regardless_of_feature_size"},
+            ],
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(
+            {
+                "duplicate_assignment": 1,
+                "missing_assignment": 1,
+                "unknown_concept_id": 2,
+            },
+            result["block_reasons"],
+        )
+        self.assertEqual(["concept-datum-duplicate", "concept-missing"], result["unknown_concept_ids"])
+        self.assertEqual([2], result["snippets_without_assignment"])
+
 
 if __name__ == "__main__":
     unittest.main()
