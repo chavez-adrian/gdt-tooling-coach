@@ -169,6 +169,28 @@ class RawImportReviewHtmlTests(unittest.TestCase):
         self.assertTrue(result["no_external_urls"])
         self.assertTrue(result["passed"])
 
+    def test_verify_review_html_requires_git_ignore_and_no_neon_modification_path(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            html_path = Path(tmp_dir) / "raw_import_review.html"
+            write_review_html(build_review_html([review_row()]), html_path)
+
+            result = verify_review_html(
+                html_path,
+                expected_rows=1,
+                check_ignore_func=lambda _path: False,
+            )
+            unsafe_result = verify_review_html(
+                html_path,
+                expected_rows=1,
+                check_ignore_func=lambda _path: True,
+                extra_forbidden_terms=["write_to_neon"],
+            )
+
+        self.assertFalse(result["git_ignored"])
+        self.assertFalse(result["passed"])
+        self.assertTrue(unsafe_result["no_neon_modification_path"])
+        self.assertTrue(unsafe_result["passed"])
+
 
 if __name__ == "__main__":
     unittest.main()

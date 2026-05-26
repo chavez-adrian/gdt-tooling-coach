@@ -14,10 +14,25 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_ROWS = 100
 
 
-def verify_review_html(path=DEFAULT_HTML_PATH, expected_rows=EXPECTED_ROWS, check_ignore_func=None):
+def verify_review_html(
+    path=DEFAULT_HTML_PATH,
+    expected_rows=EXPECTED_ROWS,
+    check_ignore_func=None,
+    extra_forbidden_terms=None,
+):
     path = Path(path)
     check_ignore_func = check_ignore_func or html_is_ignored
     html = path.read_text(encoding="utf-8") if path.exists() else ""
+    forbidden_terms = [
+        "psycopg.connect",
+        "DATABASE_URL",
+        "INSERT ",
+        "UPDATE ",
+        "DELETE ",
+        "DROP ",
+        "ALTER ",
+        "CREATE TABLE",
+    ] + list(extra_forbidden_terms or [])
     result = {
         "html_exists": path.exists(),
         "git_ignored": check_ignore_func(path),
@@ -27,6 +42,7 @@ def verify_review_html(path=DEFAULT_HTML_PATH, expected_rows=EXPECTED_ROWS, chec
             f'value="{decision}"' in html for decision in ALLOWED_REVIEW_DECISIONS
         ),
         "no_external_urls": "http://" not in html and "https://" not in html,
+        "no_neon_modification_path": not any(term in html for term in forbidden_terms),
     }
     result["passed"] = (
         result["html_exists"]
@@ -34,6 +50,7 @@ def verify_review_html(path=DEFAULT_HTML_PATH, expected_rows=EXPECTED_ROWS, chec
         and result["definition_id_entries"] == expected_rows
         and result["allowed_decisions_present"]
         and result["no_external_urls"]
+        and result["no_neon_modification_path"]
     )
     return result
 
@@ -65,6 +82,7 @@ def format_console_summary(result):
             f"Expected rows: {result['expected_rows']}",
             f"Allowed decisions present: {str(result['allowed_decisions_present']).lower()}",
             f"No external URLs: {str(result['no_external_urls']).lower()}",
+            f"No Neon modification path: {str(result['no_neon_modification_path']).lower()}",
         ]
     )
 
