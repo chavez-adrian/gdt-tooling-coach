@@ -28,6 +28,14 @@ class VerifySeedConceptsTests(unittest.TestCase):
         self.assertEqual(1, result["ready_to_insert"])
         self.assertEqual(0, result["blocked_concepts"])
 
+    def test_verifies_only_approved_execute_gate_and_parameterized_insert_sql(self):
+        result = verify_seed_gate([valid_concept()], existing_concepts=[])
+
+        self.assertTrue(result["approved_execute_gate_verified"])
+        self.assertTrue(result["parameterized_insert_verified"])
+        self.assertEqual(["--execute-approved-insert"], result["live_write_gates"])
+        self.assertEqual([], result["forbidden_sql_verbs_found"])
+
 
 if __name__ == "__main__":
     unittest.main()
