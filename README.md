@@ -243,6 +243,14 @@ concept seed manifest, and SELECT-only Neon concept metadata. It verifies the
 values, matched-signal or allowed metadata reasoning, no validated concepts, and
 prints only aggregate distributions and no-write evidence.
 
+`python scripts/export_raw_import_review.py` creates
+`data/processed/raw_import_review_export.csv` for human review after approved
+candidate snippets have been inserted as `raw_import` definitions. The export is
+SELECT-only, ignored by Git, and includes bounded definition text plus blank
+reviewer fields. `python scripts/verify_raw_import_review_export.py` verifies
+the CSV shape, 100 expected rows, raw review contract, duplicate fingerprints,
+and Git-ignore status without printing definition text.
+
 `data/concept_seed_manifest.example.json` is the initial versioned list of
 reviewable GD&T concept labels for future explicit mapping. It stores no
 definitions or source excerpts, keeps every row in `needs_human_review`, and is

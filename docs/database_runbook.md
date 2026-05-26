@@ -124,6 +124,17 @@ The checker confirms counts, review status, human-review flags, literal quote
 type, word-count limits, non-null source/concept/fingerprint values, and zero
 duplicate import fingerprints without selecting or printing definition text.
 
+To prepare human review, export the inserted `raw_import` candidate definitions:
+
+```powershell
+python scripts/export_raw_import_review.py
+python scripts/verify_raw_import_review_export.py
+```
+
+The CSV is written to `data/processed/raw_import_review_export.csv`, remains
+ignored by Git, and includes blank `review_recommendation` and `reviewer_notes`
+columns. These commands are SELECT-only and do not mark definitions validated.
+
 ## Troubleshooting
 
 - Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set

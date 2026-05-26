@@ -86,6 +86,13 @@ La insercion tambien debe ser idempotente: cada fila planeada lleva
 reportan solo conteos de duplicados/skips, se usa `ON CONFLICT DO NOTHING` y no
 se imprime `snippet_text`.
 
+El export de revision humana de definitions `raw_import` es un artefacto local
+ignorado por Git. Puede incluir `definition_text` para que una persona revise,
+pero los scripts de export/verificacion no deben imprimirlo en consola. El
+archivo debe conservar `raw_import`, `requires_human_review = true`,
+`validated = false`, fingerprint unico y campos vacios para recomendacion/notas
+del revisor.
+
 El diagnostico `python scripts/diagnose_concept_readiness.py` solo puede usar
 metadatos permitidos para explicar readiness de conceptos. No debe imprimir
 `snippet_text`, credenciales ni contenido normativo, no debe escribir en Neon y

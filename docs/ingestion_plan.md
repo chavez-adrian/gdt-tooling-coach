@@ -117,6 +117,19 @@ llaves dentro del manifest, correspondencia con `matched_signal` o razon de
 metadata permitida, ningun concepto validado automaticamente y ninguna escritura
 a Neon.
 
+Despues de la insercion live aprobada de candidate snippets, la fase siguiente
+es exportar definitions en `raw_import` para revision humana:
+
+```powershell
+python scripts/export_raw_import_review.py
+python scripts/verify_raw_import_review_export.py
+```
+
+El CSV `data/processed/raw_import_review_export.csv` permanece ignorado por Git.
+Puede contener texto literal acotado para revision, pero los scripts no deben
+imprimir ese texto ni modificar Neon. Nada se marca como `validated` en esta
+fase.
+
 `data/concept_seed_manifest.example.json` contiene las primeras etiquetas de
 conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
 versionable, no contiene definiciones, no inserta en Neon y mantiene
