@@ -62,6 +62,13 @@ contenido normativo. `python scripts/verify_snippet_coverage.py` solo puede
 explicar conteos, paginas con snippets y paginas sin snippets con codigos de
 razon metadata-only; must not mark snippets validated ni conectarse a Neon.
 
+La verificacion de asignacion snippet-to-concept con
+`python scripts/verify_snippet_concept_assignment.py` es obligatoria antes del
+dry-run de insercion con overlay. Solo puede imprimir conteos y distribuciones
+por `concept_key`, `source_type`/`language` y `matched_signal`; debe ocultar
+`snippet_text`, credenciales y host details, usar conceptos con SELECT-only y
+rechazar llaves fuera del manifest, conceptos desconocidos o ya validados.
+
 La verificacion de `data/processed/snippet_insertion_dry_run.json` con
 `python scripts/verify_snippet_insertion_dry_run.py` es una revision de
 planificacion y seguridad. It must not print snippet_text, contenido normativo,

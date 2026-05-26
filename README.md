@@ -230,6 +230,14 @@ matched signals or allowed metadata reasons, explicit `concept_key` and
 `concept_id`, confidence/status, and audit notes. The draft is ignored by Git,
 does not copy snippet text, and does not write assignments to Neon.
 
+`python scripts/verify_snippet_concept_assignment.py` is the safety checkpoint
+between that local assignment draft and any snippet insertion dry-run. It reads
+`data/processed/candidate_snippets.json`, the assignment draft, the approved
+concept seed manifest, and SELECT-only Neon concept metadata. It verifies the
+100 current assignments, one `concept_id` per snippet, approved `concept_key`
+values, matched-signal or allowed metadata reasoning, no validated concepts, and
+prints only aggregate distributions and no-write evidence.
+
 `data/concept_seed_manifest.example.json` is the initial versioned list of
 reviewable GD&T concept labels for future explicit mapping. It stores no
 definitions or source excerpts, keeps every row in `needs_human_review`, and is

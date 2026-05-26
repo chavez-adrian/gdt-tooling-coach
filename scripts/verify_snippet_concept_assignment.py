@@ -115,6 +115,7 @@ def verify_assignment_draft(
         "unknown_concept_ids": unknown_concept_ids,
         "snippets_without_assignment": snippets_without_assignment,
         "no_database_writes": True,
+        "select_only_concept_lookup": True,
     }
 
 
@@ -131,6 +132,7 @@ def format_console_summary(result):
             f"Unknown concept ids: {_format_list(result.get('unknown_concept_ids', []))}",
             f"Snippets without assignment: {_format_list(result.get('snippets_without_assignment', []))}",
             "No database writes: true",
+            "Concept lookup: SELECT only",
             "Snippet text printed: false",
         ]
     )

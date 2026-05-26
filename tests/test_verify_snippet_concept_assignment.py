@@ -85,6 +85,7 @@ class VerifySnippetConceptAssignmentTests(unittest.TestCase):
         self.assertEqual([], result["unknown_concept_ids"])
         self.assertEqual([], result["snippets_without_assignment"])
         self.assertTrue(result["no_database_writes"])
+        self.assertTrue(result["select_only_concept_lookup"])
 
     def test_rejects_missing_duplicate_and_unknown_assignment_cardinality(self):
         result = verify_assignment_draft(
@@ -226,6 +227,7 @@ class VerifySnippetConceptAssignmentTests(unittest.TestCase):
         self.assertIn("Total assignments: 1", result.stdout)
         self.assertIn("Assignments by concept_key: datum=1", result.stdout)
         self.assertIn("No database writes: true", result.stdout)
+        self.assertIn("Concept lookup: SELECT only", result.stdout)
         self.assertNotIn("literal text must never appear", result.stdout)
         self.assertNotIn("snippet_text", result.stdout)
         self.assertNotIn("DATABASE_URL", result.stdout)

@@ -102,6 +102,14 @@ solo indices, senales o razones de metadata permitidas, `concept_key`,
 modifica Neon y se revisa antes de usarlo como overlay en el dry-run de
 `insert_candidate_snippets.py`.
 
+Antes de usar ese overlay, `python scripts/verify_snippet_concept_assignment.py`
+debe verificar el borrador contra `candidate_snippets.json`, el manifest
+aprobado y conceptos existentes leidos de Neon con SELECT-only. Debe confirmar
+100 asignaciones, exactamente una asignacion y un `concept_id` por snippet,
+llaves dentro del manifest, correspondencia con `matched_signal` o razon de
+metadata permitida, ningun concepto validado automaticamente y ninguna escritura
+a Neon.
+
 `data/concept_seed_manifest.example.json` contiene las primeras etiquetas de
 conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
 versionable, no contiene definiciones, no inserta en Neon y mantiene
