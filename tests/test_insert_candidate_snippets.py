@@ -216,11 +216,19 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertIn("ON CONFLICT (import_fingerprint) DO NOTHING", INSERT_DEFINITION_SQL)
 
     def test_console_summary_does_not_print_snippet_text(self):
-        plan = build_insertion_plan([valid_snippet()], SOURCE_ROWS, execute=False)
+        fingerprint = calculate_import_fingerprint(valid_snippet(), "source-1")
+        plan = build_insertion_plan(
+            [valid_snippet()],
+            SOURCE_ROWS,
+            execute=False,
+            existing_definition_fingerprints={fingerprint},
+        )
         summary = format_console_summary({**plan, "inserted_snippets": 0})
 
         self.assertIn("Mode: dry-run", summary)
-        self.assertIn("Ready to insert: 1", summary)
+        self.assertIn("Ready to insert: 0", summary)
+        self.assertIn("Duplicate snippets skipped: 1", summary)
+        self.assertIn("Existing definitions skipped: 1", summary)
         self.assertNotIn("short literal quote", summary)
         self.assertNotIn("snippet_text", summary)
 
@@ -228,11 +236,13 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             snippets_path = Path(tmp_dir) / "candidate_snippets.json"
             sources_path = Path(tmp_dir) / "sources.json"
+            existing_path = Path(tmp_dir) / "existing_definitions.json"
             snippets_path.write_text(
                 json.dumps({"candidate_snippets": [valid_snippet()]}),
                 encoding="utf-8",
             )
             sources_path.write_text(json.dumps(SOURCE_ROWS), encoding="utf-8")
+            existing_path.write_text(json.dumps([]), encoding="utf-8")
 
             result = subprocess.run(
                 [
@@ -244,6 +254,8 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
                     "postgresql://readonly",
                     "--sources-fixture",
                     str(sources_path),
+                    "--existing-definitions-fixture",
+                    str(existing_path),
                 ],
                 cwd=Path(__file__).resolve().parents[1],
                 capture_output=True,

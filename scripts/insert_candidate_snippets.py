@@ -181,6 +181,14 @@ def fetch_existing_definition_fingerprints(database_url, fingerprints, connect=p
             return {row[0] for row in cur.fetchall()}
 
 
+def load_existing_definition_fingerprints_fixture(path):
+    with open(path, "r", encoding="utf-8") as fixture_file:
+        rows = json.load(fixture_file)
+    if isinstance(rows, dict):
+        rows = rows.get("import_fingerprints", [])
+    return set(rows)
+
+
 def insert_rows(database_url, rows, connect=psycopg.connect):
     with connect(database_url) as conn:
         with conn.transaction():
@@ -213,6 +221,8 @@ def format_console_summary(result):
             f"Blocked snippets: {result['blocked_snippets']}",
             f"Block reasons: {_format_key_counts(result.get('block_reasons', {}))}",
             f"Source match summary: {_format_key_counts(result.get('source_match_summary', {}))}",
+            f"Duplicate snippets skipped: {result.get('duplicate_snippets', 0)}",
+            f"Existing definitions skipped: {result.get('skipped_existing_definitions', 0)}",
             f"Inserted snippets: {result.get('inserted_snippets', 0)}",
             f"Database writes attempted: {str(result['database_writes_attempted']).lower()}",
             "Review state: raw_import",
@@ -234,6 +244,11 @@ def main(argv=None):
         "--sources-fixture",
         type=Path,
         help="Use a local JSON source-row fixture instead of live Neon SELECT.",
+    )
+    parser.add_argument(
+        "--existing-definitions-fixture",
+        type=Path,
+        help="Use local import_fingerprint values instead of live definitions SELECT.",
     )
     parser.add_argument(
         "--assignment-draft",
@@ -261,10 +276,13 @@ def main(argv=None):
             source_rows,
             execute=args.execute_approved_insert,
         )
-        existing_fingerprints = fetch_existing_definition_fingerprints(
-            database_url,
-            [row["import_fingerprint"] for row in plan["insertion_rows"]],
-        )
+        if args.existing_definitions_fixture is None:
+            existing_fingerprints = fetch_existing_definition_fingerprints(
+                database_url,
+                [row["import_fingerprint"] for row in plan["insertion_rows"]],
+            )
+        else:
+            existing_fingerprints = load_existing_definition_fingerprints_fixture(args.existing_definitions_fixture)
         plan = build_insertion_plan(
             snippets,
             source_rows,
