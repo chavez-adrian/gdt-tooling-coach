@@ -4,7 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.insert_seed_concepts import build_insertion_plan, format_console_summary
+from scripts.insert_seed_concepts import (
+    INSERT_CONCEPT_SQL,
+    build_insertion_plan,
+    execute_approved_insert,
+    format_console_summary,
+)
 
 
 def valid_concept(**overrides):
@@ -93,6 +98,29 @@ class InsertSeedConceptsTests(unittest.TestCase):
             {"duplicate_concept_key": 2, "concept_already_exists": 1},
             plan["block_reasons"],
         )
+
+    def test_execute_approved_insert_requires_explicit_flag(self):
+        calls = []
+        plan = build_insertion_plan([valid_concept()], existing_concepts=[], execute=False)
+
+        result = execute_approved_insert(plan, insert_rows=calls.extend)
+
+        self.assertEqual(0, result["inserted_concepts"])
+        self.assertFalse(result["database_writes_attempted"])
+        self.assertEqual([], calls)
+
+    def test_execute_approved_insert_uses_parameterized_insert_when_approved(self):
+        captured_rows = []
+        plan = build_insertion_plan([valid_concept()], existing_concepts=[], execute=True)
+
+        result = execute_approved_insert(plan, insert_rows=captured_rows.extend)
+
+        self.assertEqual(1, result["inserted_concepts"])
+        self.assertTrue(result["database_writes_attempted"])
+        self.assertEqual("datum", captured_rows[0]["slug"])
+        self.assertEqual("needs_review", captured_rows[0]["current_status"])
+        self.assertNotIn("datum", INSERT_CONCEPT_SQL)
+        self.assertNotRegex(INSERT_CONCEPT_SQL.lower(), r"\b(update|delete|drop|alter|create)\b")
 
     def test_cli_defaults_to_dry_run_with_fixture_concepts(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -16,6 +16,15 @@ SELECT id, slug, category, current_status
 FROM concepts
 ORDER BY slug;
 """
+INSERT_CONCEPT_SQL = """
+INSERT INTO concepts (
+  slug,
+  category,
+  current_status,
+  notes
+)
+VALUES (%s, %s, %s, %s);
+"""
 FORBIDDEN_DEFINITION_FIELDS = {
     "definition",
     "definition_en",
@@ -84,6 +93,7 @@ def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
                 "concept_index": index,
                 "slug": concept["concept_key"],
                 "category": concept["concept_type"],
+                "current_status": "needs_review",
                 "notes": concept.get("notes", ""),
             }
         )
@@ -102,6 +112,38 @@ def build_insertion_plan(manifest_concepts, existing_concepts, execute=False):
         "insertion_rows": rows,
         "existing_concepts_count": len(existing_concepts),
     }
+
+
+def execute_approved_insert(plan, insert_rows):
+    if not plan.get("execute_requested") or plan.get("blocked_concepts"):
+        return {
+            **plan,
+            "database_writes_attempted": False,
+            "inserted_concepts": 0,
+        }
+    rows = plan.get("insertion_rows", [])
+    insert_rows(rows)
+    return {
+        **plan,
+        "database_writes_attempted": bool(rows),
+        "inserted_concepts": len(rows),
+    }
+
+
+def insert_rows(database_url, rows, connect=psycopg.connect):
+    with connect(database_url) as conn:
+        with conn.transaction():
+            with conn.cursor() as cur:
+                for row in rows:
+                    cur.execute(
+                        INSERT_CONCEPT_SQL,
+                        (
+                            row["slug"],
+                            row["category"],
+                            row["current_status"],
+                            row["notes"],
+                        ),
+                    )
 
 
 def format_console_summary(result):
@@ -144,6 +186,10 @@ def main(argv=None):
             manifest,
             existing_concepts,
             execute=args.execute_approved_insert,
+        )
+        result = execute_approved_insert(
+            result,
+            insert_rows=lambda rows: insert_rows(database_url, rows),
         )
     except Exception as exc:
         print("Approved concept seed insertion gate failed.", file=sys.stderr)
