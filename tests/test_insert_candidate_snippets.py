@@ -43,6 +43,15 @@ SOURCE_ROWS = [
 
 
 class InsertCandidateSnippetsTests(unittest.TestCase):
+    def test_migration_003_adds_definition_import_fingerprint_unique_index(self):
+        migration = Path("db/migrations/003_definition_import_fingerprint.sql").read_text(encoding="utf-8").lower()
+
+        self.assertIn("alter table definitions", migration)
+        self.assertIn("add column if not exists import_fingerprint text", migration)
+        self.assertIn("create unique index if not exists", migration)
+        self.assertIn("definitions", migration)
+        self.assertIn("import_fingerprint", migration)
+
     def test_import_fingerprint_is_stable_for_same_snippet_identity(self):
         first = calculate_import_fingerprint(valid_snippet(), "source-1")
         second = calculate_import_fingerprint(valid_snippet(), "source-1")
