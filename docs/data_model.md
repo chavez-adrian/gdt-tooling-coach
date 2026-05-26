@@ -18,6 +18,10 @@ conceptos GD&T para revision humana. No es una insercion automatica, no guarda
 definiciones y no reemplaza la tabla `concepts`; solo prepara un vocabulario
 versionable para asignacion explicita posterior.
 
+El dry-run `python scripts/prepare_concept_seed_dry_run.py` valida el manifest
+contra `concepts` sin escribir en Neon. Sirve para revisar duplicados y bloqueos
+antes de crear cualquier ruta de insercion live.
+
 ## Fuente maestra
 
 Las tablas relacionales son la fuente maestra. `v_glossary_flat` es solo una vista de lectura para revision/exportacion.

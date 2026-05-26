@@ -225,3 +225,8 @@ snippet text or assigns concepts automatically.
 reviewable GD&T concept labels for future explicit mapping. It stores no
 definitions or source excerpts, keeps every row in `needs_human_review`, and is
 not inserted into Neon by itself.
+
+`python scripts/prepare_concept_seed_dry_run.py` validates that manifest against
+existing Neon concepts using SELECT only and writes
+`data/processed/concept_seed_dry_run.json`. The report identifies insertable
+concept labels, blocked rows, duplicate keys, and confirms no database writes.

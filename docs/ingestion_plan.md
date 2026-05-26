@@ -98,3 +98,9 @@ no imprime snippets y no asigna conceptos.
 conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
 versionable, no contiene definiciones, no inserta en Neon y mantiene
 `review_state = needs_human_review`.
+
+`python scripts/prepare_concept_seed_dry_run.py` compara ese manifest contra
+`concepts` con SELECT-only y genera
+`data/processed/concept_seed_dry_run.json`. El reporte enumera conceptos
+insertables, bloqueados, llaves duplicadas y razones de bloqueo sin ejecutar
+INSERT/UPDATE/DELETE.
