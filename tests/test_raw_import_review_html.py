@@ -123,6 +123,19 @@ class RawImportReviewHtmlTests(unittest.TestCase):
         ]:
             self.assertIn(field, html)
 
+    def test_html_contains_localstorage_save_and_restore_markers(self):
+        html = build_review_html([review_row()])
+
+        for marker in [
+            "localStorage",
+            "rawImportReviewDecisions",
+            "saveDecision",
+            "restoreDecisions",
+            "input",
+            "change",
+        ]:
+            self.assertIn(marker, html)
+
 
 if __name__ == "__main__":
     unittest.main()

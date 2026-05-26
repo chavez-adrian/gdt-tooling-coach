@@ -50,6 +50,36 @@ def build_review_html(rows):
     {controls}
     {cards}
   </main>
+  <script>
+    const STORAGE_KEY = "rawImportReviewDecisions";
+    function readDecisions() {{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{{}}");
+    }}
+    function writeDecisions(decisions) {{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(decisions));
+    }}
+    function saveDecision(card) {{
+      const decisions = readDecisions();
+      const definitionId = card.dataset.definitionId;
+      decisions[definitionId] = decisions[definitionId] || {{}};
+      card.querySelectorAll("[data-field]").forEach((field) => {{
+        decisions[definitionId][field.dataset.field] = field.value;
+      }});
+      writeDecisions(decisions);
+    }}
+    function restoreDecisions() {{
+      const decisions = readDecisions();
+      document.querySelectorAll("[data-definition-id]").forEach((card) => {{
+        const saved = decisions[card.dataset.definitionId] || {{}};
+        card.querySelectorAll("[data-field]").forEach((field) => {{
+          field.value = saved[field.dataset.field] || "";
+          field.addEventListener("input", () => saveDecision(card));
+          field.addEventListener("change", () => saveDecision(card));
+        }});
+      }});
+    }}
+    restoreDecisions();
+  </script>
 </body>
 </html>
 """
