@@ -113,6 +113,17 @@ text, SELECTs existing `definitions.import_fingerprint` values, reports
 duplicate/skipped counts, uses parameterized INSERT with `ON CONFLICT DO
 NOTHING`, and does not print `snippet_text`.
 
+After an approved live candidate-snippet insert, verify the inserted raw-import
+rows with the SELECT-only aggregate checker:
+
+```powershell
+python scripts/verify_inserted_candidate_snippets.py
+```
+
+The checker confirms counts, review status, human-review flags, literal quote
+type, word-count limits, non-null source/concept/fingerprint values, and zero
+duplicate import fingerprints without selecting or printing definition text.
+
 ## Troubleshooting
 
 - Missing `DATABASE_URL`: copy `.env.example` to `.env` for local shape, then set
