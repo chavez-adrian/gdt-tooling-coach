@@ -73,13 +73,30 @@ def main(argv=None):
 
 
 def _render_card(row):
+    required_fields = [
+        "definition_id",
+        "concept_key",
+        "source_title",
+        "source_type",
+        "language",
+        "page_number",
+        "matched_signal",
+        "word_count",
+        "definition_text",
+        "import_fingerprint",
+    ]
+    fields = "\n    ".join(_render_field(field, row.get(field, "")) for field in required_fields)
     return f"""<article data-definition-id="{_escape(row.get('definition_id', ''))}">
   <dl>
-    <dt>definition_id</dt><dd>{_escape(row.get('definition_id', ''))}</dd>
-    <dt>concept_key</dt><dd>{_escape(row.get('concept_key', ''))}</dd>
-    <dt>definition_text</dt><dd><pre>{_escape(row.get('definition_text', ''))}</pre></dd>
+    {fields}
   </dl>
 </article>"""
+
+
+def _render_field(name, value):
+    if name == "definition_text":
+        return f"<dt>{name}</dt><dd><pre>{_escape(value)}</pre></dd>"
+    return f"<dt>{name}</dt><dd>{_escape(value)}</dd>"
 
 
 def _escape(value):

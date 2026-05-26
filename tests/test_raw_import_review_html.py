@@ -56,6 +56,31 @@ class RawImportReviewHtmlTests(unittest.TestCase):
         self.assertNotIn("http://", html)
         self.assertNotIn("https://", html)
 
+    def test_review_card_shows_required_definition_fields(self):
+        html = build_review_html([review_row()])
+
+        for expected in [
+            "definition_id",
+            "concept_key",
+            "source_title",
+            "source_type",
+            "language",
+            "page_number",
+            "matched_signal",
+            "word_count",
+            "definition_text",
+            "import_fingerprint",
+            "definition-1",
+            "ASME Y14.5",
+            "asme_2018_en",
+            "en",
+            "12",
+            "datum",
+            "4",
+            "fingerprint-1",
+        ]:
+            self.assertIn(expected, html)
+
 
 if __name__ == "__main__":
     unittest.main()
