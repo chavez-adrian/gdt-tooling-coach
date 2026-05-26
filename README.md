@@ -213,13 +213,22 @@ defaults to dry-run mode and can write to Neon only with
 `--execute-approved-insert`. The gate requires explicit `concept_id`,
 resolved `source_id`, `page_number`, `raw_import`,
 `requires_human_review = true`, `validated = false`, `literal_quote`, and
-80 words or fewer; it performs no automatic concept validation.
+80 words or fewer; it performs no automatic concept validation. For review
+dry-runs, pass `--assignment-draft data/processed/snippet_concept_assignment_draft.json`
+to overlay local concept ids without modifying the candidate snippet artifact.
 
 `python scripts/diagnose_concept_readiness.py` is a SELECT-only readiness
 diagnostic for candidate snippets that still lack explicit `concept_id`
 mapping. It reads concepts metadata, summarizes missing mappings and candidate
 labels, writes `data/processed/concept_readiness_report.json`, and never prints
 snippet text or assigns concepts automatically.
+
+`python scripts/prepare_snippet_concept_assignment_draft.py` creates the local
+review checkpoint after approved concepts exist. It writes
+`data/processed/snippet_concept_assignment_draft.json` with snippet indexes,
+matched signals or allowed metadata reasons, explicit `concept_key` and
+`concept_id`, confidence/status, and audit notes. The draft is ignored by Git,
+does not copy snippet text, and does not write assignments to Neon.
 
 `data/concept_seed_manifest.example.json` is the initial versioned list of
 reviewable GD&T concept labels for future explicit mapping. It stores no

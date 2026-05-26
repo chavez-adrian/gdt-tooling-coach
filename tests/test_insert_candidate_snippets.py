@@ -6,6 +6,7 @@ from pathlib import Path
 
 from scripts.insert_candidate_snippets import (
     INSERT_DEFINITION_SQL,
+    apply_assignment_draft,
     build_insertion_plan,
     execute_approved_insert,
     format_console_summary,
@@ -153,6 +154,26 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertIn("Mode: dry-run", result.stdout)
         self.assertIn("Database writes attempted: false", result.stdout)
         self.assertNotIn("short literal quote", result.stdout)
+
+    def test_assignment_draft_overlay_adds_concept_ids_without_copying_snippet_text(self):
+        snippets = [valid_snippet(concept_id=None)]
+        assignment_draft = {
+            "assignments": [
+                {
+                    "snippet_index": 0,
+                    "concept_key": "datum",
+                    "concept_id": "concept-1",
+                    "status": "ready_to_insert",
+                }
+            ]
+        }
+
+        updated = apply_assignment_draft(snippets, assignment_draft)
+
+        self.assertEqual("concept-1", updated[0]["concept_id"])
+        self.assertEqual("datum", updated[0]["concept_key"])
+        self.assertEqual("short literal quote", updated[0]["snippet_text"])
+        self.assertIsNot(updated[0], snippets[0])
 
 
 if __name__ == "__main__":

@@ -96,6 +96,28 @@ def build_insertion_plan(snippets, source_rows, execute=False):
     }
 
 
+def load_assignment_draft(path):
+    with open(path, "r", encoding="utf-8") as draft_file:
+        return json.load(draft_file)
+
+
+def apply_assignment_draft(snippets, assignment_draft):
+    assignments_by_index = {
+        assignment["snippet_index"]: assignment
+        for assignment in assignment_draft.get("assignments", [])
+        if assignment.get("status") == "ready_to_insert"
+    }
+    updated_snippets = []
+    for index, snippet in enumerate(snippets):
+        updated_snippet = dict(snippet)
+        assignment = assignments_by_index.get(index)
+        if assignment is not None:
+            updated_snippet["concept_id"] = assignment.get("concept_id")
+            updated_snippet["concept_key"] = assignment.get("concept_key")
+        updated_snippets.append(updated_snippet)
+    return updated_snippets
+
+
 def execute_approved_insert(plan, insert_rows):
     if not plan.get("execute_requested") or plan.get("blocked_snippets"):
         return {
@@ -166,6 +188,11 @@ def main(argv=None):
         help="Use a local JSON source-row fixture instead of live Neon SELECT.",
     )
     parser.add_argument(
+        "--assignment-draft",
+        type=Path,
+        help="Overlay explicit concept_id values from a local assignment draft.",
+    )
+    parser.add_argument(
         "--execute-approved-insert",
         action="store_true",
         help="Actually insert ready snippets. Without this flag the command is dry-run only.",
@@ -175,6 +202,8 @@ def main(argv=None):
     try:
         database_url = args.database_url or load_database_url()
         snippets = load_candidate_snippets(args.input)
+        if args.assignment_draft is not None:
+            snippets = apply_assignment_draft(snippets, load_assignment_draft(args.assignment_draft))
         if args.sources_fixture is None:
             source_rows = fetch_source_rows(database_url)
         else:

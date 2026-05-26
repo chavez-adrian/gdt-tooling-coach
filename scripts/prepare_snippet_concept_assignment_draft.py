@@ -4,8 +4,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import psycopg
-
 try:
     from prepare_snippet_insertion_dry_run import (
         DEFAULT_INPUT_PATH,
@@ -40,7 +38,7 @@ SIGNAL_TO_CONCEPT_KEY = {
 
 def build_assignment_draft(snippets, concepts):
     concept_ids_by_key = {
-        concept["slug"]: concept["id"]
+        concept["slug"]: str(concept["id"])
         for concept in concepts
     }
     assignments = []

@@ -94,6 +94,14 @@ Neon, que labels candidatas pueden derivarse solo de metadatos permitidos y
 cuantos snippets no tienen candidato confiable. Este diagnostico es SELECT-only,
 no imprime snippets y no asigna conceptos.
 
+Despues de confirmar que los conceptos semilla aprobados existen,
+`python scripts/prepare_snippet_concept_assignment_draft.py` genera el checkpoint
+local de asignacion snippet-to-concept. El artefacto ignorado por Git contiene
+solo indices, senales o razones de metadata permitidas, `concept_key`,
+`concept_id`, estado/confianza y notas de auditoria. No copia `snippet_text`, no
+modifica Neon y se revisa antes de usarlo como overlay en el dry-run de
+`insert_candidate_snippets.py`.
+
 `data/concept_seed_manifest.example.json` contiene las primeras etiquetas de
 conceptos GD&T para revision humana y mapeo explicito posterior. El archivo es
 versionable, no contiene definiciones, no inserta en Neon y mantiene
