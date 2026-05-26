@@ -10,6 +10,7 @@ from scripts.insert_candidate_snippets import (
     build_insertion_plan,
     calculate_import_fingerprint,
     execute_approved_insert,
+    fetch_existing_definition_fingerprints,
     format_console_summary,
 )
 
@@ -40,6 +41,38 @@ SOURCE_ROWS = [
         "language": "en",
     }
 ]
+
+
+class FakeCursor:
+    def __init__(self, rows):
+        self.rows = rows
+        self.calls = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        return False
+
+    def execute(self, sql, params):
+        self.calls.append((sql, params))
+
+    def fetchall(self):
+        return self.rows
+
+
+class FakeConnection:
+    def __init__(self, rows):
+        self.cursor_obj = FakeCursor(rows)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        return False
+
+    def cursor(self):
+        return self.cursor_obj
 
 
 class InsertCandidateSnippetsTests(unittest.TestCase):
@@ -111,6 +144,22 @@ class InsertCandidateSnippetsTests(unittest.TestCase):
         self.assertEqual(1, plan["skipped_existing_definitions"])
         self.assertEqual([{"snippet_index": 0, "import_fingerprint": fingerprint}], plan["duplicate_details"])
         self.assertFalse(plan["database_writes_attempted"])
+
+    def test_fetch_existing_definition_fingerprints_uses_select_only_lookup(self):
+        connection = FakeConnection([("fp-existing",)])
+
+        result = fetch_existing_definition_fingerprints(
+            "postgresql://readonly",
+            ["fp-existing", "fp-new"],
+            connect=lambda _database_url: connection,
+        )
+
+        sql, params = connection.cursor_obj.calls[0]
+        self.assertEqual({"fp-existing"}, result)
+        self.assertIn("SELECT import_fingerprint", sql)
+        self.assertIn("FROM definitions", sql)
+        self.assertNotIn("INSERT", sql.upper())
+        self.assertEqual((["fp-existing", "fp-new"],), params)
 
     def test_plan_enforces_non_negotiable_raw_literal_contract(self):
         plan = build_insertion_plan(

@@ -164,6 +164,23 @@ def execute_approved_insert(plan, insert_rows):
     }
 
 
+def fetch_existing_definition_fingerprints(database_url, fingerprints, connect=psycopg.connect):
+    fingerprints = sorted(set(fingerprints))
+    if not fingerprints:
+        return set()
+    with connect(database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT import_fingerprint
+                FROM definitions
+                WHERE import_fingerprint = ANY(%s)
+                """,
+                (fingerprints,),
+            )
+            return {row[0] for row in cur.fetchall()}
+
+
 def insert_rows(database_url, rows, connect=psycopg.connect):
     with connect(database_url) as conn:
         with conn.transaction():
@@ -243,6 +260,16 @@ def main(argv=None):
             snippets,
             source_rows,
             execute=args.execute_approved_insert,
+        )
+        existing_fingerprints = fetch_existing_definition_fingerprints(
+            database_url,
+            [row["import_fingerprint"] for row in plan["insertion_rows"]],
+        )
+        plan = build_insertion_plan(
+            snippets,
+            source_rows,
+            execute=args.execute_approved_insert,
+            existing_definition_fingerprints=existing_fingerprints,
         )
         result = execute_approved_insert(
             plan,
