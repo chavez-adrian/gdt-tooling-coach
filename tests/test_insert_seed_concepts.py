@@ -8,6 +8,7 @@ from scripts.insert_seed_concepts import (
     INSERT_CONCEPT_SQL,
     build_insertion_plan,
     execute_approved_insert,
+    fetch_existing_concepts,
     format_console_summary,
 )
 
@@ -121,6 +122,42 @@ class InsertSeedConceptsTests(unittest.TestCase):
         self.assertEqual("needs_review", captured_rows[0]["current_status"])
         self.assertNotIn("datum", INSERT_CONCEPT_SQL)
         self.assertNotRegex(INSERT_CONCEPT_SQL.lower(), r"\b(update|delete|drop|alter|create)\b")
+
+    def test_fetch_existing_concepts_uses_select_only_metadata_query(self):
+        class FakeCursor:
+            description = [("id",), ("slug",), ("category",), ("current_status",)]
+
+            def __init__(self):
+                self.sql = None
+
+            def execute(self, sql):
+                self.sql = sql
+
+            def fetchall(self):
+                return [("concept-1", "datum", "reference", "needs_review")]
+
+        class FakeConnection:
+            def __init__(self):
+                self.cursor_instance = FakeCursor()
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                return False
+
+            def cursor(self):
+                return self.cursor_instance
+
+        fake_connection = FakeConnection()
+
+        rows = fetch_existing_concepts("postgresql://readonly", connect=lambda _url: fake_connection)
+
+        normalized_sql = " ".join(fake_connection.cursor_instance.sql.split()).lower()
+        self.assertTrue(normalized_sql.startswith("select "))
+        self.assertIn(" from concepts", normalized_sql)
+        self.assertNotRegex(normalized_sql, r"\b(insert|update|delete|create|drop|alter)\b")
+        self.assertEqual("datum", rows[0]["slug"])
 
     def test_cli_defaults_to_dry_run_with_fixture_concepts(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
